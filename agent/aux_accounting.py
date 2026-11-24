@@ -82,11 +82,11 @@ def _pricing_api_key(base_url: Optional[str], serving: Optional[ServingCredentia
     """
     if serving is not None and serving.serves(base_url):
         return serving.api_key
-    from hermes_cli.config_backend import ConfigBackendUnavailable
+    from zeus_cli.config_backend import ConfigBackendUnavailable
     try:
         from agent.auxiliary_client import _runtime_main_value
-        from hermes_cli.config import load_config
-        from hermes_cli.runtime_provider_custom import main_endpoint_key_for
+        from zeus_cli.config import load_config
+        from zeus_cli.runtime_provider_custom import main_endpoint_key_for
         if callable(_runtime_main_value("api_key")):
             return None
         return main_endpoint_key_for(load_config().get("model"), base_url or "") or None

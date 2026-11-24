@@ -46,7 +46,7 @@ def admission_media_references(payload):
 
 # Every pointer form of a spill archive (host path, ``~``-relative, in-container mount) carries the
 # ``spillover/<name>`` segment, with either separator (Windows paths are backslashed, JSON-escaped inside
-# structured content); sandbox-fallback ``hermes-results/<name>`` pointers do not. Prune stubs always
+# structured content); sandbox-fallback ``zeus-results/<name>`` pointers do not. Prune stubs always
 # render ``cache/pruned/<name>`` (posix display path), so that segment is required.
 SPILLOVER_SUBDIR = 'cache/spillover'
 PRUNED_SUBDIR = 'cache/pruned'  # originals of tool results the proactive prune shortened

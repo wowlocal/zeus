@@ -1,4 +1,4 @@
-import type { GatewayEvent } from '@hermes/shared'
+import type { GatewayEvent } from '@zeus/shared'
 // A reply its interrupter will continue (a host plugin stopped the turn to apply
 // a grant: session.interrupt with `resume`) ends with message.complete
 // {status: interrupted, paused: true}. Until the continuation's turn completes,
@@ -13,7 +13,7 @@ import type { ClientSessionState } from '@/app/types'
 import { createClientSessionState } from '@/lib/chat-runtime'
 import { endReplyPause, isReplyAwaitingContinuation, isReplyPaused, PAUSE_CAP_MS } from '@/store/paused-replies'
 import { $sessions, resolveComposerSessionKey } from '@/store/session'
-import type { SessionInfo } from '@/types/hermes'
+import type { SessionInfo } from '@/types/zeus'
 
 import { type MessageStreamHarness, renderMessageStream } from './test-harness'
 

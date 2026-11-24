@@ -39,7 +39,7 @@ it('retains a close when the same runtime owner is refined from profile-only to 
 })
 
 it('tolerates malformed persisted scope keys and keeps Windows aliases identical', async () => {
-  window.localStorage.setItem('hermes.desktop.previewDismissals.v1', '{"__proto__":["x"],"constructor":["y"]}')
+  window.localStorage.setItem('zeus.desktop.previewDismissals.v1', '{"__proto__":["x"],"constructor":["y"]}')
   await expect(migrateTilesForProfile('old-profile', 'new-profile')).resolves.toBeUndefined()
   recordPreviewArtifact('windows-alias', './report.html', 'C:\\work')
   const item = $previewStatusBySession.get()['windows-alias'][0]

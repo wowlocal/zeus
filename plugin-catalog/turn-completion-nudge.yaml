@@ -6,7 +6,7 @@ description: "Nudges the agent to continue when a turn ends prematurely (plannin
 maintainer: ether-btc
 tier: community
 category: tools
-requires_hermes: ">=0.21.3"
+requires_zeus: ">=0.21.3"
 version: "0.3.3"
 known_issues:
   - "free-model rot: default scorer model `respan/span-01-lite-20260925:free` may be delisted upstream - pin or monitor (see the scorer_model config description in the plugin repo)"

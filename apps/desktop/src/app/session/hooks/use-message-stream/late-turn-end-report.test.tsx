@@ -1,4 +1,4 @@
-import type { GatewayEvent } from '@hermes/shared'
+import type { GatewayEvent } from '@zeus/shared'
 // Every turn ends with two frames: message.complete, then the turn worker's
 // end-of-turn session.info (running=false), which core sends after it has
 // released the session. A turn the desktop starts right after a completion (a

@@ -107,7 +107,7 @@ function recordingDeps(ws: FakeWriteStream, { renameError }: { renameError?: Err
 // Separator-agnostic: path.join emits backslashes on Windows, so the expectation
 // is "short hidden .part name, same directory as the destination", not a
 // literal POSIX string.
-const TEMP_BASENAME = /^\.hermes-download-[0-9a-f]{8}\.part$/
+const TEMP_BASENAME = /^\.zeus-download-[0-9a-f]{8}\.part$/
 
 // path.join normalizes separators (``/tmp`` -> ``\\tmp`` on Windows) while the
 // literal destination strings in these tests do not, so compare normalized forms.
@@ -306,7 +306,7 @@ test('gatewayFileRequestPaths keeps streaming and fallback requests on the same 
 })
 
 test('an explicit backup download route replaces the workspace route and has no data-URL twin', () => {
-  const archive = '/home/u/.hermes/backups/hermes backup.zip'
+  const archive = '/home/u/.zeus/backups/zeus backup.zip'
   const downloadPath = `/api/ops/backup/download?archive=${encodeURIComponent(archive)}`
 
   const paths = gatewayFileRequestPaths(
@@ -316,7 +316,7 @@ test('an explicit backup download route replaces the workspace route and has no 
     downloadPath
   )
 
-  const download = new URL(paths.download, 'http://hermes.local')
+  const download = new URL(paths.download, 'http://zeus.local')
   assert.equal(paths.dataUrl, undefined)
   assert.equal(download.pathname, '/api/ops/backup/download')
   assert.deepEqual(

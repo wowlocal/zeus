@@ -1,0 +1,39 @@
+name: zeus-studio
+repo: https://github.com/PabloTheThinker/hermes-studio
+sha: e95be949a416d0f5b1a80eae964d547a7aec7770
+subdir: zeus_plugin/zeus-studio
+title: Zeus Studio
+description: "Local video tools for any ZeusAgent: long video or link in, captioned shorts out, plus timeline edits, Canva-style designs and photo tools, as 14 chat tools and a /studio chat slash. Whisper + FFmpeg on your machine. Never posts. Disclosure — every tool runs the separately installed zeus-studio engine CLI (v0.6.2+, installed by its own command, not covered by this pin) as a subprocess with a timeout and a minimal environment (PATH, HOME, LANG, TMPDIR, PYTHONPATH, ZEUS_STUDIO_*); tool calls read only media/image files under your home folder, /mnt, /media, /srv or the Studio library and write only new files inside ~/.zeus/clips (never overwrite); links must be public http(s), and yt-dlp runs with every connection and redirect hop checked against loopback, private, link-local, CGNAT and reserved addresses; zeus_studio_desk starts a detached local desk on 127.0.0.1 (loopback only); the plugin ships a local `zeus-studio mcp` server entry; the `/studio` chat command queues a Studio job into the current chat as a user message; optional local Ollama for clip titles; caption cues and the desk log go under <zeus home>/plugin-data/zeus-studio; caption lines are written by the calling agent; no credentials, no telemetry and no social publishing."
+maintainer: PabloTheThinker
+tier: community
+category: tools
+requires_zeus: ">=0.19.0"
+docs_url: https://github.com/PabloTheThinker/hermes-studio#readme
+version: "0.6.2"
+image: https://raw.githubusercontent.com/PabloTheThinker/hermes-studio/e95be949a416d0f5b1a80eae964d547a7aec7770/docs/catalog/banner.png
+screenshots:
+  - https://raw.githubusercontent.com/PabloTheThinker/hermes-studio/e95be949a416d0f5b1a80eae964d547a7aec7770/docs/catalog/01-timeline.jpg
+  - https://raw.githubusercontent.com/PabloTheThinker/hermes-studio/e95be949a416d0f5b1a80eae964d547a7aec7770/docs/catalog/02-clips-library.jpg
+  - https://raw.githubusercontent.com/PabloTheThinker/hermes-studio/e95be949a416d0f5b1a80eae964d547a7aec7770/docs/catalog/05-edit-timeline.jpg
+platforms: []
+known_issues:
+  - Needs the Zeus Studio engine v0.6.2 or newer installed separately (uv tool install --python 3.12 git+https://github.com/PabloTheThinker/hermes-studio@v0.6.2). If the CLI is missing or older, each tool returns a missing_dependency error with that command.
+capabilities:
+  provides_tools:
+    - zeus_studio_run
+    - zeus_studio_transcribe
+    - zeus_studio_plan
+    - zeus_studio_list
+    - zeus_studio_probe
+    - zeus_studio_desk
+    - zeus_studio_captions
+    - zeus_studio_edit
+    - zeus_studio_recommend
+    - zeus_studio_copy
+    - zeus_studio_restyle
+    - zeus_studio_name
+    - zeus_studio_design
+    - zeus_studio_photo
+  provides_hooks: []
+  provides_middleware: []
+  requires_env: []

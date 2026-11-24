@@ -5,7 +5,7 @@ description: "Control a robot vacuum that runs Valetudo through its local REST A
 maintainer: camescasse
 tier: community
 category: tools
-requires_hermes: ">=0.22.6"
+requires_zeus: ">=0.22.6"
 version: "0.1.0"
 title: Valetudo Robot Control
 docs_url: https://github.com/camescasse/hermes-valetudo#readme

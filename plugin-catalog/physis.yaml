@@ -6,7 +6,7 @@ description: "Offline evidence-backed execution memory: per-repo graph context, 
 maintainer: ilPez00
 tier: community
 category: tools
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 docs_url: https://github.com/ilPez00/hermes-physis#readme
 image: https://raw.githubusercontent.com/ilPez00/hermes-physis/0f004ff84866b2e4cec169a9e6bee8437bbabcce/assets/banner.png
 readme: true

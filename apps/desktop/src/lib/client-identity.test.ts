@@ -4,19 +4,19 @@ type Version = Record<string, string | undefined>
 
 async function identityFrom(getVersion?: () => Promise<Version>) {
   vi.resetModules()
-  ;(window as { hermesDesktop?: unknown }).hermesDesktop = getVersion ? { getVersion } : undefined
+  ;(window as { zeusDesktop?: unknown }).zeusDesktop = getVersion ? { getVersion } : undefined
 
   return (await import('./client-identity')).desktopClientIdentity
 }
 
 const identity = async (getVersion?: () => Promise<Version>) => (await identityFrom(getVersion))()
 
-const DESKTOP = { kind: 'desktop', name: 'hermes-desktop' }
+const DESKTOP = { kind: 'desktop', name: 'zeus-desktop' }
 
 describe('desktopClientIdentity', () => {
   afterEach(() => {
-    delete (window as { hermesDesktop?: unknown }).hermesDesktop
-    delete document.documentElement.dataset.hermesDesktopHost
+    delete (window as { zeusDesktop?: unknown }).zeusDesktop
+    delete document.documentElement.dataset.zeusDesktopHost
     vi.useRealTimers()
   })
 
@@ -45,11 +45,11 @@ describe('desktopClientIdentity', () => {
   })
 
   it('names the Webapp behind the browser bridge', async () => {
-    document.documentElement.dataset.hermesDesktopHost = 'browser'
+    document.documentElement.dataset.zeusDesktopHost = 'browser'
 
     await expect(identity(async () => ({ appVersion: '0.21.5' }))).resolves.toEqual({
       kind: 'webapp',
-      name: 'hermes-webapp',
+      name: 'zeus-webapp',
       version: '0.21.5'
     })
   })

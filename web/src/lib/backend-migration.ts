@@ -1,10 +1,10 @@
 /**
- * The System page's "move to a single Hermes" card: `/api/gateway/migrate/backends/*` (hermes gateway
+ * The System page's "move to a single Zeus" card: `/api/gateway/migrate/backends/*` (zeus gateway
  * migrate --backends). The backend owns every fact; this module turns its JSON into plain words for a
  * non-technical reader and reads one status poll into one of the card's phases.
  *
  * The poll reading follows the same route contract as Desktop's Web Access banner; both copies are
- * meant to move into @hermes/shared together.
+ * meant to move into @zeus/shared together.
  *
  * The click may come from the old dashboard, which the move stops: after the swap the SAME address is
  * answered by the gateway (same routes, different sign-in cookies), so the status poll answers 401
@@ -35,14 +35,14 @@ export interface BackendMigrationStatus {
   reason?: string | null;
   log_tail?: string[];
   served_by?: string;
-  /** The profile the answer is about (the name `hermes -p` takes), when the home is a profile's. */
+  /** The profile the answer is about (the name `zeus -p` takes), when the home is a profile's. */
   profile?: string | null;
   /** The engine's own spelling of the commands the card shows (with its root pin). */
   commands?: MigrateCommands;
 }
 
-/** `hermes [-p NAME] gateway migrate --backends --status|--restore`, as the server spells them for this
- *  home: a profile outside the standard root needs `HERMES_HOME=ROOT` pinned, which only the engine knows. */
+/** `zeus [-p NAME] gateway migrate --backends --status|--restore`, as the server spells them for this
+ *  home: a profile outside the standard root needs `ZEUS_HOME=ROOT` pinned, which only the engine knows. */
 export interface MigrateCommands {
   status: string;
   restore: string;
@@ -137,15 +137,15 @@ export function cardVisible(plan: BackendMigrationPlanResponse | null): boolean 
   return foundBackend(plan.plan) || REPORTED_RUNS.includes(plan.run.state);
 }
 
-/** Every `hermes …` command in *text* with `-p <profile>`: a manual step for this home must never act on
+/** Every `zeus …` command in *text* with `-p <profile>`: a manual step for this home must never act on
  *  another one. Commands that already name a profile, paths and unit names are left alone. */
 export function qualifyCommands(text: string, profile: string | null | undefined): string {
   if (!profile) return text;
-  return text.replace(/(^|[^\w./-])hermes (?!-p |--profile)/g, `$1hermes -p ${profile} `);
+  return text.replace(/(^|[^\w./-])zeus (?!-p |--profile)/g, `$1zeus -p ${profile} `);
 }
 
-/** `hermes -p <profile> gateway migrate --backends <flag>`. `-p` is given whenever the profile is known:
- *  without it a sticky `hermes profile use` choice would pick another home. */
+/** `zeus -p <profile> gateway migrate --backends <flag>`. `-p` is given whenever the profile is known:
+ *  without it a sticky `zeus profile use` choice would pick another home. */
 export function migrateCommand(
   profile: string | null | undefined,
   flag: "--restore" | "--status",
@@ -153,14 +153,14 @@ export function migrateCommand(
 ): string {
   const given = commands?.[flag === "--status" ? "status" : "restore"];
   if (given) return given;
-  return `hermes ${profile ? `-p ${profile} ` : ""}gateway migrate --backends ${flag}`;
+  return `zeus ${profile ? `-p ${profile} ` : ""}gateway migrate --backends ${flag}`;
 }
 
 /** The finding, in plain words. */
 export function findingSentence(plan: BackendMigrationPlan): string {
   const port = portOf(plan.old_address);
   const where = port ? `on port ${port}` : "on this computer";
-  return `An older Hermes server is running ${where}. Phones and browsers that use it talk to a second copy of Hermes.`;
+  return `An older Zeus server is running ${where}. Phones and browsers that use it talk to a second copy of Zeus.`;
 }
 
 /** What the move does and what people will notice, one line each. */
@@ -173,20 +173,20 @@ export function impactLines(plan: BackendMigrationPlan): string[] {
     plan.keep_webapp_address
       ? `The older server is switched off; the web app stays${plan.new_address ? ` at ${plan.new_address}` : " where it is"}.`
       : same
-        ? `Hermes itself takes over the same address (${plan.old_address}); nothing becomes reachable from anywhere new.`
-        : `Hermes itself takes over${at}.`,
+        ? `Zeus itself takes over the same address (${plan.old_address}); nothing becomes reachable from anywhere new.`
+        : `Zeus itself takes over${at}.`,
   );
   if (plan.auth_before?.auth_required) {
     lines.push("The same username and password keep working. Everyone signs in once more afterwards.");
   } else {
     lines.push("Everyone signs in once more afterwards.");
   }
-  lines.push("Browsers get the new Hermes web app instead of this dashboard page.");
+  lines.push("Browsers get the new Zeus web app instead of this dashboard page.");
   if (plan.webapp_bundle_missing) {
     lines.push("The web app is built first; this can take a few minutes.");
   }
   if (!plan.gateway.installed) {
-    lines.push("Hermes is set up to start by itself when this computer starts.");
+    lines.push("Zeus is set up to start by itself when this computer starts.");
   }
   lines.push("The address is unavailable for a few seconds during the switch.");
   lines.push("If anything goes wrong, everything is put back the way it was.");
@@ -260,7 +260,7 @@ export function isFileNote(step: string): boolean {
 
 /** An engine step to read, not to run: the planners' prose lines (they start with `#`), the rollback's
  *  per-file notes, and its "start the old backend again the way you started it before …". Every other
- *  step the engine emits starts with the program to run (or the HERMES_HOME pin in front of `hermes`). */
+ *  step the engine emits starts with the program to run (or the ZEUS_HOME pin in front of `zeus`). */
 export function isProseStep(step: string): boolean {
   return step.startsWith("#") || isFileNote(step)
     || step.startsWith("start the old backend again the way you started it before");
@@ -420,9 +420,9 @@ const STEP_WORDS: Record<string, string> = {
   manifest: "Saving how things are now",
   webapp_bundle: "Building the web app",
   write_config: "Writing the settings",
-  gateway_service: "Setting Hermes up to start by itself",
+  gateway_service: "Setting Zeus up to start by itself",
   stop_old_backend: "Switching off the older server",
-  start_gateway: "Starting Hermes on the same address",
+  start_gateway: "Starting Zeus on the same address",
   verify: "Checking the address answers",
 };
 

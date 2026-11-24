@@ -2,11 +2,11 @@
 name: 1password
 description: Set up op CLI, sign in, and read or inject secrets.
 version: 1.1.0
-author: arceus77-7, enhanced by Hermes Agent
+author: arceus77-7, enhanced by ZeusAgent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
-  hermes:
+  zeus:
     tags: [security, secrets, 1password, op, cli]
     category: security
 ---
@@ -19,12 +19,12 @@ Use this skill when the user wants secrets managed through 1Password instead of 
 
 - 1Password account
 - 1Password CLI (`op`) installed
-- One of: desktop app integration or a Connect server for `op` in the Hermes terminal
-- `tmux` available for stable authenticated sessions during Hermes terminal calls (desktop app flow only)
+- One of: desktop app integration or a Connect server for `op` in the Zeus terminal
+- `tmux` available for stable authenticated sessions during Zeus terminal calls (desktop app flow only)
 
-Hermes never passes `OP_SERVICE_ACCOUNT_TOKEN` to the terminal or `execute_code`, even when it is in
+Zeus never passes `OP_SERVICE_ACCOUNT_TOKEN` to the terminal or `execute_code`, even when it is in
 `.env` or `terminal.env_passthrough`: it unlocks every secret the service account can read. A service
-account is still the right way to feed provider keys to Hermes itself (`hermes secrets onepassword setup`).
+account is still the right way to feed provider keys to Zeus itself (`zeus secrets onepassword setup`).
 
 ## When to Use
 
@@ -36,12 +36,12 @@ account is still the right way to feed provider keys to Hermes itself (`hermes s
 
 ## Authentication Methods
 
-### Service Account (Hermes's own secret resolution, or your own shell)
+### Service Account (Zeus's own secret resolution, or your own shell)
 
-A service-account token in `${HERMES_HOME:-~/.hermes}/.env` lets Hermes resolve `op://` references for
-its own provider keys at startup (`hermes secrets onepassword setup`). It is stripped from the processes the
-agent spawns, so `op` run through the Hermes terminal does not see it. To use the token with `op`
-directly, run those commands in your own shell, outside Hermes:
+A service-account token in `${ZEUS_HOME:-~/.zeus}/.env` lets Zeus resolve `op://` references for
+its own provider keys at startup (`zeus secrets onepassword setup`). It is stripped from the processes the
+agent spawns, so `op` run through the Zeus terminal does not see it. To use the token with `op`
+directly, run those commands in your own shell, outside Zeus:
 
 ```bash
 export OP_SERVICE_ACCOUNT_TOKEN="your-token-here"
@@ -84,18 +84,18 @@ op --version
 
 3. Choose an auth method above and configure it.
 
-## Hermes Execution Pattern (desktop app flow)
+## Zeus Execution Pattern (desktop app flow)
 
-Hermes terminal commands are non-interactive by default and can lose auth context between calls.
+Zeus terminal commands are non-interactive by default and can lose auth context between calls.
 For reliable `op` use with desktop app integration, run sign-in and secret operations inside a dedicated tmux session.
 
 Note: a service-account token is never available here (see Requirements), so headless `op` use from the
-Hermes terminal needs a Connect server instead.
+Zeus terminal needs a Connect server instead.
 
 ```bash
-SOCKET_DIR="${TMPDIR:-${HERMES_HOME:-$HOME/.hermes}/cache/scratch}/hermes-tmux-sockets"
+SOCKET_DIR="${TMPDIR:-${ZEUS_HOME:-$HOME/.zeus}/cache/scratch}/zeus-tmux-sockets"
 mkdir -p "$SOCKET_DIR"
-SOCKET="$SOCKET_DIR/hermes-op.sock"
+SOCKET="$SOCKET_DIR/zeus-op.sock"
 SESSION="op-auth-$(date +%Y%m%d-%H%M%S)"
 
 tmux -S "$SOCKET" new -d -s "$SESSION" -n shell
@@ -148,12 +148,12 @@ op run -- sh -c '[ -n "$DB_PASSWORD" ] && echo "DB_PASSWORD is set" || echo "DB_
 - Never print raw secrets back to user unless they explicitly request the value.
 - Prefer `op run` / `op inject` instead of writing secrets into files.
 - If command fails with "account is not signed in", run `op signin` again in the same tmux session.
-- If desktop app integration is unavailable (headless/CI), use a Connect server from the Hermes terminal; a service-account token only works in the user's own shell or for Hermes's own `op://` resolution.
+- If desktop app integration is unavailable (headless/CI), use a Connect server from the Zeus terminal; a service-account token only works in the user's own shell or for Zeus's own `op://` resolution.
 
 ## CI / Headless note
 
-For non-interactive use outside Hermes, authenticate with `OP_SERVICE_ACCOUNT_TOKEN` and avoid interactive
-`op signin`. Service accounts require CLI v2.18.0+. Inside the Hermes terminal, use a Connect server.
+For non-interactive use outside Zeus, authenticate with `OP_SERVICE_ACCOUNT_TOKEN` and avoid interactive
+`op signin`. Service accounts require CLI v2.18.0+. Inside the Zeus terminal, use a Connect server.
 
 ## References
 

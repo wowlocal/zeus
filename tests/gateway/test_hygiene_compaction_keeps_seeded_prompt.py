@@ -13,8 +13,8 @@ import pytest
 from agent import conversation_compression as cc
 from gateway.run import _seed_hygiene_system_prompt
 
-STORED = "You are Hermes.\n\n## Skills (mandatory)\n<available_skills>\n- a: b\n</available_skills>"
-DEGRADED = "You are Hermes."
+STORED = "You are Zeus.\n\n## Skills (mandatory)\n<available_skills>\n- a: b\n</available_skills>"
+DEGRADED = "You are Zeus."
 
 
 def _agent(**over):
@@ -67,7 +67,7 @@ def test_live_agent_compaction_still_rebuilds():
 def test_compression_agent_refreshes_auto_ttl_after_context_engine_start(monkeypatch, kind, platform):
     import asyncio
     from unittest.mock import AsyncMock
-    import hermes_cli.config
+    import zeus_cli.config
     from agent.context_engine import ContextEngine
     from gateway.run import GatewayRunner, _GATEWAY_HYGIENE_PLATFORM
 
@@ -89,9 +89,9 @@ def test_compression_agent_refreshes_auto_ttl_after_context_engine_start(monkeyp
             starts.append(kwargs["platform"])
 
     cfg = {"context": {"engine": "cache-ttl-test"}}
-    monkeypatch.setattr(hermes_cli.config, "load_config_readonly", lambda: cfg)
-    monkeypatch.setattr(hermes_cli.config, "load_config", lambda: cfg)
-    for key in ("HERMES_SESSION_SOURCE", "HERMES_SESSION_SOURCE_EXPLICIT", "HERMES_SINGLE_QUERY_SESSION"):
+    monkeypatch.setattr(zeus_cli.config, "load_config_readonly", lambda: cfg)
+    monkeypatch.setattr(zeus_cli.config, "load_config", lambda: cfg)
+    for key in ("ZEUS_SESSION_SOURCE", "ZEUS_SESSION_SOURCE_EXPLICIT", "ZEUS_SINGLE_QUERY_SESSION"):
         monkeypatch.delenv(key, raising=False)
     runner = object.__new__(GatewayRunner)
     runner._session_db = SimpleNamespace(get_session=AsyncMock(return_value=None))

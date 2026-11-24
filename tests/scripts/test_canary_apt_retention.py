@@ -21,22 +21,22 @@ def test_prune_keeps_actual_apt_pool_after_desktop_only_canaries(request, tmp_pa
     server = request.getfixturevalue("r2_server")
     pool, staged = tmp_path / "pool", tmp_path / "apt"
     pool.mkdir()
-    filename = "hermes-agent_1.2.3~canary.20261001064100-1_aarch64.deb"
-    build_deb(pool / filename, {"Package": "hermes-agent", "Version": "1.2.3~canary.20261001064100-1",
+    filename = "zeus-agent_1.2.3~canary.20261001064100-1_aarch64.deb"
+    build_deb(pool / filename, {"Package": "zeus-agent", "Version": "1.2.3~canary.20261001064100-1",
                                "Architecture": "aarch64"})
-    assert stage_apt_repo.stage(pool, staged, "hermes-canary", None, OLD) == 3
+    assert stage_apt_repo.stage(pool, staged, "zeus-canary", None, OLD) == 3
     for path in staged.rglob("*"):
         if path.is_file():
             server.store[ROOT + path.relative_to(staged).as_posix()] = (path.read_bytes(), '"apt"')
     live_pool = {key for key in server.store if key.startswith(ROOT + "pool/")}
-    assert live_pool == {f"{ROOT}pool/{OLD}/h/{filename}"}
+    assert live_pool == {f"{ROOT}pool/{OLD}/z/{filename}"}
     assert lanes.jobs_to_run(lanes.CANARY - {"termux"}, "canary")["publish-canary"]
     server.store["releases/canary/release-candidates.json"] = (json.dumps({"archive": NEW}).encode(), '"head"')
     for key, text in canary_head_objects(NEW).items():
         server.store[key] = (text.encode(), '"channel"')
     current = f"releases/tag/{NEW}/desktop.zip"
-    stale = {f"releases/tag/{OLD}/desktop.zip", f"{ROOT}pool/{OLD}/h/unreferenced.deb"}
-    stable = "releases/termux/stable/pool/rc.1-v1.2.3/h/hermes-agent.deb"
+    stale = {f"releases/tag/{OLD}/desktop.zip", f"{ROOT}pool/{OLD}/z/unreferenced.deb"}
+    stable = "releases/termux/stable/pool/rc.1-v1.2.3/z/zeus-agent.deb"
     for key in {current, stable, *stale}:
         server.store[key] = (b"artifact", '"object"')
     before = dict(server.store)
@@ -52,20 +52,20 @@ def test_prune_keeps_actual_apt_pool_after_desktop_only_canaries(request, tmp_pa
 
 
 @pytest.mark.parametrize("text", [
-    None, "", "<html>upstream error</html>", "Package: hermes-agent\nVersion: 1.2.3\n",
-    "Package: hermes-agent\nFilename: ../stable/pool/h/hermes.deb\n",
-    "Package: hermes-agent\nFilename: pool/h/hermes.deb\nFilename: pool/h/other.deb\n",
-    "Package: hermes-agent\nFilename: pool/h/hermes.deb\n\nPackage: missing-filename\n",
-    "Package: hermes-agent\nFilename: pool/h/hermes.deb\n malformed continuation\n",
+    None, "", "<html>upstream error</html>", "Package: zeus-agent\nVersion: 1.2.3\n",
+    "Package: zeus-agent\nFilename: ../stable/pool/z/zeus.deb\n",
+    "Package: zeus-agent\nFilename: pool/z/zeus.deb\nFilename: pool/z/other.deb\n",
+    "Package: zeus-agent\nFilename: pool/z/zeus.deb\n\nPackage: missing-filename\n",
+    "Package: zeus-agent\nFilename: pool/z/zeus.deb\n malformed continuation\n",
 ])
 def test_prune_refuses_unreadable_or_ambiguous_live_apt_indices(request, text):
     server = request.getfixturevalue("r2_server")
-    index = ROOT + "dists/hermes-canary/main/binary-aarch64/Packages"
+    index = ROOT + "dists/zeus-canary/main/binary-aarch64/Packages"
     # Packages.gz proves a live index exists even if its uncompressed peer cannot be read.
     server.store[index + ".gz"] = (b"compressed index marker", '"gzip"')
     if text is not None:
         server.store[index] = (text.encode(), '"index"')
-    server.store[f"{ROOT}pool/{OLD}/h/hermes.deb"] = (b"live package", '"pool"')
+    server.store[f"{ROOT}pool/{OLD}/z/zeus.deb"] = (b"live package", '"pool"')
     server.store[f"releases/tag/{OLD}/desktop.zip"] = (b"expired archive", '"archive"')
     before = dict(server.store)
     with pytest.raises((RuntimeError, r2.R2RequestError), match="APT.*refusing to prune|R2 GET.*Packages"):
@@ -76,7 +76,7 @@ def test_prune_refuses_unreadable_or_ambiguous_live_apt_indices(request, text):
 
 def test_missing_apt_indices_keep_the_pool_until_references_can_be_established(request):
     server = request.getfixturevalue("r2_server")
-    pool = f"{ROOT}pool/{OLD}/h/hermes.deb"
+    pool = f"{ROOT}pool/{OLD}/z/zeus.deb"
     archive = f"releases/tag/{OLD}/desktop.zip"
     server.store.update({pool: (b"package", '"pool"'), archive: (b"expired archive", '"archive"')})
     r2.prune(14, now_epoch=NOW)

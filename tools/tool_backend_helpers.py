@@ -20,7 +20,7 @@ def managed_nous_tools_enabled(*, force_fresh: bool = False) -> bool:
     pool). Fails closed on unknown/error — never blocks startup. Callers narrow per category
     via ``tool_gateway_entitled_for``; ``force_fresh`` is for flows needing a just-bought grant."""
     try:
-        from hermes_cli.nous_account import get_nous_portal_account_info
+        from zeus_cli.nous_account import get_nous_portal_account_info
         # Branched call, not ``force_fresh=force_fresh``: tests stub the reader with zero-arg lambdas.
         account_info = (get_nous_portal_account_info(force_fresh=True) if force_fresh
                         else get_nous_portal_account_info())
@@ -33,7 +33,7 @@ def nous_tool_gateway_unavailable_message(capability: str = "the Nous Tool Gatew
                                           force_fresh: bool = False) -> str:
     """Return account-aware guidance for an unavailable Nous Tool Gateway path."""
     try:
-        from hermes_cli.nous_account import (
+        from zeus_cli.nous_account import (
             format_nous_portal_entitlement_message, get_nous_portal_account_info)
         message = format_nous_portal_entitlement_message(
             get_nous_portal_account_info(force_fresh=force_fresh), capability=capability,
@@ -42,7 +42,7 @@ def nous_tool_gateway_unavailable_message(capability: str = "the Nous Tool Gatew
             return message
     except Exception:
         pass
-    return (f"{capability} is unavailable. Run `hermes model` to refresh your "
+    return (f"{capability} is unavailable. Run `zeus model` to refresh your "
             "Nous Portal login and billing status.")
 
 
@@ -110,22 +110,22 @@ def _scoped_credential(name: str) -> str:
 
 
 def _dotenv_value(env_var: str) -> str:
-    """``.env`` value via ``hermes_cli.config.get_env_value`` (``""`` when unavailable)."""
+    """``.env`` value via ``zeus_cli.config.get_env_value`` (``""`` when unavailable)."""
     try:
-        from hermes_cli.config import get_env_value
+        from zeus_cli.config import get_env_value
         return str(get_env_value(env_var) or "").strip()
     except Exception:  # pragma: no cover — config is in-repo
         return ""
 
 
 def _env_source_suppressed(provider_id: str, env_var: str) -> bool:
-    """``hermes auth remove <provider>`` records ``env:<VAR>`` in ``suppressed_sources`` and promises
-    the variable is ignored until ``hermes auth add``; a value still living in a long-running
+    """``zeus auth remove <provider>`` records ``env:<VAR>`` in ``suppressed_sources`` and promises
+    the variable is ignored until ``zeus auth add``; a value still living in a long-running
     gateway's process environment (inherited across update restarts) must honor that too."""
     if not provider_id:
         return False
     try:
-        from hermes_cli.auth import is_source_suppressed
+        from zeus_cli.auth import is_source_suppressed
         return is_source_suppressed(provider_id, f"env:{env_var}")
     except Exception:  # pragma: no cover — auth store unreadable: keep prior behavior
         return False
@@ -135,12 +135,12 @@ def resolve_provider_secret(env_var: str, provider_id: str, config_value: str = 
                             env_getter=None) -> str:
     """Resolve a voice-provider API key (single owner for STT/TTS lookup). Order: explicit
     ``config_value`` -> profile secret scope / env -> ``.env`` via ``env_getter`` (or
-    ``hermes_cli.config.get_env_value``) -> credential pool for ``provider_id``. Under an
+    ``zeus_cli.config.get_env_value``) -> credential pool for ``provider_id``. Under an
     active multiplex turn the profile scope is authoritative: a miss returns ``""`` rather
     than borrowing another profile's env or pool. Never raises. The env/.env tier is skipped
     entirely while ``env:<env_var>`` is suppressed for ``provider_id`` (#116155).
 
-    Resolution order (fixes #68003 — keys added via ``hermes auth add <provider>`` were invisible to the
+    Resolution order (fixes #68003 — keys added via ``zeus auth add <provider>`` were invisible to the
     voice tools, which only consulted env/.env):
     """
     key = str(config_value or "").strip()
@@ -179,7 +179,7 @@ def resolve_openai_audio_api_key() -> str:
     latter). Must go through the secret scope: a raw ``os.environ`` read could bill another
     profile's account under multiplex.
 
-    Outside a multiplexed turn, ``OPENAI_API_KEY`` additionally falls back to the credential pool (``hermes
+    Outside a multiplexed turn, ``OPENAI_API_KEY`` additionally falls back to the credential pool (``zeus
     auth add openai-api``) via ``resolve_provider_secret`` — same #68003 fix as the other voice providers.
     The dedicated voice-tools override remains env/scope-only.
     """
@@ -193,7 +193,7 @@ NOUS_MANAGED_PROVIDER = "nous"
 # Per-capability keys that also count as "this category has been configured".
 _EXTRA_SELECTION_KEYS = {"web": ("search_backend", "extract_backend")}
 _DEFAULT_NAME_KEYS = ("provider", "backend", "cloud_provider")
-# Key(s) carrying each category's provider selection: one entry per `hermes tools` / Tool Gateway
+# Key(s) carrying each category's provider selection: one entry per `zeus tools` / Tool Gateway
 # category read_selection() serves. A leftover ``browser.backend`` (the pre-v52 driver choice) is
 # not the cloud provider — excluded.
 _SELECTION_NAME_KEYS = {
@@ -215,7 +215,7 @@ def selection_config_keys() -> frozenset[str]:
 def _raw_section(section: str) -> dict[str, Any] | None:
     """The RAW (unmerged) config.yaml mapping for ``section``, or None."""
     try:
-        from hermes_cli.config import read_raw_config_readonly
+        from zeus_cli.config import read_raw_config_readonly
         cfg = read_raw_config_readonly() or {}
         raw = cfg.get(section) if isinstance(cfg, dict) else None
         return raw if isinstance(raw, dict) else None
@@ -224,7 +224,7 @@ def _raw_section(section: str) -> dict[str, Any] | None:
 
 
 def read_selection(section: str) -> str | None:
-    """THE single runtime read of the persisted `hermes tools` selection: ``"nous"`` (managed
+    """THE single runtime read of the persisted `zeus tools` selection: ``"nous"`` (managed
     gateway row), a vendor name (direct, own credentials), or ``None`` (never configured ->
     legacy autodetect allowed). Reads the RAW config.yaml so key presence means "actually
     written", not "schema default"; a raw ``local`` is therefore a real user selection.
@@ -269,8 +269,8 @@ def selection_exists(section: str) -> bool:
 
 def selection_error(section: str, selection_name: str, failure: str) -> str:
     """The uniform honest-error contract for a selected-but-broken provider."""
-    return (f"{section} is configured to use {selection_name} (set via hermes "
-            f"tools), but {failure}. Run 'hermes tools' to change it.")
+    return (f"{section} is configured to use {selection_name} (set via zeus "
+            f"tools), but {failure}. Run 'zeus tools' to change it.")
 
 
 def fal_key() -> str:

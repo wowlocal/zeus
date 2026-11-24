@@ -682,7 +682,7 @@ def test_store_reconciliation_finds_the_newest_matching_published_submission(mon
     from scripts.releases import channel_releases, docker, sequencer, store
     from tests.scripts.test_release_store import STORE_FILE, _Api
 
-    newest_file = "Store-HermesBundled-2026.7000.1.0-win.msixbundle"
+    newest_file = "Store-ZeusBundled-2026.7000.1.0-win.msixbundle"
     manifests = {
         f"releases/tag/rc.1-v{version}/release-candidates.json":
             json.dumps({"files": [{"path": filename}]}).encode()
@@ -743,7 +743,7 @@ SLIM, DESKTOP, OLD = "sha256:" + "b" * 64, "sha256:" + "c" * 64, "sha256:" + "9"
 def _unfinished_head_fixture(monkeypatch, pointer, *, slim=None, desktop=None):
     """0.21.5 is public and the protected desktop head, but its advance stopped after the head moved:
     publish_release writes the candidate pointer last, then the slim and the desktop Docker aliases."""
-    from hermes_cli.release_channels import ChannelError
+    from zeus_cli.release_channels import ChannelError
     from scripts.releases import channel_releases, docker, store
 
     archived = json.dumps({"tag": "v0.21.5", "packages": []}).encode()
@@ -844,7 +844,7 @@ def test_a_registry_error_never_rolls_the_aliases_back_to_the_desktop_head(monke
     release's, not a sign 0.21.5's promotion stopped) or fails too (owner unknown). A stale 0.21.5
     pointer still gets its desktop advance, without the Docker promotion that would move the
     aliases back."""
-    from hermes_cli.release_channels import ChannelError
+    from zeus_cli.release_channels import ChannelError
     from scripts.releases import channel_releases, docker, sequencer, store
 
     archived = json.dumps({"tag": "v0.21.5", "packages": []}).encode()

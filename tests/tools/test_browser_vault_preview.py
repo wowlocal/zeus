@@ -11,7 +11,7 @@ import pytest
 
 from agent.redact import clear_vault_redaction_values
 from agent.vault_store import get_vault_store
-from hermes_constants import reset_hermes_home_override, set_hermes_home_override
+from zeus_constants import reset_zeus_home_override, set_zeus_home_override
 from tools import browser_vault_tool
 from tools.registry import registry
 
@@ -38,7 +38,7 @@ class PreviewWindow:
         expression = request["expression"]
         if "location.href" in expression:
             result = self.origin + "/login"
-        elif 'setAttribute("data-hermes-vault-slot-" + nonce' in expression:
+        elif 'setAttribute("data-zeus-vault-slot-" + nonce' in expression:
             result = json.dumps(CONTROLS)
         elif "reverted" in expression:  # read-back pass: the page kept the value
             result = json.dumps({"landed": 1, "reverted": 0, "missing": []})
@@ -58,14 +58,14 @@ def _managed_browser_used(*_args, **_kwargs):
 def home(tmp_path, monkeypatch):
     monkeypatch.setattr(browser_vault_tool, "_fenced_page_op", _managed_browser_used)
     monkeypatch.setattr(browser_vault_tool, "_ensure_supervisor", _managed_browser_used)
-    token = set_hermes_home_override(tmp_path)
+    token = set_zeus_home_override(tmp_path)
     (tmp_path / "config.yaml").write_text(json.dumps({"vault": {"onepassword": {"enabled": False},
                                                                   "bitwarden": {"enabled": False}}}))
     try:
         yield tmp_path
     finally:
         clear_vault_redaction_values()
-        reset_hermes_home_override(token)
+        reset_zeus_home_override(token)
 
 
 def _login(password, origin=ORIGIN):

@@ -12,7 +12,7 @@ from tests.scripts.test_render_builds_publication import rbt
 ])
 def test_new_canary_orders_against_published_legacy_page(request, stamp, advances):
     server = request.getfixturevalue("r2_server")
-    base = f"http://127.0.0.1:{server.server_port}/hermes-releases"
+    base = f"http://127.0.0.1:{server.server_port}/zeus-releases"
     key = "releases/canary/index.html"
     previous = rbt._page("Canary downloads", "v1.2.3+canary.20261020T064100Z", []).encode()
     server.store[key] = (previous, '"old"')

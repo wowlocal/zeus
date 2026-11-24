@@ -1,7 +1,7 @@
 // OSC 7501 Program Status Protocol (https://www.superlogical.com/rex/docs/build/program-status):
-// the TUI's twin of hermes_cli/terminal_notify.py::program_status_sequence. Terminals that track it
-// show which Hermes tab is working, waiting on the user, finished or failed.
-import type { ConnectionOperationTarget } from '@hermes/shared/gateway-events'
+// the TUI's twin of zeus_cli/terminal_notify.py::program_status_sequence. Terminals that track it
+// show which Zeus tab is working, waiting on the user, finished or failed.
+import type { ConnectionOperationTarget } from '@zeus/shared/gateway-events'
 import { atom } from 'nanostores'
 
 import type { OverlayState } from '../app/interfaces.js'
@@ -31,7 +31,7 @@ export const markProgramStatusReported = (): void => {
 }
 
 // Quit: idle/done/error outlive the process under the spec, so without a clear a pane back at its
-// shell keeps listing Hermes as an agent. Runs from process.on('exit'): synchronous, never throws.
+// shell keeps listing Zeus as an agent. Runs from process.on('exit'): synchronous, never throws.
 export function clearProgramStatus(write: (seq: string) => void): boolean {
   if (!reported) {
     return false
@@ -71,7 +71,7 @@ export const errorOutcome = (reason: unknown): TurnOutcome =>
   typeof reason === 'string' && reason.trim() ? { msg: reason, state: 'error' } : { state: 'error' }
 
 export function encodeProgramStatus(state: ProgramState, kind?: BlockedKind, msg = ''): string {
-  const pairs = [`state=${state}`, 'app=hermes']
+  const pairs = [`state=${state}`, 'app=zeus']
 
   if (state === 'blocked' && kind) {
     pairs.push(`kind=${kind}`)

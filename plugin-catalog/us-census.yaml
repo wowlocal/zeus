@@ -6,7 +6,7 @@ description: "ACS population, income, age, and housing for a US place, with vint
 maintainer: TakeshiTGAL
 tier: community
 category: tools
-requires_hermes: ">=0.21.4"
+requires_zeus: ">=0.21.4"
 docs_url: https://github.com/TakeshiTGAL/hermes-plugin-us-census#readme
 version: "0.1.0"
 image: https://raw.githubusercontent.com/TakeshiTGAL/hermes-plugin-us-census/b4117141db87cf320824959741d94059fde6d151/assets/catalog-banner.png

@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 import pytest
 
-from hermes_cli import managed_scope
+from zeus_cli import managed_scope
 from tools import env_passthrough, url_safety
 
 
@@ -20,11 +20,11 @@ def _reset() -> None:
 
 @pytest.fixture
 def managed(tmp_path, monkeypatch):
-    """Write the managed config.yaml (HERMES_MANAGED_DIR) and drop every cache that holds these keys."""
+    """Write the managed config.yaml (ZEUS_MANAGED_DIR) and drop every cache that holds these keys."""
     md = tmp_path / "managed"
     md.mkdir()
-    monkeypatch.setenv("HERMES_MANAGED_DIR", str(md))
-    monkeypatch.delenv("HERMES_ALLOW_PRIVATE_URLS", raising=False)
+    monkeypatch.setenv("ZEUS_MANAGED_DIR", str(md))
+    monkeypatch.delenv("ZEUS_ALLOW_PRIVATE_URLS", raising=False)
 
     def write(text: str) -> None:
         (md / "config.yaml").write_text(text, encoding="utf-8")
@@ -47,9 +47,9 @@ def test_a_managed_fake_ip_entry_cannot_excuse_a_reserved_class(managed):
 
 
 def test_a_managed_env_passthrough_still_refuses_provider_credentials(managed):
-    from tools.environments.local_env_policy import _HERMES_PROVIDER_ENV_BLOCKLIST
+    from tools.environments.local_env_policy import _ZEUS_PROVIDER_ENV_BLOCKLIST
 
-    credential = min(_HERMES_PROVIDER_ENV_BLOCKLIST)
+    credential = min(_ZEUS_PROVIDER_ENV_BLOCKLIST)
     managed(f"terminal:\n  env_passthrough: [{credential}, SSL_CERT_FILE]\n")
     assert not env_passthrough.is_env_passthrough(credential)
     assert env_passthrough.is_env_passthrough("SSL_CERT_FILE")

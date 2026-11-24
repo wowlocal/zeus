@@ -514,7 +514,7 @@ jobs:
             --version "$RELEASE_VERSION"
           actual="$(cargo metadata --no-deps --format-version 1 \
             --manifest-path "$tree/apps/bootstrap-installer/src-tauri/Cargo.toml" \
-            | jq -r '.packages[] | select(.name == "hermes-bootstrap") | .version')"
+            | jq -r '.packages[] | select(.name == "zeus-bootstrap") | .version')"
           test "$actual" = "$RELEASE_VERSION" || {
             echo "::error::Bootstrap Cargo version $actual != $RELEASE_VERSION"
             exit 1
@@ -615,7 +615,7 @@ jobs:
       RELEASE_TAG: ${{ needs.admit.outputs.tag }}
       RELEASE_TAG_OBJECT: ${{ needs.admit.outputs.claim-object }}
       RELEASE_COMMIT: ${{ needs.admit.outputs.commit }}
-      HERMES_ARCHIVE_TAG: ${{ needs.admit.outputs.claim-tag }}
+      ZEUS_ARCHIVE_TAG: ${{ needs.admit.outputs.claim-tag }}
       CANDIDATE_MANIFEST_URL: ${{ needs.candidate-manifest.outputs.manifest-url }}
       CANDIDATE_MANIFEST_SHA256: ${{ needs.candidate-manifest.outputs.manifest-sha256 }}
       RELEASE_NEEDS: ${{ toJSON(needs) }}
@@ -645,7 +645,7 @@ jobs:
       - name: Verify the accepted packages and stage the Termux pool
         run: python -m scripts.bundles.release_artifacts publish --root verified
       - name: Publish the canary and advance its channels
-        # The macOS feed merge parses YAML (hermes_yaml -> ruamel); the node toolchain has none.
+        # The macOS feed merge parses YAML (zeus_yaml -> ruamel); the node toolchain has none.
         run: python -m scripts.ci.python_packages ruamel.yaml==0.18.17 -- -m scripts.releases.channel_releases canary
         env:
           GH_TOKEN: ${{ github.token }}
@@ -660,7 +660,7 @@ jobs:
           args=()
           if [ "$DESKTOP_CHANNEL" != true ]; then args+=(--no-channel-page); fi
           python scripts/render-builds-table.py --tag "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" \
-            --archive "$HERMES_ARCHIVE_TAG" \
+            --archive "$ZEUS_ARCHIVE_TAG" \
             --candidate-manifest-sha256 "$CANDIDATE_MANIFEST_SHA256" --candidate-commit "$RELEASE_COMMIT" \
             "${args[@]}"
 
@@ -843,7 +843,7 @@ jobs:
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - name: Reconcile ordered stable publication
         if: needs.admit.outputs.policy == 'stable'
-        # The macOS feed merge parses YAML (hermes_yaml -> ruamel); the node toolchain has none.
+        # The macOS feed merge parses YAML (zeus_yaml -> ruamel); the node toolchain has none.
         run: python -m scripts.ci.python_packages ruamel.yaml==0.18.17 -- -m scripts.releases.sequencer
         env:
           GH_TOKEN: ${{ github.token }}

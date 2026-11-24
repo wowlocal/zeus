@@ -25,7 +25,7 @@ interface RowOptions {
 async function renderRow({ clientActivity = true, connectionState = 'open', systemIdleSeconds }: RowOptions) {
   if (systemIdleSeconds !== undefined) {
     const snapshot = { system: true, idleSeconds: systemIdleSeconds, locked: false, suspended: false, seq: 1, sampledAt: Date.now() }
-    window.hermesDesktop = { presence: { get: async () => snapshot, onChange: () => () => undefined } } as never
+    window.zeusDesktop = { presence: { get: async () => snapshot, onChange: () => () => undefined } } as never
   }
 
   window.location.hash = '#/settings/notifications'
@@ -48,18 +48,18 @@ afterEach(() => {
   cleanup()
   stop?.()
   stop = null
-  delete (window as { hermesDesktop?: unknown }).hermesDesktop
+  delete (window as { zeusDesktop?: unknown }).zeusDesktop
   window.location.hash = ''
   $gateway.set(null)
   vi.useRealTimers()
 })
 
-it('describes what it tells Hermes, without promising what a phone will do', async () => {
+it('describes what it tells Zeus, without promising what a phone will do', async () => {
   const row = await renderRow({ systemIdleSeconds: 4 })
 
   expect(row()).toContain('This computer for phone notifications')
   expect(row()).toContain(
-    'What this window tells Hermes about you being here. A phone notification plugin decides what to do with it.'
+    'What this window tells Zeus about you being here. A phone notification plugin decides what to do with it.'
   )
 })
 
@@ -77,25 +77,25 @@ it('says activity does not matter on a backend that did not advertise the featur
   expect(row()).not.toContain('While a conversation is open')
 })
 
-it('with the OS idle clock, says Hermes is told when you last used this computer', async () => {
+it('with the OS idle clock, says Zeus is told when you last used this computer', async () => {
   const row = await renderRow({ systemIdleSeconds: 4 })
 
   expect(row()).toContain(
-    'While a conversation is open in this window, Hermes is told when you last used this computer. Last input 4 sec ago.'
+    'While a conversation is open in this window, Zeus is told when you last used this computer. Last input 4 sec ago.'
   )
 })
 
-it('with page input only, says Hermes is told when you last used this window', async () => {
+it('with page input only, says Zeus is told when you last used this window', async () => {
   const row = await renderRow({})
 
   // No input seen yet: the row never invents one.
   act(() => void vi.advanceTimersByTime(10_000))
   expect(row()).toContain(
-    'While a conversation is open in this window, Hermes is told when you last used this window. No input seen yet.'
+    'While a conversation is open in this window, Zeus is told when you last used this window. No input seen yet.'
   )
   expect(row()).not.toContain('Last input')
 
   window.document.dispatchEvent(new Event('pointerdown'))
   act(() => void vi.advanceTimersByTime(120_000))
-  expect(row()).toContain('Hermes is told when you last used this window. Last input 2 min ago.')
+  expect(row()).toContain('Zeus is told when you last used this window. Last input 2 min ago.')
 })

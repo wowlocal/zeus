@@ -1,4 +1,4 @@
-"""disk-cleanup plugin — auto-cleanup of ephemeral Hermes session files.
+"""disk-cleanup plugin — auto-cleanup of ephemeral Zeus session files.
 
 ``pre_tool_call`` + ``post_tool_call`` silently track test/temp paths CREATED by write_file/patch/terminal;
 ``on_session_end`` runs :func:`disk_cleanup.quick` when any test file was tracked this turn;
@@ -16,7 +16,7 @@ import time
 from pathlib import Path
 from typing import Any, Callable, Dict, FrozenSet, List, Optional, Set, Tuple
 
-from hermes_constants import named_profile_home, named_profile_is_live
+from zeus_constants import named_profile_home, named_profile_is_live
 
 from . import disk_cleanup as dg
 
@@ -40,7 +40,7 @@ def _extract_paths_from_terminal(args: dict[str, Any]) -> set[str]:
     paths: set[str] = set()
     cmd = args.get("command") or ""
     if isinstance(cmd, str) and cmd:
-        # Tokenise the command — catches `touch /tmp/hermes-x/test_foo.py`.
+        # Tokenise the command — catches `touch /tmp/zeus-x/test_foo.py`.
         # ``posix`` follows the host so Windows backslash paths survive
         # (``shlex.split(posix=True)`` would eat them as escapes).
         # Non-posix mode keeps quote characters in tokens, so strip a fully
@@ -153,7 +153,7 @@ Subcommands:
 
 Categories: temp | test | research | download | chrome-profile | cron-output | other
 
-All operations are scoped to HERMES_HOME and /tmp/hermes-*.  # no-tmp: ok — legacy scratch scope this plugin cleans up
+All operations are scoped to ZEUS_HOME and /tmp/zeus-*.  # no-tmp: ok — legacy scratch scope this plugin cleans up
 Test files are auto-tracked on write_file / terminal and auto-cleaned at session end.
 """
 
@@ -200,7 +200,7 @@ def _cmd_track(argv: list[str]) -> str:
         return f"Unknown category '{category}'. Allowed: {sorted(dg.ALLOWED_CATEGORIES)}"
     if dg.track(path_arg, category, silent=True):
         return f"Tracked {path_arg} as '{category}'."
-    return f"Not tracked (already present, missing, or outside HERMES_HOME): {path_arg}"
+    return f"Not tracked (already present, missing, or outside ZEUS_HOME): {path_arg}"
 
 
 def _cmd_forget(argv: list[str]) -> str:
@@ -231,7 +231,7 @@ def _handle_slash(raw_args: str) -> Optional[str]:
         return handler(argv)
     except FileNotFoundError as exc:
         # A session still bound to a deleted/renamed profile: the state boundary refused to recreate it.
-        home = named_profile_home(dg.get_hermes_home())
+        home = named_profile_home(dg.get_zeus_home())
         if home is None or named_profile_is_live(home):
             raise
         return f"Profile '{home.name}' no longer exists; disk-cleanup stopped (files it already removed stay removed). {exc}"
@@ -242,4 +242,4 @@ def register(ctx) -> None:
     ctx.register_hook("post_tool_call", _on_post_tool_call)
     ctx.register_hook("on_session_end", _on_session_end)
     ctx.register_command("disk-cleanup", handler=_handle_slash,
-                         description="Track and clean up ephemeral Hermes session files.")
+                         description="Track and clean up ephemeral Zeus session files.")

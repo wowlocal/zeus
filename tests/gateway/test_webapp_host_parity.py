@@ -1,5 +1,5 @@
 """Every ``webapp.host`` that works on main behaves as it does there: what the gateway serves, what it
-reports, the address native clients dial, the Host header it accepts and what ``hermes webapp --status``
+reports, the address native clients dial, the Host header it accepts and what ``zeus webapp --status``
 and Web Access print. Pinned as literals, so the same file passes against main.
 
 Covered: ``127.0.0.1``, ``::1``, ``localhost``, ``0.0.0.0``, ``::``, a ``webapp:`` block that is off
@@ -121,8 +121,8 @@ SETTINGS = {  # (enabled, host, port, public_url, bind, reason) for "webapp: {en
 
 @pytest.mark.parametrize("host", HOSTS)
 def test_the_settings_dial_address_and_host_check_of_a_host_main_accepts_are_mains(tmp_path, host):
-    from hermes_cli.web_server_boundary import _is_accepted_host, should_require_auth
-    from hermes_cli.webapp_access import _mode
+    from zeus_cli.web_server_boundary import _is_accepted_host, should_require_auth
+    from zeus_cli.webapp_access import _mode
 
     settings = webapp.webapp_settings(_home(tmp_path, f"webapp:\n  enabled: true\n  host: '{host}'\n"))
     assert (settings.enabled, settings.host, settings.port, settings.public_url, settings.bind,
@@ -138,7 +138,7 @@ def test_the_settings_dial_address_and_host_check_of_a_host_main_accepts_are_mai
         "192.168.1.20:9120": False, "rebound.example.net": False})
 
 
-STATUS_OUTPUT = {  # ``hermes webapp --status`` against a gateway serving the Webapp on each host (all of it)
+STATUS_OUTPUT = {  # ``zeus webapp --status`` against a gateway serving the Webapp on each host (all of it)
     "127.0.0.1": "Serving at http://127.0.0.1:9120\n",
     "::1": "Serving at http://[::1]:9120\n",
     "localhost": "Serving at http://localhost:9120\n",
@@ -148,11 +148,11 @@ STATUS_OUTPUT = {  # ``hermes webapp --status`` against a gateway serving the We
 
 
 @pytest.mark.parametrize("host", HOSTS)
-def test_hermes_webapp_status_prints_what_main_prints(monkeypatch, tmp_path, capsys, host):
-    from hermes_cli import webapp_launcher as launcher
+def test_zeus_webapp_status_prints_what_main_prints(monkeypatch, tmp_path, capsys, host):
+    from zeus_cli import webapp_launcher as launcher
 
     home = _home(tmp_path, f"webapp:\n  enabled: true\n  host: '{host}'\n")
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
     url = webapp.dial_origin(host, 9120) if host != "localhost" else "http://localhost:9120"
     monkeypatch.setattr(launcher, "_control", lambda _home, verb, params=None: {
         "ok": True, "result": {"state": "serving", "url": url, "reason": None}})
@@ -185,7 +185,7 @@ def test_a_bind_error_gives_mains_reason(monkeypatch, tmp_path, host, error):
     from gateway.control_socket import GatewayControlServer
 
     home = _home(tmp_path, f"webapp:\n  enabled: true\n  host: '{host}'\n")
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
 
     async def start(runner, *, host="127.0.0.1", port=0, webapp=None):
         if webapp is not None:

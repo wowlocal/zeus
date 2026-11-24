@@ -21,7 +21,7 @@ describe('migrateTilesForProfile', () => {
 
   it('moves tabs, bot tiles, cached tails, remembered ids and owner hints to the new profile name', async () => {
     const storage = await import('@/lib/storage')
-    storage.writeJson('hermes.desktop.sessionTiles.v2', {
+    storage.writeJson('zeus.desktop.sessionTiles.v2', {
       webdesign_bhp: [
         { storedSessionId: 's-1', dir: 'right', ownerRoute: { connectionId: 'local', profile: 'webdesign_bhp' } }
       ],
@@ -40,7 +40,7 @@ describe('migrateTilesForProfile', () => {
         }
       ]
     })
-    storage.writeJson('hermes.desktop.sessionOwnerHints.v1', [
+    storage.writeJson('zeus.desktop.sessionOwnerHints.v1', [
       ['s-1', { connectionId: 'local', profile: 'webdesign_bhp', targetProfile: 'webdesign_bhp' }]
     ])
 
@@ -81,7 +81,7 @@ describe('migrateTilesForProfile', () => {
     }
 
     type Tile = { ownerRoute?: { profile: string; targetProfile?: string }; storedSessionId: string }
-    const tiles = storage.readJson<Record<string, Tile[]>>('hermes.desktop.sessionTiles.v2')
+    const tiles = storage.readJson<Record<string, Tile[]>>('zeus.desktop.sessionTiles.v2')
     expect(tiles?.webdesign_bhp).toBeUndefined()
     expect(tiles?.['hutnik-projectmanager']?.map(t => [t.storedSessionId, t.ownerRoute?.profile])).toEqual([
       ['s-1', 'hutnik-projectmanager']
@@ -106,7 +106,7 @@ describe('migrateTilesForProfile', () => {
   it('leaves owner hints of a same-named profile on another connection alone', async () => {
     const storage = await import('@/lib/storage')
     const remote = { connectionId: 'remote-1', profile: 'webdesign_bhp', targetProfile: 'webdesign_bhp' }
-    storage.writeJson('hermes.desktop.sessionOwnerHints.v1', [
+    storage.writeJson('zeus.desktop.sessionOwnerHints.v1', [
       ['s-1', { connectionId: 'local', profile: 'webdesign_bhp', targetProfile: 'webdesign_bhp' }],
       ['s-9', remote]
     ])
@@ -120,7 +120,7 @@ describe('migrateTilesForProfile', () => {
     ])
     // The rename ran on the local backend; the remote profile still has its old name.
     expect(sessionStore.getSessionOwnerHints('s-9')).toEqual([remote])
-    expect(storage.readJson<unknown[]>('hermes.desktop.sessionOwnerHints.v1')).toContainEqual(['s-9', remote])
+    expect(storage.readJson<unknown[]>('zeus.desktop.sessionOwnerHints.v1')).toContainEqual(['s-9', remote])
   })
 
   it.each(['rename', 'delete'] as const)('%s keeps frame journals scoped and revokes the old profile', async operation => {

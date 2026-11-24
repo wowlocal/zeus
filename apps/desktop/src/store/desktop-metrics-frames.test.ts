@@ -9,7 +9,7 @@ import type { SharedMetricsRequester } from './shared-metrics'
 const MINUTE = 60_000
 const DAY = 24 * 60 * MINUTE
 const MIDNIGHT = Date.UTC(2026, 8, 28)
-const KEY = 'hermes.desktop.metrics.v1:test-scope'
+const KEY = 'zeus.desktop.metrics.v1:test-scope'
 const current = () => true
 const storedKeys = () => Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index)!)
 let closeIndexedDb: () => void = () => undefined
@@ -557,7 +557,7 @@ describe('peer frame day settlement', () => {
     await locks.drain()
     const held = Promise.withResolvers<void>()
 
-    void navigator.locks.request('hermes-desktop-metrics-coordination', () => held.promise)
+    void navigator.locks.request('zeus-desktop-metrics-coordination', () => held.promise)
     vi.setSystemTime(MIDNIGHT + 6 * MINUTE - 1)
     writer.checkpoint()
     vi.setSystemTime(MIDNIGHT + 6 * MINUTE + 1)
@@ -578,7 +578,7 @@ describe('peer frame day settlement', () => {
     await locks.drain()
     const held = Promise.withResolvers<void>()
 
-    void navigator.locks.request('hermes-desktop-metrics-coordination', () => held.promise)
+    void navigator.locks.request('zeus-desktop-metrics-coordination', () => held.promise)
     vi.setSystemTime(MIDNIGHT - 3 * MINUTE)
     collector.checkpoint()
     vi.setSystemTime(MIDNIGHT - 2 * MINUTE)
@@ -879,11 +879,11 @@ describe('peer frame day settlement', () => {
       setItem.call(this, key, value)
     })
 
-    localStorage.setItem('hermes.desktop.sessionTiles.v2', JSON.stringify({ alpha: ['session-1'] }))
+    localStorage.setItem('zeus.desktop.sessionTiles.v2', JSON.stringify({ alpha: ['session-1'] }))
     await expect(DesktopFrameMetrics.migrate(KEY, destination)).resolves.toBeUndefined()
     expect(localStorage.getItem(captured.consent)).toBeNull()
     expect(stale.isCurrent()).toBe(false)
-    expect(JSON.parse(localStorage.getItem('hermes.desktop.sessionTiles.v2')!)).toEqual({ alpha: ['session-1'] })
+    expect(JSON.parse(localStorage.getItem('zeus.desktop.sessionTiles.v2')!)).toEqual({ alpha: ['session-1'] })
     failingWrite.mockRestore()
     const renamed = new DesktopFrameMetrics(destination)
 

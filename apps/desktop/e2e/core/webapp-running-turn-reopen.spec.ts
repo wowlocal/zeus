@@ -53,7 +53,7 @@ const todos = (tag: string, count: number) =>
 
 /** True once the profile's state.db holds an assistant row containing `text`. */
 function assistantStored(sandbox: CoreSandbox, text: string): boolean {
-  const db = new DatabaseSync(path.join(sandbox.hermesHome, 'state.db'), { readOnly: true })
+  const db = new DatabaseSync(path.join(sandbox.zeusHome, 'state.db'), { readOnly: true })
 
   try {
     return Boolean(

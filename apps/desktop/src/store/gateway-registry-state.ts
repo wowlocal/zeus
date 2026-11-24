@@ -1,6 +1,6 @@
 import { atom } from 'nanostores'
 
-import type { HermesGateway } from '@/hermes'
+import type { ZeusGateway } from '@/zeus'
 import { initialGatewayProfile } from '@/lib/platform'
 import type { RegistryConfig } from '@/store/gateway-registry-config'
 import type { Secondary } from '@/store/gateway-socket-entry'
@@ -18,7 +18,7 @@ import type { Secondary } from '@/store/gateway-socket-entry'
 // runtime behavior is identical to plain module state.
 export interface GatewayRegistryState {
   config: RegistryConfig | null
-  primaryGateway: HermesGateway | null
+  primaryGateway: ZeusGateway | null
   primaryProfile: string
   activeKey: string
   secondaries: Map<string, Secondary>
@@ -35,11 +35,11 @@ export interface GatewayRegistryState {
   turnLeases: Map<string, () => void>
   /** Debounced releases so an immediate chained turn can reuse its lease. */
   turnLeaseReleaseTimers: Map<string, ReturnType<typeof setTimeout>>
-  $gateway: ReturnType<typeof atom<HermesGateway | null>>
+  $gateway: ReturnType<typeof atom<ZeusGateway | null>>
   $activeProfile: ReturnType<typeof atom<string>>
 }
 
-const STATE_KEY = Symbol.for('hermes.desktop.gatewayRegistryState')
+const STATE_KEY = Symbol.for('zeus.desktop.gatewayRegistryState')
 
 function createRegistryState(): GatewayRegistryState {
   return {
@@ -57,7 +57,7 @@ function createRegistryState(): GatewayRegistryState {
     // The active gateway instance, exposed for inline message-stream
     // components (inline ClarifyTool, model overlays) that call gateway
     // methods without the instance threaded down through props.
-    $gateway: atom<HermesGateway | null>(null),
+    $gateway: atom<ZeusGateway | null>(null),
     // The PROFILE the active gateway is routed to (bare profile name, never a
     // composite registry scope). Owned exclusively by applyActive() so the
     // published profile can never diverge from the socket actually selected —

@@ -12,7 +12,7 @@ import time
 MANIFEST_SCHEMA = 1
 SHA256 = re.compile(r"[a-f0-9]{64}")
 GIT_SHA = re.compile(r"[a-f0-9]{40}")
-from hermes_cli.update_channel import STABLE_TAG_RE
+from zeus_cli.update_channel import STABLE_TAG_RE
 from scripts.releases.versioning import parse_attempt_ref
 ARCHES = ("amd64", "arm64")
 IMAGE = "nousresearch/hermes-agent"
@@ -32,7 +32,7 @@ def require_stable_tag(tag: str) -> str:
 def is_canary_image_tag(tag: object) -> bool:
     """A canary's versioned image tag: its git tag, ``canary.<stamp>-vX.Y.Z``, unchanged (the
     claim tag stable-release.yml passes as every image tag)."""
-    from hermes_cli.update_channel import is_canary_tag
+    from zeus_cli.update_channel import is_canary_tag
 
     return is_canary_tag(tag)
 
@@ -176,8 +176,8 @@ def promote_stable(tag: str, digest: str, release_tag: str, *, run=output, sleep
 
 
 def _live_canary_stamp(repository: str, public_base: str | None = None) -> str | None:
-    from hermes_cli.release_channels import ChannelError
-    from hermes_cli.update_channel import published_canary_timestamp
+    from zeus_cli.release_channels import ChannelError
+    from zeus_cli.update_channel import published_canary_timestamp
     from scripts.releases.versioning import published_channel_identity
 
     try:
@@ -205,7 +205,7 @@ def promote_canary(
     The canary's own versioned tag stays immutable; stable and latest are never touched here.
     When ``repository`` is provided, refuses to roll the aliases back behind the live
     protected canary head in R2."""
-    from hermes_cli.update_channel import canary_timestamp
+    from zeus_cli.update_channel import canary_timestamp
 
     if not is_canary_image_tag(tag):
         raise DockerReleaseError(f"Not a canary image tag: {tag!r}")

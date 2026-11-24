@@ -1,4 +1,4 @@
-"""Hermes learns how each route really caches, from the usage it already receives (no probes).
+"""Zeus learns how each route really caches, from the usage it already receives (no probes).
 
 Invariants: (a) never read back after two attempts -> no-cache: no keep-alives, and an explicit route
 stops sending markers; (b) two hits that re-wrote the prefix -> no keep-alives; (c) two early misses ->
@@ -20,7 +20,7 @@ _T0 = 1_000_000.0
 
 @pytest.fixture
 def home(tmp_path, monkeypatch):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path / "a"))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path / "a"))
     return tmp_path
 
 
@@ -125,7 +125,7 @@ def test_each_profile_learns_on_its_own(home, monkeypatch):
     for _ in range(2):
         _obs("openai/gpt-5.6-luna", write=6013)
     assert routes.rule_for("nous", _NOUS, "openai/gpt-5.6-luna", True) == "no-cache"
-    monkeypatch.setenv("HERMES_HOME", str(home / "b"))  # another profile, same process
+    monkeypatch.setenv("ZEUS_HOME", str(home / "b"))  # another profile, same process
     assert routes.rule_for("nous", _NOUS, "openai/gpt-5.6-luna", True) is None
     assert not (home / "b" / "cache" / "prompt_cache_routes.json").exists()
 

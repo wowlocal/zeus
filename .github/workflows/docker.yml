@@ -225,7 +225,7 @@ jobs:
           # PR builds only. Blacksmith commits a sticky disk from any job unless its branch
           # protection is on, so a trusted build must not read a cache a PR can write; the
           # empty key keeps main/release builds on the local fallback builder until it is.
-          cache-key: ${{ github.event_name == 'pull_request' && format('hermes-agent/pr-{0}-{1}', matrix.variant, matrix.arch) || '' }}
+          cache-key: ${{ github.event_name == 'pull_request' && format('zeus-agent/pr-{0}-{1}', matrix.variant, matrix.arch) || '' }}
 
       - name: Set up Docker Buildx (retry)
         if: steps.buildx.outcome == 'failure'
@@ -234,7 +234,7 @@ jobs:
           # PR builds only. Blacksmith commits a sticky disk from any job unless its branch
           # protection is on, so a trusted build must not read a cache a PR can write; the
           # empty key keeps main/release builds on the local fallback builder until it is.
-          cache-key: ${{ github.event_name == 'pull_request' && format('hermes-agent/pr-{0}-{1}', matrix.variant, matrix.arch) || '' }}
+          cache-key: ${{ github.event_name == 'pull_request' && format('zeus-agent/pr-{0}-{1}', matrix.variant, matrix.arch) || '' }}
 
       # Build once, load into the local daemon for testing.  Cached
       # per-arch; the push step below reuses every layer from this build.
@@ -247,7 +247,7 @@ jobs:
           platforms: ${{ matrix.platform }}
           tags: ${{ env.IMAGE_NAME }}:test
           build-args: |
-            HERMES_BOT_DESKTOP=${{ matrix.variant == 'desktop' && '1' || '0' }}
+            ZEUS_BOT_DESKTOP=${{ matrix.variant == 'desktop' && '1' || '0' }}
           # Slim owns the scope; desktop adds the gated apt layer, so it reads
           # and writes nothing — a mode=max scope could exceed the cache cap.
           cache-from: type=gha,scope=docker-${{ matrix.arch }}
@@ -256,7 +256,7 @@ jobs:
 
       # Run the docker-integration test suite against the freshly-built image
       # already loaded into the local daemon (`:test`). The fixture's
-      # HERMES_TEST_IMAGE branch short-circuits the rebuild. Release tests
+      # ZEUS_TEST_IMAGE branch short-circuits the rebuild. Release tests
       # archive these exact bytes rather than rebuilding at publish time.
       # Park the stamp while PM provisions the runner, then restore it so
       # tests/docker can compare the image's provenance with the checkout.
@@ -278,7 +278,7 @@ jobs:
         if: inputs.skip-tests != true
         env:
           # Skip rebuild; use the image already loaded by the build step.
-          HERMES_TEST_IMAGE: ${{ env.IMAGE_NAME }}:test
+          ZEUS_TEST_IMAGE: ${{ env.IMAGE_NAME }}:test
           # Match the policy in tests.yml :: test job — no accidental
           # real-API calls from inside the harness.
           OPENROUTER_API_KEY: ""
@@ -288,7 +288,7 @@ jobs:
           # Each of these tests drives a container, so the docker daemon sets
           # the limit and not the processor. This pins the runner's worker
           # count to the core count.
-          HERMES_TEST_WORKERS=$(nproc) scripts/run_tests.sh tests/docker/
+          ZEUS_TEST_WORKERS=$(nproc) scripts/run_tests.sh tests/docker/
 
       - name: Verify release image identity
         if: needs.mode.outputs.phase == 'test'
@@ -296,7 +296,7 @@ jobs:
           RELEASE_VERSION: ${{ inputs.version }}
         run: |
           actual="$(docker run --rm --entrypoint python "${IMAGE_NAME}:test" -c \
-            'import json; print(json.load(open("/opt/hermes/install-stamp.json"))["baseVersion"])')"
+            'import json; print(json.load(open("/opt/zeus/install-stamp.json"))["baseVersion"])')"
           # baseVersion is the stable core; a canary carries +canary.<stamp> only in displayVersion.
           test "$actual" = "${RELEASE_VERSION%%+*}"
 
@@ -428,7 +428,7 @@ jobs:
           file: Dockerfile
           platforms: ${{ matrix.platform }}
           build-args: |
-            HERMES_BOT_DESKTOP=${{ matrix.variant == 'desktop' && '1' || '0' }}
+            ZEUS_BOT_DESKTOP=${{ matrix.variant == 'desktop' && '1' || '0' }}
           labels: |
             org.opencontainers.image.revision=${{ env.CANDIDATE_COMMIT }}
           outputs: type=image,name=${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true

@@ -413,7 +413,7 @@ describe('a report counts as told only once the connection accepted it', () => {
 
 describe('main\'s answer about OS notifications', () => {
   afterEach(() => {
-    delete (window as { hermesDesktop?: unknown }).hermesDesktop
+    delete (window as { zeusDesktop?: unknown }).zeusDesktop
     window.location.hash = ''
     $gateway.set(null)
     $activeSessionId.set(null)
@@ -427,7 +427,7 @@ describe('main\'s answer about OS notifications', () => {
     let answer: (supported: boolean) => void = () => undefined
     const reply = new Promise<boolean>(resolve => (answer = resolve))
     const notifySupported = vi.fn(() => reply)
-    window.hermesDesktop = { notify: vi.fn(async () => true), notifySupported } as never
+    window.zeusDesktop = { notify: vi.fn(async () => true), notifySupported } as never
     vi.spyOn(document, 'hasFocus').mockReturnValue(false)
     setNativeNotifyKind('turnDone', true)
     const channel = fakeChannel()
@@ -489,8 +489,8 @@ describe('can_alert from this window', () => {
   ] as const
 
   afterEach(() => {
-    delete (window as { hermesDesktop?: unknown }).hermesDesktop
-    delete document.documentElement.dataset.hermesDesktopHost
+    delete (window as { zeusDesktop?: unknown }).zeusDesktop
+    delete document.documentElement.dataset.zeusDesktopHost
     vi.unstubAllGlobals()
     window.location.hash = ''
     $gateway.set(null)
@@ -503,7 +503,7 @@ describe('can_alert from this window', () => {
 
   it.each(cases)('%s, focused %s, turn-done %s, permission %s -> %s', async (host, focused, turnDone, permission, expected) => {
     if (host === 'webapp') {
-      document.documentElement.dataset.hermesDesktopHost = 'browser'
+      document.documentElement.dataset.zeusDesktopHost = 'browser'
       // The live permission the browser bridge checks, not only the cached store.
       vi.stubGlobal('isSecureContext', true)
       vi.stubGlobal('Notification', { permission })
@@ -522,7 +522,7 @@ describe('can_alert from this window', () => {
     $sessionStates.set({ s1: createClientSessionState('stored-1') })
     // The host can show notifications (Desktop: main says so; a browser asks its permission).
     const supported = Promise.resolve(true)
-    window.hermesDesktop = { notify: vi.fn(async () => true), notifySupported: () => supported } as never
+    window.zeusDesktop = { notify: vi.fn(async () => true), notifySupported: () => supported } as never
     const stop = startPresenceReporter()
     await supported
 

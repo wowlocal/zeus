@@ -19,7 +19,7 @@ def admitted(tmp_path, monkeypatch):
     monkeypatch.setattr(sched, "_reload_dotenv_and_publish_delivery_target", lambda job: None)
     monkeypatch.setattr(sched, "_cron_cleanup_timeout_seconds", lambda: 0.02)
     monkeypatch.setattr(sched, "_resolve_cron_enabled_toolsets", lambda *a: None)
-    from hermes_cli import runtime_provider
+    from zeus_cli import runtime_provider
     monkeypatch.setattr(runtime_provider, "resolve_runtime_provider", lambda **kw: _RUNTIME)
     from unittest.mock import Mock
     import persistence_assembly
@@ -139,9 +139,9 @@ def test_live_worker_defers_end_until_stopped(admitted, monkeypatch):
 @pytest.mark.parametrize("gate", ["config", "empty_payload", "injection", "empty_prompt"])
 def test_real_preparation_refusals_keep_result_and_end_once(admitted, monkeypatch, gate):
     db, job = admitted
-    from hermes_constants import get_hermes_home
+    from zeus_constants import get_zeus_home
     if gate == "config":
-        (get_hermes_home() / "config.yaml").write_text("broken: [")
+        (get_zeus_home() / "config.yaml").write_text("broken: [")
     elif gate == "empty_payload":
         job["prompt"] = ""
     elif gate == "injection":

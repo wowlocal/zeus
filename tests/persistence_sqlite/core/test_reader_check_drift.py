@@ -9,7 +9,7 @@ from contextlib import closing
 
 import pytest
 
-from hermes_cli.sqlite_safe_read import offline_file_access
+from zeus_cli.sqlite_safe_read import offline_file_access
 from persistence.core.errors import DeclarativeDrift
 from persistence_assembly import open_persistence, open_persistence_reader, open_store_admin, profile_scope
 from tests.fixtures.storage_seed import seed_session

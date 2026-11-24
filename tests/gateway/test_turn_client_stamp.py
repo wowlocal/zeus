@@ -13,7 +13,7 @@ import pytest
 
 from tests.fixtures.storage_seed import seed_session
 
-DESKTOP = {'name': 'hermes-desktop', 'version': '2.1.0', 'kind': 'desktop'}
+DESKTOP = {'name': 'zeus-desktop', 'version': '2.1.0', 'kind': 'desktop'}
 
 
 def _peer():
@@ -36,7 +36,7 @@ async def _authority(home, monkeypatch, answer):
     from gateway.session_authority import LiveSession, initialize_session_authority
 
     home.mkdir(parents=True, exist_ok=True)
-    monkeypatch.setenv('HERMES_HOME', str(home))
+    monkeypatch.setenv('ZEUS_HOME', str(home))
     store = SessionStore(home / 'sessions', GatewayConfig())
     runner = SimpleNamespace(_session_db=store.persistence, session_store=store, _draining=False,
                              _handle_message=answer, _adapter_for_source=lambda source: None)
@@ -118,7 +118,7 @@ async def test_a_sibling_profile_turn_on_the_same_socket_carries_the_same_stamp(
     """A host-scoped socket (the Desktop's shared primary) routes ``profile=beta`` to beta's
     authority through a sibling connection on the SAME transport, so beta's row is stamped too."""
     monkeypatch.setattr(Path, 'home', lambda: tmp_path)
-    root = tmp_path / '.hermes'
+    root = tmp_path / '.zeus'
     seen = []
     beta = await _authority(root / 'profiles' / 'beta', monkeypatch, _recorder(seen))
     launch = await _authority(root, monkeypatch, _recorder(seen))

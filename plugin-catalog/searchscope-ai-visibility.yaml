@@ -19,7 +19,7 @@ description: >-
 maintainer: Search Scope
 tier: community
 category: tools
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 docs_url: https://github.com/InovArcAi/searchscope-ai-visibility-mcp#readme
 version: "1.0.0"
 platforms: []

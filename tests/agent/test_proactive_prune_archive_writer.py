@@ -8,7 +8,7 @@ from tools.tool_result_storage import PRUNED_SUBDIR, _write_to_spillover
 
 
 def test_failed_exclusive_write_removes_partial_archive(tmp_path, monkeypatch):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
 
     @contextmanager
     def partial_write(path, mode):
@@ -26,7 +26,7 @@ def test_failed_exclusive_write_removes_partial_archive(tmp_path, monkeypatch):
 
 
 def test_exclusive_open_collision_preserves_existing_archive(tmp_path, monkeypatch):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     existing = tmp_path / PRUNED_SUBDIR / "existing.txt"
     existing.parent.mkdir(parents=True)
     existing.write_bytes(b"earlier original")

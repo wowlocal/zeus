@@ -23,8 +23,8 @@ async def _discord_owner(tmp_path, monkeypatch):
 
 async def _admit_human(runner, authority, event):
     from gateway.session_ingress_context import native_callback
-    from hermes_constants import get_hermes_home
-    with native_callback(runner, event, get_hermes_home()):
+    from zeus_constants import get_zeus_home
+    with native_callback(runner, event, get_zeus_home()):
         return await authority.admit_native(event)
 
 

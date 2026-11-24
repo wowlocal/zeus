@@ -21,7 +21,7 @@ import pytest
 
 from gateway.status_report.reporter import StatusReporter
 from gateway.status_report.target import ReportTarget
-from hermes_constants import get_process_hermes_home
+from zeus_constants import get_process_zeus_home
 from tests.waiting import async_wait_until
 
 FIXTURES = Path(__file__).resolve().parents[2] / "fixtures" / "status_report" / "v1"
@@ -153,14 +153,14 @@ def a_status_source() -> dict:
         "gateway_platforms": {"telegram": {"state": "connected"}},
         "nous_session_valid": "valid",
         "install_id": "install-0001", "profiles": ["default", "work"], "active_sessions": 3,
-        "version": "9.9.9", "hermes_home": "/srv/hermes",
+        "version": "9.9.9", "zeus_home": "/srv/zeus",
     }
 
 
 def make_reporter(receiver: Receiver, *, source=a_status_source, credential: Optional[str] = None,
                   url: str = REPORT_URL) -> StatusReporter:
     return StatusReporter(ReportTarget(url, credential or new_credential()),
-                          launch_home=get_process_hermes_home(), read_source=source, opener=receiver)
+                          launch_home=get_process_zeus_home(), read_source=source, opener=receiver)
 
 
 async def settle(timeout: float = 10.0) -> None:

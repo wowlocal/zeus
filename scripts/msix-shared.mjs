@@ -13,23 +13,23 @@ const require = createRequire(import.meta.url)
  * @returns {import('../apps/desktop/electron/install-stamp.js').ChannelBuildRequest | null}
  */
 export function channelBuildRequest(env = process.env) {
-  if (!env._HERMES_CHANNEL_REQUEST_JSON) return null
-  const value = JSON.parse(env._HERMES_CHANNEL_REQUEST_JSON)
-  if (env.HERMES_DESKTOP_VARIANT !== 'bundled') throw new Error('Channel builds support only bundled packaging')
-  if (env.HERMES_BUILD_COMMIT || env.HERMES_PAYLOAD_TAG) throw new Error('Channel request conflicts with commit or tag identity')
+  if (!env._ZEUS_CHANNEL_REQUEST_JSON) return null
+  const value = JSON.parse(env._ZEUS_CHANNEL_REQUEST_JSON)
+  if (env.ZEUS_DESKTOP_VARIANT !== 'bundled') throw new Error('Channel builds support only bundled packaging')
+  if (env.ZEUS_BUILD_COMMIT || env.ZEUS_PAYLOAD_TAG) throw new Error('Channel request conflicts with commit or tag identity')
   // The bundled toolchain already supplies Python. Reuse the authoritative
   // validator rather than maintaining a third protocol decoder for packaging.
   const validator = [
     'import sys',
     'sys.path.insert(0, sys.argv[1])',
-    'from hermes_cli.release_channels import decode_json',
+    'from zeus_cli.release_channels import decode_json',
     'from scripts.bundles.desktop_prepare import validate_channel_request',
     'validate_channel_request(decode_json(sys.stdin.buffer.read()))'
   ].join('; ')
-  execFileSync(env.HERMES_PYTHON || 'python', ['-I', '-S', '-c', validator, path.resolve(import.meta.dirname, '..')], {
-    env, input: env._HERMES_CHANNEL_REQUEST_JSON, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 30_000
+  execFileSync(env.ZEUS_PYTHON || 'python', ['-I', '-S', '-c', validator, path.resolve(import.meta.dirname, '..')], {
+    env, input: env._ZEUS_CHANNEL_REQUEST_JSON, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'], timeout: 30_000
   })
-  if (env.HERMES_PAYLOAD_VERSION && env.HERMES_PAYLOAD_VERSION !== value.version) throw new Error('Channel package version conflicts with prepared request')
+  if (env.ZEUS_PAYLOAD_VERSION && env.ZEUS_PAYLOAD_VERSION !== value.version) throw new Error('Channel package version conflicts with prepared request')
   Object.freeze(value.identity)
   Object.freeze(value.bundleEnv)
   return Object.freeze(value)
@@ -74,7 +74,7 @@ export function contentTypeFor(filename) {
 }
 
 const VERSION_CORE = '(?:0|[1-9]\\d{0,2})\\.(?:0|[1-9]\\d*)\\.(?:0|[1-9]\\d*)'
-// canary.<stamp>-v<stable> (hermes_cli/update_channel.py _CANARY_TAG_RE): group 1 is the stamp,
+// canary.<stamp>-v<stable> (zeus_cli/update_channel.py _CANARY_TAG_RE): group 1 is the stamp,
 // group 2 the stable core. A canary's version is <stable>+canary.<stamp> (releaseVersion).
 export const CANARY_TAG_RE = new RegExp(`^canary\\.(20\\d{6}T\\d{6}Z)-v(${VERSION_CORE})$`)
 // commit.<stamp>-v<core> (update_channel._COMMIT_TAG_RE): a commit build's claim tag, same groups.
@@ -177,11 +177,11 @@ function releaseEpoch(tag, gitRoot) {
     const compact = new Date(epoch * 1000).toISOString().replace(/[-:T]/g, '').replace(/\.000Z$/, '')
     const expected = `${compact.slice(0, 8)}T${compact.slice(8)}Z`
     if (expected !== stamp) throw new Error('Invalid canary calendar timestamp')
-    const supplied = process.env.HERMES_RELEASE_EPOCH
+    const supplied = process.env.ZEUS_RELEASE_EPOCH
     if (supplied !== undefined && Number(supplied) !== epoch) throw new Error('Canary release epoch differs from its tag')
     return epoch
   }
-  const supplied = process.env.HERMES_RELEASE_EPOCH
+  const supplied = process.env.ZEUS_RELEASE_EPOCH
   if (supplied !== undefined) {
     if (!/^\d+$/.test(supplied)) throw new Error('Invalid immutable release epoch')
     return Number(supplied)
@@ -264,10 +264,10 @@ export function stageChannelManifest(desktopDir, request) {
  * exact feed filename/identity without duplicating the derivation.
  *
  * @param {string} desktopDir absolute apps/desktop path
- * @param {string} [tag] the release tag (defaults to HERMES_PAYLOAD_TAG)
+ * @param {string} [tag] the release tag (defaults to ZEUS_PAYLOAD_TAG)
  * @returns {{ identity: object, version: string, name: string, fileVersion: string }}
  */
-export function appIdentity(desktopDir, tag = process.env.HERMES_PAYLOAD_TAG || '') {
+export function appIdentity(desktopDir, tag = process.env.ZEUS_PAYLOAD_TAG || '') {
   const identity = require(path.join(desktopDir, 'product-identity.cjs'))
   const pkg = JSON.parse(fs.readFileSync(path.join(desktopDir, 'package.json'), 'utf8'))
   const repoRoot = path.resolve(desktopDir, '..', '..')
@@ -279,14 +279,14 @@ export function appIdentity(desktopDir, tag = process.env.HERMES_PAYLOAD_TAG || 
   // Commit artifacts retain app semver but do not advance an update channel. A commit build that
   // runs the release pipeline carries its claim tag (commit.<stamp>-vX.Y.Z) and is versioned from
   // it below, exactly like a canary; a tagless commit build keeps X.Y.Z.
-  if (process.env.HERMES_BUILD_COMMIT && !(tag && COMMIT_TAG_RE.test(String(tag)))) {
-    if (tag) throw new Error('Commit-only builds must not set HERMES_PAYLOAD_TAG')
-    const commit = process.env.HERMES_BUILD_COMMIT
+  if (process.env.ZEUS_BUILD_COMMIT && !(tag && COMMIT_TAG_RE.test(String(tag)))) {
+    if (tag) throw new Error('Commit-only builds must not set ZEUS_PAYLOAD_TAG')
+    const commit = process.env.ZEUS_BUILD_COMMIT
     if (!/^[a-f0-9]{40}$/.test(commit)) throw new Error('Commit builds require an exact full SHA')
-    const version = String(process.env.HERMES_PAYLOAD_VERSION || '')
+    const version = String(process.env.ZEUS_PAYLOAD_VERSION || '')
     if (!/^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/.test(version)
         || version.split('.').some(part => Number(part) > 65535)) {
-      throw new Error('Commit builds require HERMES_PAYLOAD_VERSION=X.Y.Z with 16-bit fields')
+      throw new Error('Commit builds require ZEUS_PAYLOAD_VERSION=X.Y.Z with 16-bit fields')
     }
     if (identity.store) throw new Error('Store packaging requires a stable release tag')
     return { identity, version: `${version}.0`, fileVersion: version, name: identity.artifactNamePascal }
@@ -295,8 +295,8 @@ export function appIdentity(desktopDir, tag = process.env.HERMES_PAYLOAD_TAG || 
     return { identity, version: storePackageVersion(String(tag), repoRoot),
       fileVersion: requireReleaseVersion(String(tag)), name: identity.artifactNamePascal }
   }
-  if (COMMIT_TAG_RE.test(String(tag)) && !process.env.HERMES_BUILD_COMMIT) {
-    throw new Error('A commit build tag requires HERMES_BUILD_COMMIT (the commit identity)')
+  if (COMMIT_TAG_RE.test(String(tag)) && !process.env.ZEUS_BUILD_COMMIT) {
+    throw new Error('A commit build tag requires ZEUS_BUILD_COMMIT (the commit identity)')
   }
   if (CANARY_TAG_RE.test(String(tag)) || COMMIT_TAG_RE.test(String(tag)) || (tag && STABLE_TAG_RE.test(tag))) {
     return {

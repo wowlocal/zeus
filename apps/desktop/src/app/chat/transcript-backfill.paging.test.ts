@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { type ChatMessage, toChatMessages } from '@/lib/chat-messages'
 import { $transcriptTailBySessionId, recordTranscriptTail, rewindTranscriptTail } from '@/store/transcript-tail'
-import type { SessionMessage } from '@/types/hermes'
+import type { SessionMessage } from '@/types/zeus'
 
 import {
   _resetTranscriptBackfillForTests,
@@ -12,12 +12,12 @@ import {
   transcriptBackfillAvailable
 } from './transcript-backfill'
 
-vi.mock('@/hermes', () => ({
+vi.mock('@/zeus', () => ({
   getOlderSessionMessages: vi.fn(),
   getSessionMessages: vi.fn()
 }))
 
-const { getOlderSessionMessages, getSessionMessages } = await import('@/hermes')
+const { getOlderSessionMessages, getSessionMessages } = await import('@/zeus')
 
 // A stored SessionMessage row: distinct timestamps keep toChatMessages ids
 // unique and the row id survives as ChatMessage.rowId.

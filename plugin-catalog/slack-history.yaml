@@ -9,7 +9,7 @@ docs_url: https://github.com/TakeshiTGAL/hermes-plugin-slack-history#readme
 screenshots:
   - https://raw.githubusercontent.com/TakeshiTGAL/hermes-plugin-slack-history/a3618d87529b4b9663fd2cf6a7fe8b95eb2447c9/assets/demo.png
 version: "0.1.0"
-requires_hermes: '>=0.21.4'
+requires_zeus: '>=0.21.4'
 platforms:
   - linux
   - macos

@@ -1,4 +1,4 @@
-"""Profile identity purge for `hermes profile delete`: the delete-only path, and what an unserve
+"""Profile identity purge for `zeus profile delete`: the delete-only path, and what an unserve
 must leave alone.
 
 `_unserve_profile()` runs for every name that leaves the served set — a rename's old name leaves it
@@ -45,9 +45,9 @@ def _entry(session_key, chat_id, profile):
 
 
 def _state_db():
-    from hermes_constants import get_hermes_home
+    from zeus_constants import get_zeus_home
     from persistence_assembly import open_persistence, profile_scope
-    return open_persistence(profile_scope(home=Path(get_hermes_home())))
+    return open_persistence(profile_scope(home=Path(get_zeus_home())))
 
 
 def _runner_stub(store):

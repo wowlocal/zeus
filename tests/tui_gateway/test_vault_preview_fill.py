@@ -23,11 +23,11 @@ CONTROLS = [
 
 @pytest.fixture
 def login(tmp_path, monkeypatch):
-    home = tmp_path / ".hermes"
+    home = tmp_path / ".zeus"
     home.mkdir()
     (home / "config.yaml").write_text(json.dumps({"vault": {"onepassword": {"enabled": False},
                                                              "bitwarden": {"enabled": False}}}))
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
     out = srv._methods["vault.add"](1, {"kind": "login", "label": "Example", "origin": ORIGIN, "secret": {
         "identifier_type": "email", "identifier": "me@example.test", "password": PASSWORD}})
     return out["result"]["id"]
@@ -51,7 +51,7 @@ def window(monkeypatch):
         expr = req["expression"]
         if "location.href" in expr:
             result = state["origin"] + "/signin"
-        elif 'setAttribute("data-hermes-vault-slot-" + nonce' in expr:
+        elif 'setAttribute("data-zeus-vault-slot-" + nonce' in expr:
             result = json.dumps(CONTROLS)
         elif "reverted" in expr:  # read-back pass: the page kept both values
             result = json.dumps({"landed": expr.count('"index"'), "reverted": 0, "missing": []})

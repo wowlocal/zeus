@@ -7,7 +7,7 @@ Two data sources:
    (official optional). These give us full metadata — overview prose, version,
    license, env vars, commands — that the unified index doesn't carry.
 
-2. The unified Hermes Skills Index at ``website/static/api/skills-index.json``,
+2. The unified Zeus Skills Index at ``website/static/api/skills-index.json``,
    built twice daily by ``scripts/build_skills_index.py`` (workflow
    ``.github/workflows/skills-index.yml``). Covers skills.sh, ClawHub, browse.sh,
    LobeHub, well-known endpoints, and the GitHub taps
@@ -26,7 +26,7 @@ from datetime import datetime, timezone, UTC
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0, REPO_ROOT)
-import hermes_yaml as yaml
+import zeus_yaml as yaml
 
 LOCAL_SKILL_DIRS = [
     ("skills", "built-in"),
@@ -171,32 +171,32 @@ def _docs_page_path(rel_dir: str, source_label: str) -> str:
 
 
 def _install_command(source: str, identifier: str, name: str) -> str:
-    """Build the ``hermes skills install …`` command for a unified-index entry.
+    """Build the ``zeus skills install …`` command for a unified-index entry.
 
     These show up in the SkillCard panel so users can copy-paste them. We try
     to use the most idiomatic identifier per source.
     """
     if not identifier:
-        return f"hermes skills install {name}"
+        return f"zeus skills install {name}"
     src = source.lower()
     if src in {"official", "built-in", "optional"}:
         # OptionalSkillSource emits identifiers like "official/security/1password"
-        return f"hermes skills install {identifier}"
+        return f"zeus skills install {identifier}"
     if src in {"skills.sh", "skills-sh"}:
         # Already wrapped as "skills-sh/owner/repo/skill" by the source
-        return f"hermes skills install {identifier}"
+        return f"zeus skills install {identifier}"
     if src == "clawhub":
-        return f"hermes skills install clawhub/{identifier}"
+        return f"zeus skills install clawhub/{identifier}"
     if src == "browse-sh":
         # Identifier already includes the "browse-sh/" prefix from BrowseShSource
-        return f"hermes skills install {identifier}"
+        return f"zeus skills install {identifier}"
     if src == "lobehub":
-        return f"hermes skills install {identifier}"
+        return f"zeus skills install {identifier}"
     if src == "github":
-        return f"hermes skills install {identifier}"
+        return f"zeus skills install {identifier}"
     if src == "well-known":
-        return f"hermes skills install {identifier}"
-    return f"hermes skills install {identifier}"
+        return f"zeus skills install {identifier}"
+    return f"zeus skills install {identifier}"
 
 
 def _source_url(source: str, identifier: str, extra: dict) -> str:
@@ -306,9 +306,9 @@ def extract_local_skills():
             tags = []
             metadata = fm.get("metadata")
             if isinstance(metadata, dict):
-                hermes_meta = metadata.get("hermes", {})
-                if isinstance(hermes_meta, dict):
-                    tags = hermes_meta.get("tags", [])
+                zeus_meta = metadata.get("zeus", {})
+                if isinstance(zeus_meta, dict):
+                    tags = zeus_meta.get("tags", [])
             if not tags:
                 tags = fm.get("tags", [])
             if isinstance(tags, str):
@@ -353,7 +353,7 @@ def extract_local_skills():
                 # 1-based curated hero rank; the site and the app rotate through these.
                 **({"featured": featured.index(rel_id) + 1} if rel_id in featured else {}),
                 "installIdentifier": install_identifier,
-                "installCmd": f"hermes skills install {install_identifier}",
+                "installCmd": f"zeus skills install {install_identifier}",
             })
 
     return skills
@@ -464,7 +464,7 @@ def extract_unified_index_skills():
             "docsPath": "",
             "identifier": identifier,
             "installCmd": install_cmd,
-            "installIdentifier": install_cmd.removeprefix("hermes skills install "),
+            "installIdentifier": install_cmd.removeprefix("zeus skills install "),
             "sourceUrl": source_url,
         })
 

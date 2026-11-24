@@ -4,7 +4,7 @@ export const deNotifications = {
   intro: 'OS-Benachrichtigungen (keine In-App-Toasts). Pro Gerät.',
   enableAll: 'Benachrichtigungen aktivieren',
   enableAllDesc: 'Aus schaltet jede Benachrichtigung unten stumm.',
-  focusedHint: 'Abschluss-Alerts feuern nur, während Hermes im Hintergrund ist.',
+  focusedHint: 'Abschluss-Alerts feuern nur, während Zeus im Hintergrund ist.',
   kinds: {
     approval: {
       label: 'Genehmigung nötig',
@@ -12,11 +12,11 @@ export const deNotifications = {
     },
     input: {
       label: 'Eingabe nötig',
-      description: 'Hermes hat eine Frage gestellt oder braucht ein Passwort oder Geheimnis.'
+      description: 'Zeus hat eine Frage gestellt oder braucht ein Passwort oder Geheimnis.'
     },
     turnDone: {
       label: 'Antwort bereit',
-      description: 'Ein Turn wurde beendet, während Hermes im Hintergrund war.'
+      description: 'Ein Turn wurde beendet, während Zeus im Hintergrund war.'
     },
     turnError: {
       label: 'Turn fehlgeschlagen',
@@ -32,7 +32,7 @@ export const deNotifications = {
     },
     plugin: {
       label: 'Plugin-Benachrichtigungen',
-      description: 'Ein Desktop-Plugin hat eine Benachrichtigung gesendet, während Hermes im Hintergrund war.'
+      description: 'Ein Desktop-Plugin hat eine Benachrichtigung gesendet, während Zeus im Hintergrund war.'
     }
   },
   browserPermission: {
@@ -49,15 +49,15 @@ export const deNotifications = {
   },
   phonePresence: {
     title: 'Dieser Computer für Telefon-Benachrichtigungen',
-    description: 'Was dieses Fenster Hermes darüber mitteilt, ob du hier bist. Ein Plugin für Telefon-Benachrichtigungen entscheidet, was daraus folgt.',
+    description: 'Was dieses Fenster Zeus darüber mitteilt, ob du hier bist. Ein Plugin für Telefon-Benachrichtigungen entscheidet, was daraus folgt.',
     unsupported: 'Telefon-Benachrichtigungen hängen auf diesem Backend nicht von deiner Aktivität ab.',
     disconnected: 'Nicht verbunden.',
-    watchingComputer: (time: string) => `Solange in diesem Fenster eine Unterhaltung geöffnet ist, erfährt Hermes, wann du diesen Computer zuletzt benutzt hast. Letzte Eingabe vor ${time}.`,
-    watchingWindow: (time: string) => `Solange in diesem Fenster eine Unterhaltung geöffnet ist, erfährt Hermes, wann du dieses Fenster zuletzt benutzt hast. Letzte Eingabe vor ${time}.`,
-    watchingWindowNoInput: 'Solange in diesem Fenster eine Unterhaltung geöffnet ist, erfährt Hermes, wann du dieses Fenster zuletzt benutzt hast. Noch keine Eingabe bemerkt.'
+    watchingComputer: (time: string) => `Solange in diesem Fenster eine Unterhaltung geöffnet ist, erfährt Zeus, wann du diesen Computer zuletzt benutzt hast. Letzte Eingabe vor ${time}.`,
+    watchingWindow: (time: string) => `Solange in diesem Fenster eine Unterhaltung geöffnet ist, erfährt Zeus, wann du dieses Fenster zuletzt benutzt hast. Letzte Eingabe vor ${time}.`,
+    watchingWindowNoInput: 'Solange in diesem Fenster eine Unterhaltung geöffnet ist, erfährt Zeus, wann du dieses Fenster zuletzt benutzt hast. Noch keine Eingabe bemerkt.'
   },
   test: 'Testbenachrichtigung senden',
-  testTitle: 'Hermes',
+  testTitle: 'Zeus',
   testBody: 'Benachrichtigungen funktionieren.',
   testSent:
     'Test gesendet. Wenn nichts erscheint, überprüfen Sie die Benachrichtigungsberechtigungen Ihres Betriebssystems und Fokus/Nicht stören.',

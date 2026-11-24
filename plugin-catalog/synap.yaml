@@ -6,7 +6,7 @@ description: "Synap — OpenAI-compatible hosted inference. Sends prompts and SY
 maintainer: Linkrra
 tier: community
 category: models
-requires_hermes: ">=0.22.0"
+requires_zeus: ">=0.22.0"
 docs_url: https://github.com/jimmyplup/hermes-synap-provider#readme
 version: "1.0.0"
 capabilities:

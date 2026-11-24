@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, expect, test, vi } from 'vitest'
 
-import { HermesGateway } from '@/api/client'
-import type { HermesConnection } from '@/global'
+import { ZeusGateway } from '@/api/client'
+import type { ZeusConnection } from '@/global'
 import { TimeoutError } from '@/lib/with-timeout'
 
 import { serverOwnsComposerQueue } from './composer-queue'
@@ -11,7 +11,7 @@ import { isStalledDialError } from './gateway-dial-failures'
 import { $connection, _resetSessionOwnerHintsForTests, setSessionOwnerHint } from './session'
 
 // @donovan-yohan's reproducer from the review of #148219 on cc6ad86a, with a parking case added:
-// the registry, HermesGateway, wire publisher, composer predicate and stall classifier are real;
+// the registry, ZeusGateway, wire publisher, composer predicate and stall classifier are real;
 // the Electron descriptor and the WebSocket peer are synthetic.
 class ReviewSocket extends EventTarget {
   static readonly CONNECTING = 0
@@ -47,13 +47,13 @@ class ReviewSocket extends EventTarget {
   }
 }
 
-let primary: HermesGateway
+let primary: ZeusGateway
 
 const descriptor = {
   connectionId: 'override-remote', mode: 'remote', profile: 'worker', authMode: 'token',
   token: 'synthetic-only', wsUrl: 'wss://override.example/api/ws?ticket=synthetic',
   baseUrl: 'https://override.example'
-} as HermesConnection
+} as ZeusConnection
 
 beforeEach(async () => {
   vi.useFakeTimers()
@@ -63,13 +63,13 @@ beforeEach(async () => {
   $connectionWires.set({})
   _resetSessionOwnerHintsForTests({ storage: true })
   configureGatewayRegistry({ activeConnectionId: () => 'local', foregroundScopes: () => new Set(), onEvent: vi.fn() })
-  primary = new HermesGateway()
+  primary = new ZeusGateway()
   const opening = primary.connect('wss://local.example/api/ws?ticket=synthetic')
   await vi.advanceTimersByTimeAsync(2)
   await opening
   setPrimaryGateway(primary, 'default')
   setPrimaryGatewayConnectionId('local', 'local')
-  window.hermesDesktop = {
+  window.zeusDesktop = {
     getConnection: vi.fn(async () => descriptor),
     getGatewayWsUrl: vi.fn(async () => descriptor.wsUrl)
   } as never
@@ -83,7 +83,7 @@ afterEach(() => {
   $connection.set(null)
   $connectionWires.set({})
   _resetSessionOwnerHintsForTests({ storage: true })
-  delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
+  delete (window as unknown as { zeusDesktop?: unknown }).zeusDesktop
   vi.clearAllTimers()
   vi.useRealTimers()
   vi.unstubAllGlobals()
@@ -117,7 +117,7 @@ test('control: an explicit remote source records its own wire without changing l
   const { ensureGatewayForAgent } = await import('./gateway')
   recordConnectionWire('local', 'canonical')
   ReviewSocket.advertise = {}
-  window.hermesDesktop = {
+  window.zeusDesktop = {
     getConnectionFor: vi.fn(async () => descriptor),
     getGatewayWsUrlFor: vi.fn(async () => descriptor.wsUrl)
   } as never
@@ -132,7 +132,7 @@ test('control: an explicit remote source records its own wire without changing l
 
 test('a real protocol readiness timeout is classified as a stalled dial', async () => {
   ReviewSocket.advertise = null
-  const client = new HermesGateway()
+  const client = new ZeusGateway()
   const connected = client.connect('wss://silent.example/api/ws?ticket=synthetic')
   const outcome = connected.then(() => null, error => error)
 
@@ -140,7 +140,7 @@ test('a real protocol readiness timeout is classified as a stalled dial', async 
     await vi.advanceTimersByTimeAsync(15_001)
     const error = await outcome
     expect(error).toBeInstanceOf(Error)
-    expect(error.message).toBe('Hermes gateway protocol readiness timed out')
+    expect(error.message).toBe('Zeus gateway protocol readiness timed out')
     expect(client.connectionState).toBe('closed')
     expect(isStalledDialError(error)).toBe(true)
   } finally {

@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """Which pinned catalog plugins a change to core breaks, from a committed index of their core imports.
 
-Catalog plugins live in their own repositories, pinned by sha, and many import Hermes modules that are
+Catalog plugins live in their own repositories, pinned by sha, and many import Zeus modules that are
 not on the published plugin API. A core PR that removes or renames such a module or name breaks the
 plugin on the next release, and nothing in this repository's CI sees it (the plugin's code is not here).
 
-``catalog_core_imports/*.json`` records, per catalog entry at its pinned sha, every Hermes import the
-plugin makes (``hermes_cli.plugin_validate_private_imports.hermes_import_sites``, the parser
-``hermes plugins validate`` uses). Two commands:
+``catalog_core_imports/*.json`` records, per catalog entry at its pinned sha, every Zeus import the
+plugin makes (``zeus_cli.plugin_validate_private_imports.zeus_import_sites``, the parser
+``zeus plugins validate`` uses). Two commands:
 
 ``build [NAME ...]``  fetches the ``.py`` files of each entry at its pin (only the entries whose pin
                       changed, unless ``--all``) and rewrites the index. Network; the scheduled
@@ -19,7 +19,7 @@ plugin makes (``hermes_cli.plugin_validate_private_imports.hermes_import_sites``
                       repository, pin and source line. A warning, never a failure: it tells the author
                       which public interface the plugins need before the break ships.
 
-An import resolves when its module exists in the tree (directly or through ``hermes_agent/compat/moves.py``)
+An import resolves when its module exists in the tree (directly or through ``zeus_agent/compat/moves.py``)
 and, for ``from module import name``, the module defines ``name`` at top level, has a submodule of that
 name, is a name a module ``__getattr__`` can answer (judged by the strings it, its helpers and its lookup
 tables spell), or comes from a star import or a write through ``globals()``. What a still-present name DOES
@@ -52,14 +52,14 @@ COMMENT_DETAIL_CHARS = 30_000
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from hermes_agent.compat.finder import current_name
-from hermes_agent.compat.paths import moves_from_source
-from hermes_cli.plugin_validate_private_imports import (
+from zeus_agent.compat.finder import current_name
+from zeus_agent.compat.paths import moves_from_source
+from zeus_cli.plugin_validate_private_imports import (
     CoreImports,
     ImportBranch,
     ImportChoice,
     ImportSite,
-    hermes_import_sites,
+    zeus_import_sites,
     is_public_import,
 )
 
@@ -178,7 +178,7 @@ def index_entry(entry, work: Path) -> Row:
     try:
         _fetch_python_files(entry.repo, entry.sha, dest)
         plugin_dir = dest / subdir if subdir else dest
-        imports = hermes_import_sites(plugin_dir) if plugin_dir.is_dir() else CoreImports((), ())
+        imports = zeus_import_sites(plugin_dir) if plugin_dir.is_dir() else CoreImports((), ())
         return Row(entry.sha, subdir, imports)
     except (subprocess.CalledProcessError, subprocess.TimeoutExpired, OSError) as exc:
         error = (getattr(exc, "stderr", b"") or str(exc).encode()).decode("utf-8", "replace").strip()[-200:]
@@ -188,7 +188,7 @@ def index_entry(entry, work: Path) -> Row:
 
 
 def build(names: list[str], rebuild_all: bool, jobs: int) -> int:
-    from hermes_cli.plugin_catalog import load_catalog
+    from zeus_cli.plugin_catalog import load_catalog
 
     catalog = {e.name: e for e in load_catalog(CATALOG)}
     old = read_index()
@@ -222,7 +222,7 @@ class Tree:
         self.files = frozenset(listed)
         self.dirs = frozenset("/".join(parts[:i]) for p in listed for parts in [p.split("/")[:-1]]
                               for i in range(1, len(parts) + 1))
-        path = "hermes_agent/compat/moves.py"
+        path = "zeus_agent/compat/moves.py"
         self.moves = moves_from_source(self.read(path)) if path in self.files else {}
 
     def _git(self, *args: str) -> str:
@@ -369,10 +369,10 @@ def _runs(resolver: Resolver, branch: ImportBranch) -> bool:
             and all(any(_runs(resolver, b) for b in choice.branches) for choice in branch.choices))
 
 
-def _runs_on_hermes(resolver: Resolver, branch: ImportBranch) -> bool:
-    """The block runs AND reaches Hermes through at least one import, directly or in a nested ``try``."""
+def _runs_on_zeus(resolver: Resolver, branch: ImportBranch) -> bool:
+    """The block runs AND reaches Zeus through at least one import, directly or in a nested ``try``."""
     return _runs(resolver, branch) and (bool(branch.sites) or any(
-        _runs_on_hermes(resolver, b) for choice in branch.choices for b in choice.branches))
+        _runs_on_zeus(resolver, b) for choice in branch.choices for b in choice.branches))
 
 
 def _sites(branch: ImportBranch) -> list[ImportSite]:
@@ -380,16 +380,16 @@ def _sites(branch: ImportBranch) -> list[ImportSite]:
 
 
 def _lost_sites(choice: ImportChoice, before: Resolver, after: Resolver) -> list[ImportSite]:
-    """The sites to report when no branch of ``choice`` that reaches Hermes runs on ``after`` while one did on
-    ``before``: what those branches no longer resolve. A ``try`` that still runs without Hermes (a handler
-    with no Hermes import) has lost the feature, so it is reported too. When a branch still runs on both
+    """The sites to report when no branch of ``choice`` that reaches Zeus runs on ``after`` while one did on
+    ``before``: what those branches no longer resolve. A ``try`` that still runs without Zeus (a handler
+    with no Zeus import) has lost the feature, so it is reported too. When a branch still runs on both
     trees, a ``try`` nested in it can still lose its own feature: only that branch is looked into, since an
     unused handler can resolve too."""
-    surviving = [branch for branch in choice.branches if _runs_on_hermes(after, branch)]
+    surviving = [branch for branch in choice.branches if _runs_on_zeus(after, branch)]
     if surviving:
-        return [site for branch in surviving if _runs_on_hermes(before, branch)
+        return [site for branch in surviving if _runs_on_zeus(before, branch)
                 for nested in branch.choices for site in _lost_sites(nested, before, after)]
-    worked = [branch for branch in choice.branches if _runs_on_hermes(before, branch)]
+    worked = [branch for branch in choice.branches if _runs_on_zeus(before, branch)]
     return [site for branch in worked for site in _sites(branch)
             if before.resolves(site.module, site.name) and not after.resolves(site.module, site.name)]
 
@@ -472,7 +472,7 @@ def report(found: list[Break], catalog: dict, public_api: frozenset) -> str:
              f"that {len(plugins)} pinned catalog plugin{'s' if len(plugins) != 1 else ''} import. Merging it "
              "breaks them for every user on the next release.", "",
              "**Core names the plugins need** (private: needs a public interface; public API: already published in "
-             "hermes_cli/data/plugin_api.json, so removing it breaks the plugin compat contract):", ""]
+             "zeus_cli/data/plugin_api.json, so removing it breaks the plugin compat contract):", ""]
     for target in sorted(by_target, key=lambda t: (-len(by_target[t]), t)):
         public = "public API" if is_public_import(sites[target].module, sites[target].name, public_api) else "private"
         users = sorted(by_target[target])
@@ -485,7 +485,7 @@ def report(found: list[Break], catalog: dict, public_api: frozenset) -> str:
         "To keep these plugins working, before or with this change:",
         "1. Give each private name above a public interface: a ctx method, a hook, or a plugin_api.json entry "
         "(plugins/AGENTS.md § Boundary lint), then tell each plugin's maintainer to move to it.",
-        "2. Or keep the old name importable: a moved module gets a key in hermes_agent/compat/moves.py, "
+        "2. Or keep the old name importable: a moved module gets a key in zeus_agent/compat/moves.py, "
         "a moved name stays where it was.",
         "",
         "This is a warning: it does not block the merge.",
@@ -519,7 +519,7 @@ def _publish_warning(text: str, found: list[Break]) -> None:
 
 def _public_api(tree: Tree) -> frozenset:
     """``plugin_api.json``'s entries as ``tree`` has them (empty when it has none)."""
-    path = "hermes_cli/data/plugin_api.json"
+    path = "zeus_cli/data/plugin_api.json"
     if path not in tree.files:
         return frozenset()
     return frozenset(entry for group in json.loads(tree.read(path))["groups"] for entry in group["entries"])
@@ -527,7 +527,7 @@ def _public_api(tree: Tree) -> frozenset:
 
 def check(base_rev: str, head_rev: str) -> int:
     """Always 0: a break is reported as a warning, never a failure."""
-    from hermes_cli.plugin_catalog import load_catalog
+    from zeus_cli.plugin_catalog import load_catalog
 
     index = read_index()
     base = Tree(ROOT, base_rev)

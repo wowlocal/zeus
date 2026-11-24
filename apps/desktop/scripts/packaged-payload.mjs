@@ -3,7 +3,7 @@ import path from 'node:path'
 
 /**
  * @param {{ config: { extraResources?: Array<string | { from?: string, to?: string }> | null }, projectDir: string }} packager
- * @returns {string | null} null for a variant that ships no payload (Hermes Light)
+ * @returns {string | null} null for a variant that ships no payload (Zeus Light)
  */
 export function preparedPayloadSource({ config, projectDir }) {
   const mapping = config.extraResources?.find(entry => typeof entry === 'object' && entry.to === 'agent-payload')

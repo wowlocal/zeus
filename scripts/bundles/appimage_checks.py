@@ -104,7 +104,7 @@ sys.path[:0] = [repo, site_dir]
 site.addsitedir(site_dir)
 import pm
 from pm import paths as pm_paths
-from hermes_cli.local_runtime.binaries import installed_engine
+from zeus_cli.local_runtime.binaries import installed_engine
 if pm_paths.repo_root() != Path(repo) or pm_paths.store_root() != Path(tools) or pm.current_target() != 'linux-x64':
     raise SystemExit('PM did not resolve the packaged linux-x64 runtime')
 for path in map(Path, paths):
@@ -192,13 +192,13 @@ def check_desktop(work: Path, image: Path) -> None:
         with os.fdopen(write_fd, "wb") as writer:
             proc = subprocess.Popen([*trace_command(work, "desktop"), image, "--appimage-extract-and-run",
                                      "--disable-setuid-sandbox"], pass_fds=(writer.fileno(),),
-                                    env={**os.environ, "HERMES_DESKTOP_READY_FD": str(writer.fileno())},
+                                    env={**os.environ, "ZEUS_DESKTOP_READY_FD": str(writer.fileno())},
                                     stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         try:
             wait_window(ready, 240)
-            log = Path(os.environ["HERMES_HOME"]) / "logs" / "desktop.log"
+            log = Path(os.environ["ZEUS_HOME"]) / "logs" / "desktop.log"
             deadline = time.monotonic() + 180
-            while not (log.is_file() and b"[backend] Hermes gateway is ready" in log.read_bytes()):
+            while not (log.is_file() and b"[backend] Zeus gateway is ready" in log.read_bytes()):
                 if proc.poll() is not None or time.monotonic() >= deadline:
                     raise ValueError("desktop did not report a ready local gateway")
                 time.sleep(0.25)

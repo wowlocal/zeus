@@ -6,7 +6,7 @@ description: "Live Hyperliquid dashboard tab, Flow Deck alerts, wallets and mark
 maintainer: KevinM0001
 tier: community
 category: tools
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 version: "1.0.0"
 image: "https://raw.githubusercontent.com/KevinM0001/hermes-hyperliquid-plugin/abc81670fbfa0839fa6d3fc5b0ad823fe8c9e97d/docs/screenshots/card.png"
 screenshots:

@@ -1,7 +1,7 @@
-"""Fold the resolved user home and HERMES_HOME in a command to ``~/`` / ``~/.hermes/``.
+"""Fold the resolved user home and ZEUS_HOME in a command to ``~/`` / ``~/.zeus/``.
 
 Detection-time normalization for :mod:`tools.approval_detection`: the dangerous-command patterns
-name Hermes's own files through ``~/.hermes`` / ``$HERMES_HOME`` spellings, so every spelling a shell
+name Zeus's own files through ``~/.zeus`` / ``$ZEUS_HOME`` spellings, so every spelling a shell
 uses for the resolved homes (native, Git Bash ``/c/…``, ``~``, ``$HOME``, ``$LOCALAPPDATA``, …) is
 rewritten into those forms first.
 """
@@ -10,7 +10,7 @@ import functools
 import os
 import re
 
-from hermes_platform.host import facts
+from zeus_platform.host import facts
 
 
 # Shell metacharacters, quotes, and whitespace that terminate a path token.
@@ -34,10 +34,10 @@ def _fold_matches(pattern, command: str, replace) -> str:
     That backslash belongs to the last name, which goes on past the match:
 
     - right after the home (the tail is only that backslash run): the home's own last name continues,
-      so ``hermes\\ data\\ backup`` is a sibling of the home ``hermes data``. It stays unfolded.
+      so ``zeus\\ data\\ backup`` is a sibling of the home ``zeus data``. It stays unfolded.
       Quoted, the backslash is a literal name character and the name is no closer to the home, so
       this rule needs no quote state.
-    - in a child name (``My\\ Documents``, ``.hermes/\\ x``, ``config.yaml${u:+\\ }``, ``config.yaml{,\\ }``):
+    - in a child name (``My\\ Documents``, ``.zeus/\\ x``, ``config.yaml${u:+\\ }``, ``config.yaml{,\\ }``):
       the home is a real prefix. Fold it and preserve the child spelling for the detector, so the rest of
       the word survives after ``~/`` and an expansion that bash turns back into ``config.yaml`` still meets
       the patterns. This can also prompt for a literal backup name such as ``.bashrc\\ backup``, just as
@@ -127,8 +127,8 @@ def _path_below(root: str, path: str) -> str | None:
 def _home_spellings(paths, command: str) -> list[str]:
     """Every spelling a shell uses for one of *paths*: as written (native and Git Bash drive form)
     and the same location written through a home variable — ``~``, ``$HOME``, ``$LOCALAPPDATA`` /
-    ``%LOCALAPPDATA%``, ``$USERPROFILE``. Windows's default HERMES_HOME nests under the profile,
-    which Git Bash reaches as ``/c/Users/<me>/AppData/Local/hermes``; folding only the absolute
+    ``%LOCALAPPDATA%``, ``$USERPROFILE``. Windows's default ZEUS_HOME nests under the profile,
+    which Git Bash reaches as ``/c/Users/<me>/AppData/Local/zeus``; folding only the absolute
     native form left that spelling — and its ``~/…`` and ``$LOCALAPPDATA/…`` siblings — unmatched.
     The variable spellings are only derived when *command* writes one of ``~``, ``$``, ``%``, so a
     command with no variable syntax costs nothing beyond its own absolute prefixes."""
@@ -162,23 +162,23 @@ def _rewrite_resolved_user_home(command: str) -> str:
     return _fold_home_prefixes(command, paths, "~")
 
 
-def _rewrite_resolved_hermes_home(command: str) -> str:
-    """Resolved HERMES_HOME -> ``~/.hermes/`` so the _HERMES_CONFIG_PATH / _HERMES_ENV_PATH rules
+def _rewrite_resolved_zeus_home(command: str) -> str:
+    """Resolved ZEUS_HOME -> ``~/.zeus/`` so the _ZEUS_CONFIG_PATH / _ZEUS_ENV_PATH rules
     match Docker/gateway deployments and the platform default in every spelling a shell uses for it
-    (native, Git Bash ``/c/…``, ``~/AppData/Local/hermes``, ``$LOCALAPPDATA/hermes``)."""
+    (native, Git Bash ``/c/…``, ``~/AppData/Local/zeus``, ``$LOCALAPPDATA/zeus``)."""
     try:
-        from hermes_constants import get_hermes_home
-        home = get_hermes_home().expanduser()
+        from zeus_constants import get_zeus_home
+        home = get_zeus_home().expanduser()
         paths = _home_spellings([str(home), str(home.resolve(strict=False))], command)
     except Exception:
         return command
-    command = _fold_home_prefixes(command, paths, "~/.hermes")
+    command = _fold_home_prefixes(command, paths, "~/.zeus")
     # The prefix fold needs a child tail; fold the bare home word too (`mv /opt/data /tmp/x`) so the
-    # Hermes-home rules see it.
+    # Zeus-home rules see it.
     for path in dict.fromkeys(sorted((p for p in paths if p), key=len, reverse=True)):
         pattern = _bare_home_fold_regex(path)
         if pattern is not None:
-            command = _fold_matches(pattern, command, lambda _m: "~/.hermes")
+            command = _fold_matches(pattern, command, lambda _m: "~/.zeus")
     return command
 
 

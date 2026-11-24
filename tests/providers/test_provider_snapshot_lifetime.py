@@ -26,7 +26,7 @@ _CHILD = textwrap.dedent("""
 
     sys.path.insert(0, sys.argv[1])
     import providers
-    from hermes_constants import get_process_hermes_home
+    from zeus_constants import get_process_zeus_home
     from providers import get_provider_profile
     from providers import plugin_reload
 
@@ -48,7 +48,7 @@ _CHILD = textwrap.dedent("""
 
     print(json.dumps({
         "root": str(plugin_reload._snapshot_root),
-        "home": str(get_process_hermes_home()),
+        "home": str(get_process_zeus_home()),
         "temp": tempfile.gettempdir(),
         "loader": plugin_reload.__file__,
         "isolated": sys.flags.isolated,
@@ -58,7 +58,7 @@ _CHILD = textwrap.dedent("""
     for line in sys.stdin:
         command = json.loads(line)
         if command["op"] == "update":
-            from hermes_cli.plugins import PluginManager
+            from zeus_cli.plugins import PluginManager
             PluginManager().discover_and_load(force=True)
             after = get_provider_profile("snapshot-demo")
             result = location(after)
@@ -115,8 +115,8 @@ def _provider_process(home: Path, os_temp: Path, stderr_path: Path):
     env = {
         "PATH": os.environ.get("PATH", ""),
         "HOME": str(home),
-        "HERMES_HOME": str(home),
-        "HERMES_RUNTIME_DIR": str(home / "tools"),
+        "ZEUS_HOME": str(home),
+        "ZEUS_RUNTIME_DIR": str(home / "tools"),
         "TMPDIR": str(os_temp), "TMP": str(os_temp), "TEMP": str(os_temp),
         "LANG": "C.UTF-8", "TZ": "UTC",
     }

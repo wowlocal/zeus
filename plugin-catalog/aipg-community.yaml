@@ -6,7 +6,7 @@ description: "AI Power Grid (aipowergrid.io) model provider through its OpenAI-c
 maintainer: speteai
 tier: community
 category: models
-requires_hermes: ">=0.23.1"
+requires_zeus: ">=0.23.1"
 docs_url: https://github.com/speteai/hermes-aipg-provider#readme
 version: "1.0.0"
 readme: true

@@ -9,7 +9,7 @@ class FakeWindow extends EventEmitter {
   readonly webContents = {
     isDestroyed: () => false,
     send: (channel: string, payload: PresenceSnapshot) => {
-      if (channel === 'hermes:presence') {
+      if (channel === 'zeus:presence') {
         this.sent.push(payload)
       }
     }
@@ -46,7 +46,7 @@ function harness({ supported = true, windows = [new FakeWindow()], platform = 'l
     app,
     getSystemIdleTime,
     power,
-    get: () => handlers.get('hermes:presence:get')?.() as PresenceSnapshot,
+    get: () => handlers.get('zeus:presence:get')?.() as PresenceSnapshot,
     // Idle time follows the clock until the user touches the machine.
     idleFor: (seconds: number) => void (idleSeconds = seconds),
     osState: (state: string) => void (idleState = state),
@@ -217,7 +217,7 @@ describe('attachPresenceSource', () => {
     expect(presence.get().locked).toBe(true)
   })
 
-  // Under X11 the clock is reset by Hermes itself after a reply (no user input), so Linux never
+  // Under X11 the clock is reset by Zeus itself after a reply (no user input), so Linux never
   // samples it, X11 or Wayland: presence falls back to input inside the window.
   it.each([
     ['X11', { DISPLAY: ':0', XDG_SESSION_TYPE: 'x11', WAYLAND_DISPLAY: undefined }],

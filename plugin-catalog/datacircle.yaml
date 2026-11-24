@@ -7,7 +7,7 @@ description: "Find the best GTM APIs. Four tools on Datacircle's open API, with 
 maintainer: waynehamadi
 tier: community
 category: tools
-requires_hermes: ">=0.23.1"
+requires_zeus: ">=0.23.1"
 docs_url: https://datacircle.dev/api
 readme: true
 platforms: []

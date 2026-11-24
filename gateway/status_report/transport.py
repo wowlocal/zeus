@@ -10,13 +10,13 @@ from dataclasses import dataclass
 from typing import Any, Literal, Optional
 
 from gateway.status_report.target import ReportTarget
-from hermes_cli.urllib_security import NoRedirectHandler
+from zeus_cli.urllib_security import NoRedirectHandler
 
 logger = logging.getLogger(__name__)
 
 OutcomeKind = Literal["stored", "throttled", "rejected", "failed", "refused"]
 # urllib's default names the interpreter and its version, which some edge filters refuse.
-_USER_AGENT = "hermes-gateway-status-report/1"
+_USER_AGENT = "zeus-gateway-status-report/1"
 _THROTTLED = frozenset({429, 503})
 _REJECTED = frozenset({401, 403})
 

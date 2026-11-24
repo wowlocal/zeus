@@ -93,7 +93,7 @@ vi.mock('./use-profile-prewarm', () => ({
   useProfilePrewarm: () => ({ cancelPrewarm: vi.fn(), notePointerMove: vi.fn(), startPrewarm: vi.fn() })
 }))
 
-vi.mock('@/hermes', () => ({
+vi.mock('@/zeus', () => ({
   getProfileSoul: vi.fn().mockResolvedValue({ content: '' }),
   updateProfileSoul: vi.fn()
 }))
@@ -164,7 +164,7 @@ describe('ProfileRail sandboxed profiles', () => {
   it('offers a way back to this computer on a sandboxed profile, so a removed plugin does not strand it', async () => {
     const clearProfileBackend = vi.fn(async () => ({ applied: true }))
 
-    ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = { clearProfileBackend }
+    ;(window as unknown as { zeusDesktop: unknown }).zeusDesktop = { clearProfileBackend }
 
     try {
       renderRail()
@@ -176,7 +176,7 @@ describe('ProfileRail sandboxed profiles', () => {
       // Whatever it is called: one entry that hands the profile back (main's clear already asks natively).
       expect(items.filter(text => /this computer|switch back|sandbox|run locally/i.test(text))).not.toEqual([])
     } finally {
-      delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
+      delete (window as unknown as { zeusDesktop?: unknown }).zeusDesktop
     }
   })
 
@@ -194,7 +194,7 @@ describe('ProfileRail sandboxed profiles', () => {
       setProfileBackend: vi.fn()
     }
 
-    ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = bridge
+    ;(window as unknown as { zeusDesktop: unknown }).zeusDesktop = bridge
 
     try {
       renderRail()
@@ -206,7 +206,7 @@ describe('ProfileRail sandboxed profiles', () => {
       expect(bridge.clearProfileBackend.mock.calls[0]).toEqual([{ plugin: PLUGIN, profile: 'work' }])
       expect(bridge.confirmClearProfileBackend).not.toHaveBeenCalled()
     } finally {
-      delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
+      delete (window as unknown as { zeusDesktop?: unknown }).zeusDesktop
     }
   })
 

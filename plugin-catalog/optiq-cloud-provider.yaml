@@ -6,7 +6,7 @@ description: "OptiQ Cloud serves DeepSeek, GLM, MiniMax, MiMo and Qwen models in
 maintainer: optiq-bot
 tier: community
 category: models
-requires_hermes: ">=0.21.6"
+requires_zeus: ">=0.21.6"
 docs_url: https://github.com/optiq-bot/optiq-hermes-plugin#readme
 version: "1.0.0"
 platforms: []

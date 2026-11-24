@@ -5,7 +5,7 @@ description: "Quantitative claim verification, statistical comparison, and evide
 maintainer: vrindachaa
 tier: community
 category: tools
-requires_hermes: ">=0.21.5"
+requires_zeus: ">=0.21.5"
 version: "0.1.0"
 capabilities:
   provides_tools: [verify_claim, evaluate_difference, qualify_conclusion]

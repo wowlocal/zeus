@@ -7,7 +7,7 @@ description: 'Trim silence from a sound effect and report length, estimated temp
 maintainer: TakeshiTGAL
 tier: community
 category: tools
-requires_hermes: ">=0.21.6"
+requires_zeus: ">=0.21.6"
 docs_url: https://github.com/TakeshiTGAL/hermes-plugin-sound-cut#readme
 version: "0.1.0"
 platforms:

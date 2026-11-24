@@ -7,7 +7,7 @@ description: "High-reliability practices on your real launches, changes and inci
 maintainer: KellerAI
 tier: community
 category: general
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 docs_url: https://github.com/KellerAI/hermes-plugins/tree/main/reliability-desk#readme
 version: "1.0.0"
 readme: true

@@ -100,11 +100,11 @@ def test_the_url_in_the_launch_environment_starts_one_supervised_watcher(monkeyp
 
 
 def test_a_gateway_started_for_a_named_profile_does_not_report(tmp_path, monkeypatch):
-    """The image starts each profile's gateway as ``hermes -p <name> gateway run``: same container
+    """The image starts each profile's gateway as ``zeus -p <name> gateway run``: same container
     environment, so the same stamp, but its home is ``<root>/profiles/<name>``."""
-    profile_home = tmp_path / "hermes_test" / "profiles" / "coder"
+    profile_home = tmp_path / "zeus_test" / "profiles" / "coder"
     profile_home.mkdir(parents=True)
-    monkeypatch.setenv("HERMES_HOME", str(profile_home))
+    monkeypatch.setenv("ZEUS_HOME", str(profile_home))
     monkeypatch.setenv(STATUS_REPORT_URL_ENV, stamped_url(new_credential()))
     runner = _bare_runner(monkeypatch)
 
@@ -118,13 +118,13 @@ def test_a_gateway_without_the_stamp_loads_no_status_report_code(tmp_path):
     """Off is off at import too: neither ``import gateway.run`` nor the watcher spawn loads any of
     the reporter when reports are off, and the report code never loads the dashboard's routers."""
     env = {key: os.environ[key] for key in ("PATH", "SYSTEMROOT", "WINDIR") if key in os.environ}
-    env.update(HOME=str(tmp_path), HERMES_HOME=str(tmp_path / "home"), PYTHONDONTWRITEBYTECODE="1",
+    env.update(HOME=str(tmp_path), ZEUS_HOME=str(tmp_path / "home"), PYTHONDONTWRITEBYTECODE="1",
                PYTHONPATH=str(Path(__file__).resolve().parents[3]))
     code = ("import json, sys; import gateway.run as run; "
             "run.GatewayRunner._start_status_report_watcher(run.GatewayRunner.__new__(run.GatewayRunner)); "
             "print(json.dumps(sorted(m for m in sys.modules "
             "if m.startswith(('gateway.status_report.reporter', 'gateway.status_report.payload', "
-            "'gateway.status_report.transport', 'hermes_cli.web_routers')))))")
+            "'gateway.status_report.transport', 'zeus_cli.web_routers')))))")
     child = subprocess.run([sys.executable, "-c", code], cwd=tmp_path, env=env, text=True,
                            capture_output=True, timeout=120, check=False)
 

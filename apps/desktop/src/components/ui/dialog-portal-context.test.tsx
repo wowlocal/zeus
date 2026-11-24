@@ -15,7 +15,7 @@ beforeAll(() => {
 
 afterEach(() => {
   cleanup()
-  delete window.document.documentElement.dataset.hermesDesktopHost
+  delete window.document.documentElement.dataset.zeusDesktopHost
 
   for (const host of window.document.querySelectorAll('body > [data-browser-portal-host]')) {
     host.remove()
@@ -37,7 +37,7 @@ describe('browser portal hosts', () => {
   })
 
   it('creates and reuses one body-level host per layer on the Webapp', () => {
-    window.document.documentElement.dataset.hermesDesktopHost = 'browser'
+    window.document.documentElement.dataset.zeusDesktopHost = 'browser'
 
     const menuA = getBrowserPortalContainer('menu')
     const menuB = getBrowserPortalContainer('menu')
@@ -61,7 +61,7 @@ describe('browser portal hosts', () => {
   })
 
   it('keeps dialog and explicit containers ahead of the browser fallback', () => {
-    window.document.documentElement.dataset.hermesDesktopHost = 'browser'
+    window.document.documentElement.dataset.zeusDesktopHost = 'browser'
     const explicit = window.document.createElement('div')
     explicit.dataset.slot = 'explicit-host'
 
@@ -90,7 +90,7 @@ describe('browser portal hosts', () => {
   })
 
   it('routes ContextMenu, Select, and Tooltip into their browser hosts on the Webapp', () => {
-    window.document.documentElement.dataset.hermesDesktopHost = 'browser'
+    window.document.documentElement.dataset.zeusDesktopHost = 'browser'
 
     const first = render(
       <ContextMenu>

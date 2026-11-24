@@ -1,4 +1,4 @@
-import type { CanonicalClientIdentity } from '@hermes/shared'
+import type { CanonicalClientIdentity } from '@zeus/shared'
 
 import { isBrowserHostedDesktop } from '@/lib/platform'
 
@@ -22,7 +22,7 @@ function readVersion(): Promise<string> {
   // Read once per window. This machine's own build comes first: `appVersion` is a display string that can
   // hold spaces a label may not, and on a source install it names the backend. Behind the browser bridge it
   // is the only one, and it is the serving checkout's version.
-  reading ??= Promise.resolve(window.hermesDesktop?.getVersion?.())
+  reading ??= Promise.resolve(window.zeusDesktop?.getVersion?.())
     .then(info => [info?.clientVersion, info?.baseVersion, info?.appVersion].find(usable) ?? '')
     .catch(() => '')
 
@@ -47,8 +47,8 @@ function versionWithin(ms: number): Promise<string> {
  */
 export async function desktopClientIdentity(): Promise<CanonicalClientIdentity> {
   const client: CanonicalClientIdentity = isBrowserHostedDesktop()
-    ? { kind: 'webapp', name: 'hermes-webapp' }
-    : { kind: 'desktop', name: 'hermes-desktop' }
+    ? { kind: 'webapp', name: 'zeus-webapp' }
+    : { kind: 'desktop', name: 'zeus-desktop' }
 
   const version = await versionWithin(VERSION_WAIT_MS)
 

@@ -1,7 +1,7 @@
 """Tool result persistence -- preserves large outputs instead of truncating. Layers against
 context overflow: (1) per-tool caps inside each tool; (2) ``maybe_persist_tool_result`` —
 output over the tool's threshold is persisted and replaced by a preview + path; canonical home
-is ALWAYS host-side ``$HERMES_HOME/cache/spillover/{id}.txt`` (works for sessions that never
+is ALWAYS host-side ``$ZEUS_HOME/cache/spillover/{id}.txt`` (works for sessions that never
 ran a terminal), remote backends get the translated in-sandbox path (probed for readability)
 else a copy in the sandbox temp dir; (3) ``enforce_turn_budget``."""
 
@@ -23,7 +23,7 @@ from tools.budget_config import DEFAULT_PREVIEW_SIZE_CHARS, BudgetConfig, DEFAUL
 logger = logging.getLogger(__name__)
 PERSISTED_OUTPUT_TAG = "<persisted-output>"
 PERSISTED_OUTPUT_CLOSING_TAG = "</persisted-output>"
-STORAGE_DIR = os.path.join(tempfile.gettempdir(), "hermes-results")
+STORAGE_DIR = os.path.join(tempfile.gettempdir(), "zeus-results")
 _ARCHIVE_SUBDIRS = (SPILLOVER_SUBDIR, PRUNED_SUBDIR)
 # Fallback spillover age only (unreadable config); the real default is the session
 # retention window — see _spillover_retention_hours().
@@ -44,9 +44,9 @@ _spillover_pruned_homes: set = set()  # profile home keys already swept this pro
 
 
 def get_spillover_dir():
-    """Return $HERMES_HOME/cache/spillover as a Path (not created)."""
-    from hermes_constants import get_hermes_home
-    return get_hermes_home() / SPILLOVER_SUBDIR
+    """Return $ZEUS_HOME/cache/spillover as a Path (not created)."""
+    from zeus_constants import get_zeus_home
+    return get_zeus_home() / SPILLOVER_SUBDIR
 
 
 def _spillover_retention_hours() -> int:
@@ -55,7 +55,7 @@ def _spillover_retention_hours() -> int:
     days later must still find what the ``<persisted-output>`` pointer promises (#126351).
     Falls back to the legacy 24h cache age when the config is unreadable."""
     try:
-        from hermes_cli.config import load_config_readonly
+        from zeus_cli.config import load_config_readonly
         days = float((load_config_readonly().get("sessions") or {}).get("retention_days", 90))
         if not math.isfinite(days):  # YAML ``.inf`` / ``.nan`` parse as floats; int() would raise
             return SPILLOVER_MAX_AGE_HOURS
@@ -71,7 +71,7 @@ def _spillover_retention_hours() -> int:
 # (the store reads the same rules when a delete retires a session's archives).
 
 
-_ARCHIVE_PATH_RE = re.compile(r"(?:^|[/\\])(?:spillover|hermes-results|pruned)[/\\][^/\\]+$")
+_ARCHIVE_PATH_RE = re.compile(r"(?:^|[/\\])(?:spillover|zeus-results|pruned)[/\\][^/\\]+$")
 
 
 def expired_archive_fields(path: str) -> dict:
@@ -129,8 +129,8 @@ def cleanup_spillover_cache(max_age_hours: int | None = None) -> int:
     unlink SessionDB delete/prune performs, not with the age sweep."""
     age_hours = _spillover_retention_hours() if max_age_hours is None else max_age_hours
     cutoff = time.time() - (age_hours * 3600)
-    from hermes_constants import get_hermes_home
-    home = get_hermes_home()
+    from zeus_constants import get_zeus_home
+    home = get_zeus_home()
     return sum(_sweep_archive_dir(home / subdir, cutoff) for subdir in _ARCHIVE_SUBDIRS)
 
 
@@ -166,8 +166,8 @@ def _prune_spillover_once() -> None:
     """Best-effort prune, at most once per process PER PROFILE HOME (CLI-only installs never run
     housekeeping; a multiplexed gateway must sweep every profile's ``cache/spillover``, not just the
     first one that spilled)."""
-    from hermes_constants import hermes_home_key
-    home_key = hermes_home_key()
+    from zeus_constants import zeus_home_key
+    home_key = zeus_home_key()
     with _spillover_prune_lock:
         if home_key in _spillover_pruned_homes:
             return
@@ -190,7 +190,7 @@ def _is_host_side_env(env) -> bool:
 
 
 def _write_to_spillover(content: str, filename: str, subdir: str = SPILLOVER_SUBDIR, exclusive: bool = False):
-    """Write host-side to $HERMES_HOME/<subdir> (default cache/spillover); returns path str or None.
+    """Write host-side to $ZEUS_HOME/<subdir> (default cache/spillover); returns path str or None.
 
     The write is read back and compared byte-for-byte before the caller tells the model "Full
     output saved": a partially-flushed or corrupted file (quota, ENOSPC race) fails closed to the
@@ -199,8 +199,8 @@ def _write_to_spillover(content: str, filename: str, subdir: str = SPILLOVER_SUB
     data = content.encode("utf-8", errors="replace")
     created = False
     try:
-        from hermes_constants import get_hermes_home
-        spill_dir = get_hermes_home() / subdir
+        from zeus_constants import get_zeus_home
+        spill_dir = get_zeus_home() / subdir
         spill_dir.mkdir(parents=True, exist_ok=True)
         path = spill_dir / filename
         with open(path, "xb" if exclusive else "wb") as fh:  # exclusive: never overwrite another original
@@ -265,7 +265,7 @@ def _resolve_storage_dir(env) -> str:
             temp_dir = get_temp_dir()
         except Exception as exc:
             logger.debug("Could not resolve env temp dir: %s", exc)
-    return f"{temp_dir.rstrip('/') or '/'}/hermes-results" if temp_dir else STORAGE_DIR
+    return f"{temp_dir.rstrip('/') or '/'}/zeus-results" if temp_dir else STORAGE_DIR
 
 
 def _safe_result_filename(tool_use_id: str, ext: str = "txt") -> str:
@@ -310,24 +310,24 @@ def _backend_reads_host_files() -> bool:
 
 def _archive_stub_path(host_path: str) -> str:
     """Where the model's ``read_file`` finds the archive at *host_path*: the ``~/``-relative display path on
-    the local backend, else the mounted/synced path (``/root/.hermes/...`` or ``~/.hermes/...``). Always
+    the local backend, else the mounted/synced path (``/root/.zeus/...`` or ``~/.zeus/...``). Always
     ``/``-separated, so the reference scan finds ``cache/pruned/<name>`` in either form."""
     from pathlib import Path, PurePath
 
-    from hermes_constants import display_hermes_home, get_hermes_home
+    from zeus_constants import display_zeus_home, get_zeus_home
 
     if _archive_backend() != "local":
         from tools.credential_files import to_agent_visible_cache_path
 
         return to_agent_visible_cache_path(host_path)
-    rel = Path(host_path).relative_to(get_hermes_home())
-    return f"{PurePath(display_hermes_home()).as_posix()}/{rel.as_posix()}"
+    rel = Path(host_path).relative_to(get_zeus_home())
+    return f"{PurePath(display_zeus_home()).as_posix()}/{rel.as_posix()}"
 
 
 def write_pruned_original(content: str, session_id: str, tool_name: str, tool_call_id: str) -> tuple[str, str] | None:
     """Archive one tool result's full original before the proactive prune shortens it.
 
-    Writes ``$HERMES_HOME/cache/pruned/<session>_<UTC stamp>_<tool>_<short id>.<json|txt>`` (``.json``
+    Writes ``$ZEUS_HOME/cache/pruned/<session>_<UTC stamp>_<tool>_<short id>.<json|txt>`` (``.json``
     when the body parses as JSON), read back and compared byte-for-byte like a spill. Returns
     ``(host path, stub path)``; the stub path is the ``~/``-relative display path, always ``/``-separated so
     the reference scan finds ``cache/pruned/<name>``; on a sandboxed backend it is the path the sandbox reads
@@ -339,12 +339,12 @@ def write_pruned_original(content: str, session_id: str, tool_name: str, tool_ca
         ext = "json"
     except ValueError:
         ext = "txt"
-    from hermes_constants import get_hermes_home
+    from zeus_constants import get_zeus_home
     if _archive_backend() is None:
         return None
     stamp = time.strftime("%Y%m%dT%H%M%SZ", time.gmtime())
     short_id = hashlib.sha256(str(tool_call_id or "").encode("utf-8")).hexdigest()[:8]
-    archive_dir = get_hermes_home() / PRUNED_SUBDIR
+    archive_dir = get_zeus_home() / PRUNED_SUBDIR
     # Resumed histories can repeat a tool_call_id: suffix until the name is free, then create exclusively.
     filename = next(
         name for n in range(1_000)
@@ -358,7 +358,7 @@ def write_pruned_original(content: str, session_id: str, tool_name: str, tool_ca
 
 # ── Archive-before-stub: compaction / proactive-prune originals under cache/pruned/ ──
 # Every tool result a prune or compaction is about to shorten is first written, byte-verified, to
-# ``$HERMES_HOME/cache/pruned/`` and its stub names that file, so ``read_file`` gets the exact output
+# ``$ZEUS_HOME/cache/pruned/`` and its stub names that file, so ``read_file`` gets the exact output
 # back. A result whose write fails keeps its full body; the files share the spillover sweeper above.
 
 ARCHIVE_POINTER_SEP = " — full result: "
@@ -395,7 +395,7 @@ def _readback_archive_path(tool_name: str, tool_args: str) -> str | None:
     from pathlib import Path, PurePath
 
     from agent.context_compressor import _json_dict
-    from hermes_constants import display_hermes_home, get_hermes_home
+    from zeus_constants import display_zeus_home, get_zeus_home
 
     path = _json_dict(tool_args).get("path")
     if not isinstance(path, str) or not path or not _backend_reads_host_files():
@@ -405,12 +405,12 @@ def _readback_archive_path(tool_name: str, tool_args: str) -> str | None:
         if not candidate.is_absolute():
             return None
         candidate = candidate.resolve()
-        if (candidate.parent != (get_hermes_home() / PRUNED_SUBDIR).resolve() or not candidate.is_file()
+        if (candidate.parent != (get_zeus_home() / PRUNED_SUBDIR).resolve() or not candidate.is_file()
                 or not _ARCHIVE_NAME_RE.fullmatch(candidate.name)):
             return None
     except (OSError, ValueError, RuntimeError):  # unreadable path, embedded NUL, symlink loop
         return None
-    return f"{PurePath(display_hermes_home()).as_posix()}/{PRUNED_SUBDIR}/{candidate.name}"
+    return f"{PurePath(display_zeus_home()).as_posix()}/{PRUNED_SUBDIR}/{candidate.name}"
 
 
 def _calls_for_rows(messages: list[dict[str, Any]]) -> list[tuple[str, str]]:
@@ -495,12 +495,12 @@ def archive_list_for_summary(named: set[str], kept: list[dict[str, Any]]) -> str
     deterministic list to append to the committed summary; ``""`` when none. The generated summary may drop
     a pointer: this list keeps the model's recovery path, and the reference the retention sweep reads,
     whatever the summarizer wrote."""
-    from hermes_constants import get_hermes_home
+    from zeus_constants import get_zeus_home
 
     missing = named - pruned_archive_refs(kept)
     if not missing:
         return ""
-    home = get_hermes_home()
+    home = get_zeus_home()
     return "\n\n" + ARCHIVE_LIST_HEADING + "".join(
         f"\n- {_archive_stub_path(str(home / ref))}" for ref in sorted(missing))
 

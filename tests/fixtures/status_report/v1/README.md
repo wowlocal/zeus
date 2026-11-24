@@ -7,7 +7,7 @@ against these files, so a receiver can copy this folder as its test vectors.
 ## Request
 
 `POST <the URL without its credential>` with `Content-Type: application/json`,
-`Authorization: Bearer <credential>` and `User-Agent: hermes-gateway-status-report/1`. The
+`Authorization: Bearer <credential>` and `User-Agent: zeus-gateway-status-report/1`. The
 credential is the value of the `t` query parameter of the stamped URL; it is moved into the header
 and never sent in the URL. Every report opens its own connection, and a redirect is not followed.
 

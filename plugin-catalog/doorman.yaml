@@ -19,7 +19,7 @@ description: >-
 maintainer: TwoRobotsinaTrenchcoat
 tier: community
 category: automation
-requires_hermes: ">=0.22"
+requires_zeus: ">=0.22"
 docs_url: https://github.com/TwoRobotsinaTrenchcoat/Hermes-Doorman#readme
 version: "0.2.3"
 platforms: []

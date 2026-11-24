@@ -1,4 +1,4 @@
-import type { GatewayEvent } from '@hermes/shared'
+import type { GatewayEvent } from '@zeus/shared'
 // A turn can settle on `session.info running=false` alone (lost or reordered
 // message.complete, reconnect gap, provider crash). Text still waiting on the
 // flush floor — up to 250 ms while the window is hidden — must land in the

@@ -105,8 +105,8 @@ async def test_service_tier_config_publishes_route_gated_fast_for_cold_messaging
     from gateway.session_authority import initialize_session_authority
     from gateway.session_controls import AuthorityConnection
 
-    monkeypatch.setenv('HERMES_HOME', str(tmp_path))
-    monkeypatch.setattr(run, '_hermes_home', tmp_path)
+    monkeypatch.setenv('ZEUS_HOME', str(tmp_path))
+    monkeypatch.setattr(run, '_zeus_home', tmp_path)
     monkeypatch.setattr('agent.codex_service_tiers.codex_account_offers_tier', lambda *a, **k: True)
     (tmp_path / 'config.yaml').write_text(
         'model:\n'

@@ -5,7 +5,7 @@ description: "A prompt-injection fire drill for your own agent. /drill run plant
 maintainer: browncyber
 tier: community
 category: tools
-requires_hermes: ">=0.23.1"
+requires_zeus: ">=0.23.1"
 docs_url: https://github.com/browncyber/hermes-injection-range/tree/5bb785f4d9010e0964e02e8707bd390f3eb1cb62#readme
 version: "0.1.0"
 title: "injection-range — prompt-injection fire drill"

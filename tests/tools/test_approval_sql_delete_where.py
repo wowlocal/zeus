@@ -49,10 +49,10 @@ def test_where_comment_bypass_blocked_end_to_end(monkeypatch):
 
     from tools.approval import check_all_command_guards
 
-    monkeypatch.setenv("HERMES_CRON_SESSION", "1")
-    monkeypatch.delenv("HERMES_INTERACTIVE", raising=False)
-    monkeypatch.delenv("HERMES_GATEWAY_SESSION", raising=False)
-    monkeypatch.delenv("HERMES_YOLO_MODE", raising=False)
+    monkeypatch.setenv("ZEUS_CRON_SESSION", "1")
+    monkeypatch.delenv("ZEUS_INTERACTIVE", raising=False)
+    monkeypatch.delenv("ZEUS_GATEWAY_SESSION", raising=False)
+    monkeypatch.delenv("ZEUS_YOLO_MODE", raising=False)
     with patch("tools.approval_context._get_cron_approval_mode", return_value="deny"):
         blocked = check_all_command_guards('psql -c "DELETE FROM users -- WHERE"', "local")
         assert blocked["approved"] is False

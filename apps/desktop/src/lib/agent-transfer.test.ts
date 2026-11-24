@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import type { HermesApiRequest } from '@/global'
+import type { ZeusApiRequest } from '@/global'
 
 import {
   base64Bytes,
@@ -26,7 +26,7 @@ const unb64 = (data: string) => Uint8Array.from(atob(data), c => c.charCodeAt(0)
 
 interface Call {
   owner: TransferEndpoint
-  req: HermesApiRequest
+  req: ZeusApiRequest
 }
 
 interface FakeOptions {
@@ -58,7 +58,7 @@ function fakeBackends(archive: Uint8Array, options: FakeOptions = {}) {
   const uploads = new Map<string, Uint8Array>()
   let uploadSeq = 0
 
-  type Handler = (req: HermesApiRequest, params: URLSearchParams, side: string, path: string) => unknown
+  type Handler = (req: ZeusApiRequest, params: URLSearchParams, side: string, path: string) => unknown
 
   const sourceChunk: Handler = (_req, params) => {
     if (sourceFailures > 0) {
@@ -126,7 +126,7 @@ function fakeBackends(archive: Uint8Array, options: FakeOptions = {}) {
   }
 
   const routes: Record<string, Handler> = {
-    '/api/ops/backup': () => ({ archive: '/home/u/.hermes/backups/b.zip', name: 'backup' }),
+    '/api/ops/backup': () => ({ archive: '/home/u/.zeus/backups/b.zip', name: 'backup' }),
     '/api/ops/backup/chunk': sourceChunk,
     '/api/ops/import': () => ({ name: 'import', ok: true }),
     '/api/ops/transfer/chunk': targetChunk,
@@ -134,7 +134,7 @@ function fakeBackends(archive: Uint8Array, options: FakeOptions = {}) {
     '/api/status': () => (keepHost ? { import_keep_host: 1, version: 'x' } : { version: 'old' })
   }
 
-  const request: TransferRequestFn = async <T>(owner: TransferEndpoint, req: HermesApiRequest) => {
+  const request: TransferRequestFn = async <T>(owner: TransferEndpoint, req: ZeusApiRequest) => {
     calls.push({ owner, req })
     const [path, query = ''] = req.path.split('?')
     const handler = routes[path] ?? (path.endsWith('/status') ? actionStatus : undefined)
@@ -176,7 +176,7 @@ describe('transferAgent', () => {
 
     const reads = calls.filter(c => c.req.path.startsWith('/api/ops/backup/chunk'))
     expect(reads.every(c => c.owner === SOURCE)).toBe(true)
-    expect(reads[0].req.path).toContain(`archive=${encodeURIComponent('/home/u/.hermes/backups/b.zip')}`)
+    expect(reads[0].req.path).toContain(`archive=${encodeURIComponent('/home/u/.zeus/backups/b.zip')}`)
     expect(reads[0].req.path).toContain(`length=${CHUNK_BYTES}`)
 
     // Each source chunk goes to the target as the same base64 string, interleaved read → write.
@@ -197,7 +197,7 @@ describe('transferAgent', () => {
     const { calls, request } = fakeBackends(new Uint8Array([1, 2, 3]), { keepHost: false })
 
     await expect(transferAgent(request, SOURCE, TARGET, () => undefined, { timing: instant })).rejects.toThrow(
-      'This cloud agent needs a Hermes update before it can receive a transfer.'
+      'This cloud agent needs a Zeus update before it can receive a transfer.'
     )
     expect(calls.map(c => c.req.path)).toEqual(['/api/status'])
   })
@@ -214,7 +214,7 @@ describe('transferAgent', () => {
   it('refuses a truncated archive instead of restoring it', async () => {
     const { calls, request } = fakeBackends(new Uint8Array([1, 2, 3]))
 
-    const truncated: TransferRequestFn = async <T>(owner: TransferEndpoint, req: HermesApiRequest) =>
+    const truncated: TransferRequestFn = async <T>(owner: TransferEndpoint, req: ZeusApiRequest) =>
       req.path.startsWith('/api/ops/backup/chunk')
         ? ({ data: b64(new Uint8Array([1])), done: true, offset: 0, size: 2 } as T)
         : request<T>(owner, req)
@@ -233,7 +233,7 @@ describe('transferAgent', () => {
       { chunk: 100 }
     )
 
-    const request: TransferRequestFn = async <T>(owner: TransferEndpoint, req: HermesApiRequest) => {
+    const request: TransferRequestFn = async <T>(owner: TransferEndpoint, req: ZeusApiRequest) => {
       const response = await backend.request<T>(owner, req)
 
       if (req.path === '/api/ops/transfer/chunk') {
@@ -292,7 +292,7 @@ describe('runBackup', () => {
   it('rejects a backup response without a path before polling', async () => {
     const calls: string[] = []
 
-    const request: TransferRequestFn = async <T>(_owner: TransferEndpoint, req: HermesApiRequest) => {
+    const request: TransferRequestFn = async <T>(_owner: TransferEndpoint, req: ZeusApiRequest) => {
       calls.push(req.path)
 
       return { name: 'backup' } as T
@@ -321,7 +321,7 @@ describe('failureText', () => {
       '',
       '  Warnings (1 files skipped):',
       '  memories/MEMORY.md: [Errno 13] Permission denied',
-      'Running in Docker: start the gateway with hermes gateway run',
+      'Running in Docker: start the gateway with zeus gateway run',
       'Import incomplete: 1 file(s) were not restored (see Warnings above). Fix the cause and re-run the import.'
     ]
 

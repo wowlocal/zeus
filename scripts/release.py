@@ -1,5 +1,5 @@
-#!/usr/bin/env -S bash -c 'exec "$BASH" "$(dirname "$0")/run-in-hermes-env" python3 "$0" "$@"'
-"""Hermes Agent release entrypoint.
+#!/usr/bin/env -S bash -c 'exec "$BASH" "$(dirname "$0")/run-in-zeus-env" python3 "$0" "$@"'
+"""ZeusAgent release entrypoint.
 
 Stable releases use the ``release``, ``publish``, and ``abandon`` subcommands.
 Canary, commit, and dynamic-channel operations retain their top-level flags.
@@ -18,11 +18,11 @@ from datetime import datetime, timedelta, timezone, UTC
 from pathlib import Path
 
 # Bootstrap the repo root onto sys.path so this script can import the
-# canary-tag authority from hermes_cli.update_channel (hermes_cli/__init__.py
+# canary-tag authority from zeus_cli.update_channel (zeus_cli/__init__.py
 # is import-light: only os/sys + version constants).
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from hermes_cli.update_channel import (
+from zeus_cli.update_channel import (
     _CANARY_TAG_RE, STABLE_TAG_RE, canary_tag_for_date, canary_timestamp,
     is_canary_tag, release_version,
 )
@@ -159,7 +159,7 @@ def remote_github_repo(remote: str) -> str | None:
 
 
 # Stable tags are matched with STABLE_TAG_RE and canary tags
-# with _CANARY_TAG_RE, both imported from hermes_cli.update_channel — the
+# with _CANARY_TAG_RE, both imported from zeus_cli.update_channel — the
 # single authority for both tag shapes (the stable major is capped at three
 # digits so historical CalVer tags like v2026.7.20 never match; a canary tag is
 # canary.<full UTC stamp>-v<exact stable core>, the same claim shape as rc.N-vX.Y.Z).
@@ -233,7 +233,7 @@ def parse_coauthors(body: str) -> list:
         return []
     # AI/bot emails to ignore in co-author trailers
     _ignored_emails = {"noreply@anthropic.com", "noreply@github.com",
-                       "cursoragent@cursor.com", "hermes@nousresearch.com"}
+                       "cursoragent@cursor.com", "zeus@nousresearch.com"}
     _ignored_names = re.compile(r"^(Claude|Copilot|Cursor Agent|GitHub Actions?|dependabot|renovate)", re.IGNORECASE)
     pattern = re.compile(r"Co-authored-by:\s*(.+?)\s*<([^>]+)>", re.IGNORECASE)
     results = []
@@ -314,7 +314,7 @@ def generate_changelog(commits, tag_name, semver, repo_url="https://github.com/N
     # Header
     now = datetime.now()
     date_str = now.strftime("%B %d, %Y")
-    lines.append(f"# Hermes Agent v{semver} ({tag_name})")
+    lines.append(f"# ZeusAgent v{semver} ({tag_name})")
     lines.append("")
     lines.append(f"**Release Date:** {date_str}")
     lines.append("")
@@ -326,12 +326,12 @@ def generate_changelog(commits, tag_name, semver, repo_url="https://github.com/N
     # ones; the release body links point at the R2 public URL). A release
     # whose matrix never finishes keeps the link — visibly unfinished,
     # and it points at the run that stopped.
-    lines.append("<!-- HERMES_BUILDS_TABLE -->")
+    lines.append("<!-- ZEUS_BUILDS_TABLE -->")
     lines.append("")
 
     if first_release:
         lines.append("> 🎉 **First official release!** This marks the beginning of regular weekly releases")
-        lines.append("> for Hermes Agent. See below for everything included in this initial release.")
+        lines.append("> for ZeusAgent. See below for everything included in this initial release.")
         lines.append("")
 
     all_authors = set()
@@ -494,7 +494,7 @@ def _resume_canary(
         create = [
             "gh", "release", "create", tag, "--repo", repository,
             "--verify-tag", "--draft", "--prerelease",
-            "--title", f"Hermes Agent canary {tag}",
+            "--title", f"ZeusAgent canary {tag}",
         ]
         # GitHub's generated notes cover every pull request since the last published release, unbounded.
         notes = None if notes_file else generate_changelog(
@@ -697,7 +697,7 @@ def _prune_old_commit_claims(args, push_remote: str) -> None:
     """Delete commit build claim tags older than 90 days (r2.COMMIT_KEEP_DAYS, the window their
     claim archives keep). They own no GitHub release, so only the remote tag goes. Dated by the
     tag's own UTC stamp; anything that does not parse is kept."""
-    from hermes_cli.update_channel import commit_timestamp
+    from zeus_cli.update_channel import commit_timestamp
     from scripts.releases.r2 import COMMIT_KEEP_DAYS
 
     cutoff = (datetime.now(UTC) - timedelta(days=COMMIT_KEEP_DAYS)).strftime("%Y%m%d")
@@ -720,7 +720,7 @@ def _prune_old_commit_claims(args, push_remote: str) -> None:
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Hermes Agent Release Tool")
+    parser = argparse.ArgumentParser(description="ZeusAgent Release Tool")
     parser.add_argument("--canary", action="store_true",
                         help="Tag + publish a stable-core canary "
                              "(canary.<YYYYMMDDTHHMMSSZ>-v<stable>); no-op when "

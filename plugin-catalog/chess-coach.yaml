@@ -2,11 +2,11 @@ name: chess-coach
 title: Chess Coach
 repo: https://github.com/oppai/chess-coach
 sha: c317bc3c7818be9279cb66765b578128e6fe102f
-description: Practice mate in one to four or play Hermes with piece odds on an interactive Desktop chessboard.
+description: Practice mate in one to four or play Zeus with piece odds on an interactive Desktop chessboard.
 maintainer: oppai
 tier: community
 category: desktop
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 version: "0.2.0"
 capabilities:
   provides_tools:

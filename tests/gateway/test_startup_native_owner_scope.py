@@ -93,7 +93,7 @@ async def test_two_profile_native_recovery_keeps_scope_routes_and_one_drain(tmp_
     from gateway.run_runtime import recover_profile_native_sessions
     from gateway.session_authorities import active_authority, owner_scope
     from gateway.session_authority import SessionAuthority
-    from hermes_constants import get_hermes_home
+    from zeus_constants import get_zeus_home
 
 
     async with _restarted(tmp_path, monkeypatch) as (runner, homes, adapters, saved):
@@ -109,7 +109,7 @@ async def test_two_profile_native_recovery_keeps_scope_routes_and_one_drain(tmp_
         def record_read(kind, bound, owner=None):
             def read(*args, **kwargs):
                 reads.append((kind, owner or active_authority(runner).profile_id,
-                              str(get_hermes_home()), threading.get_ident()))
+                              str(get_zeus_home()), threading.get_ident()))
                 return bound(*args, **kwargs)
             return read
 
@@ -123,7 +123,7 @@ async def test_two_profile_native_recovery_keeps_scope_routes_and_one_drain(tmp_
                                             authority.profile_id))
 
         def snapshot(authority, phase):
-            boundaries.append((phase, authority.profile_id, str(get_hermes_home()), threading.get_ident()))
+            boundaries.append((phase, authority.profile_id, str(get_zeus_home()), threading.get_ident()))
 
         async def recover(authority, bindings):
             snapshot(authority, 'native')
@@ -140,7 +140,7 @@ async def test_two_profile_native_recovery_keeps_scope_routes_and_one_drain(tmp_
 
         async def handle(event):
             authority = active_authority(runner)
-            executed.append((event.text, authority.profile_id, str(get_hermes_home()), threading.get_ident()))
+            executed.append((event.text, authority.profile_id, str(get_zeus_home()), threading.get_ident()))
             if event.text.endswith('-allowed'):
                 entered.set()
                 await asyncio.wait_for(release.wait(), 10)
@@ -169,7 +169,7 @@ async def test_two_profile_native_recovery_keeps_scope_routes_and_one_drain(tmp_
             other = runner.session_authorities.for_home(homes[1 if name == 'default' else 0][1])
             with owner_scope(other):
                 outcome = await recover_profile_native_sessions(runner, authority)
-                assert str(get_hermes_home()) == other.profile_id
+                assert str(get_zeus_home()) == other.profile_id
             assert outcome[sid] == 'ready', outcome
             assert outcome[denied] == 'permission_denied', outcome
             task = authority.sessions[sid].task
@@ -210,7 +210,7 @@ def rows_to_ref(authority, sid):
 @pytest.mark.asyncio
 async def test_native_scan_stall_leaves_loop_and_other_profile_responsive(tmp_path, monkeypatch):
     from gateway.run_runtime import recover_profile_native_sessions
-    from hermes_constants import get_hermes_home
+    from zeus_constants import get_zeus_home
 
     async with _restarted(tmp_path, monkeypatch) as (runner, homes, _adapters, _saved):
         authority = runner.session_authorities.for_home(homes[1][1])
@@ -222,7 +222,7 @@ async def test_native_scan_stall_leaves_loop_and_other_profile_responsive(tmp_pa
         original = authority.persistence.admissions.pending_targets
 
         def read(*args, **kwargs):
-            observations.append((threading.get_ident(), str(get_hermes_home())))
+            observations.append((threading.get_ident(), str(get_zeus_home())))
             loop.call_soon_threadsafe(entered.set)
             assert release.wait(5), 'store scan blocked the loop; heartbeat could not release it'
             return original(*args, **kwargs)
@@ -235,7 +235,7 @@ async def test_native_scan_stall_leaves_loop_and_other_profile_responsive(tmp_pa
             loop.call_soon(heartbeat.set)
             await asyncio.wait_for(heartbeat.wait(), 5)
             assert not task.done()
-            assert get_hermes_home() == homes[0][1]
+            assert get_zeus_home() == homes[0][1]
             assert observations == [(observations[0][0], str(homes[1][1]))]
             assert observations[0][0] != loop_thread
         finally:

@@ -38,7 +38,7 @@ def _target_live_state(runner, _name, home, record):
 async def bot_delivery_list(connection, _ref, params):
     from gateway.session_authorities import require_serving, served_profile_name
     from tools.bot_delivery_status import list_sender_deliveries
-    from tools.bot_mode_probe import _hermes_root
+    from tools.bot_mode_probe import _zeus_root
 
     authority, actor = connection.authority, connection.actor
     require_serving(authority)
@@ -50,7 +50,7 @@ async def bot_delivery_list(connection, _ref, params):
     sender = served_profile_name(home)
     live_state = partial(_target_live_state, getattr(authority, 'runner', None))
     try:
-        rows = await asyncio.to_thread(list_sender_deliveries, _hermes_root(home), sender, live_state=live_state)
+        rows = await asyncio.to_thread(list_sender_deliveries, _zeus_root(home), sender, live_state=live_state)
     except OSError as exc:  # a receipt that exists but cannot be read: the client keeps its last rows
         raise RuntimeStoreError('storage_unavailable', detail=type(exc).__name__) from exc
     return {'sender': sender, 'deliveries': rows}

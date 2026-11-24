@@ -112,7 +112,7 @@ export interface ApprovalAccessTarget {
 
 export interface ApprovalNetworkTarget {
   host: string
-  /** A display name for the site, e.g. the Hermes tool that uses it. */
+  /** A display name for the site, e.g. the Zeus tool that uses it. */
   label?: string
 }
 
@@ -523,7 +523,7 @@ export async function answerApproval(
   }
 
   if (!gateway) {
-    throw new Error('Hermes gateway is not connected')
+    throw new Error('Zeus gateway is not connected')
   }
 
   const params = {

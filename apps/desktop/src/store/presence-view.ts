@@ -10,7 +10,7 @@
  * answers "nothing in view" wherever the composer would first have to resume or create one.
  */
 
-import { registryBackendScopeKey } from '@hermes/shared'
+import { registryBackendScopeKey } from '@zeus/shared'
 
 import { sessionRpcOwner } from '@/app/contrib/session-rpc-dispatcher'
 import { routeSessionId } from '@/app/routes'

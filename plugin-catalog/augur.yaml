@@ -17,7 +17,7 @@ description: >-
 maintainer: Bruno-coder21
 tier: community
 category: tools
-requires_hermes: ">=0.23.1"
+requires_zeus: ">=0.23.1"
 docs_url: https://github.com/Bruno-coder21/augur#readme
 readme: true
 screenshots:

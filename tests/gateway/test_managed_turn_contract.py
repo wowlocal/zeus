@@ -31,15 +31,15 @@ def assignment(tmp_path, monkeypatch, *, finite=True, unattended=False, yolo=Fal
 def test_child_executes_under_finite_policy_and_preserves_receipt(tmp_path, monkeypatch, finite, unattended):
     from agent import managed_worker as worker
     from gateway.session_finite import finite_turn_required, unattended_turn
-    from hermes_scope import Fence, current_scope
+    from zeus_scope import Fence, current_scope
     from tools.approval import _yolo_active, clear_session
     frame, _ = assignment(tmp_path, monkeypatch, finite=finite, unattended=unattended)
     frame['scope'].update(epoch=3, generation=8)  # distinct, so a swapped fence is caught
-    import hermes_cli.config
+    import zeus_cli.config
     from agent.agent_init import _init_prompt_cache_config
 
-    monkeypatch.setattr(hermes_cli.config, "load_config_readonly", dict)
-    for key in ("HERMES_SESSION_SOURCE", "HERMES_SESSION_SOURCE_EXPLICIT", "HERMES_SINGLE_QUERY_SESSION"):
+    monkeypatch.setattr(zeus_cli.config, "load_config_readonly", dict)
+    for key in ("ZEUS_SESSION_SOURCE", "ZEUS_SESSION_SOURCE_EXPLICIT", "ZEUS_SINGLE_QUERY_SESSION"):
         monkeypatch.delenv(key, raising=False)
     observed, frames, scopes, cache_ttls, adaptive = [], [], [], [], []
 
@@ -160,7 +160,7 @@ def test_a_client_stamp_crosses_the_bootstrap_and_reads_only_inside_its_turn(tmp
     from gateway.session_managed_worker import _bootstrap
     from gateway.session_surface import surface_turn_client
     frame, (authority, ref, row, policy, scope) = assignment(tmp_path, monkeypatch)
-    client = {'name': 'hermes-desktop', 'version': '2.1.0', 'kind': 'desktop'}
+    client = {'name': 'zeus-desktop', 'version': '2.1.0', 'kind': 'desktop'}
     stamped = validate_bootstrap(json.loads(json.dumps(_bootstrap(
         authority, ref, {'payload': {**row['payload'], 'surface_v1': {'client': client}}}, policy, scope))))
     assert json.loads(stamped['policy']['request_json'])['turn_v1']['surface_v1'] == {'client': client}

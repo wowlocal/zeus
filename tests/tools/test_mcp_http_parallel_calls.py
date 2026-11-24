@@ -21,8 +21,8 @@ import uvicorn
 from mcp.server import MCPServer
 from mcp.server.mcpserver import Context
 
-import hermes_yaml as yaml
-from hermes_constants import get_hermes_home
+import zeus_yaml as yaml
+from zeus_constants import get_zeus_home
 from tests.waiting import wait_until
 
 
@@ -99,7 +99,7 @@ def connected(request):
             cfg["transport"] = "sse"
         if opt_in is not None:
             cfg["supports_parallel_tool_calls"] = opt_in
-        (get_hermes_home() / "config.yaml").write_text(
+        (get_zeus_home() / "config.yaml").write_text(
             yaml.safe_dump({"mcp_servers": {"parallel-probe": cfg},
                             "tools": {"tool_search": {"enabled": tool_search}}}), encoding="utf-8")
         from tools.mcp_tool_discovery import discover_mcp_tools
@@ -188,7 +188,7 @@ def test_legacy_sse_remains_serial(connected):
 
 @pytest.mark.parametrize("owner_parallel", [True, False])
 def test_adopted_connection_uses_callers_parallel_policy(connected, tmp_path, monkeypatch, owner_parallel):
-    from hermes_constants import reset_hermes_home_override, set_hermes_home_override
+    from zeus_constants import reset_zeus_home_override, set_zeus_home_override
     from tools import mcp_tool as core
     from tools.mcp_tool_scope import _resolve_server_key
 
@@ -199,11 +199,11 @@ def test_adopted_connection_uses_callers_parallel_policy(connected, tmp_path, mo
         home.mkdir()
     @contextmanager
     def profile(name):
-        token = set_hermes_home_override(homes[name])
+        token = set_zeus_home_override(homes[name])
         try:
             yield
         finally:
-            reset_hermes_home_override(token)
+            reset_zeus_home_override(token)
 
     with profile("owner"):
         owner, handler = connect(opt_in=owner_parallel)
@@ -357,7 +357,7 @@ def test_opted_in_stdio_keeps_the_single_stream_serial(tmp_path):
 
     script = tmp_path / "serial_probe.py"
     script.write_text(_STDIO, encoding="utf-8")
-    (get_hermes_home() / "config.yaml").write_text(yaml.safe_dump({"mcp_servers": {
+    (get_zeus_home() / "config.yaml").write_text(yaml.safe_dump({"mcp_servers": {
         "serial-probe": {"command": sys.executable, "args": [str(script)],
                          "supports_parallel_tool_calls": True,
                          "sampling": {"enabled": False}, "elicitation": {"enabled": False}}}}), encoding="utf-8")

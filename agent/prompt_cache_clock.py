@@ -48,7 +48,7 @@ response, so a first pure read keeps the saved proof.
 
 Confidence: ``proven`` (the response named the tier), ``declared`` (what we sent, on a route known
 to honour it), ``assumed`` (no guarantee), ``unknown`` (no published retention, or the cache moved:
-route switch, fallback, compaction, or a runtime whose requests Hermes does not build).
+route switch, fallback, compaction, or a runtime whose requests Zeus does not build).
 """
 
 from __future__ import annotations
@@ -283,15 +283,15 @@ def _estimated_end(coverage: dict[str, float], *, base_url: str, retention: Any,
 
 
 def _managed_unload_end(base_url: str, idle_from: float) -> Optional[float]:
-    """When Hermes' own managed llama-server has certainly unloaded an idle model (and its prompt cache):
+    """When Zeus' own managed llama-server has certainly unloaded an idle model (and its prompt cache):
     the idle-unload limit plus two sweeps after the model went idle (the last request finished). A
     user's own local server has no time-based expiry (None)."""
-    from hermes_cli.local_runtime.growth import is_managed_endpoint
+    from zeus_cli.local_runtime.growth import is_managed_endpoint
 
     if not is_managed_endpoint(base_url):
         return None
-    from hermes_cli.local_runtime.bootstrap import _SWEEP_EVERY_S
-    from hermes_cli.local_runtime.supervisor import LlamaServerSupervisor
+    from zeus_cli.local_runtime.bootstrap import _SWEEP_EVERY_S
+    from zeus_cli.local_runtime.supervisor import LlamaServerSupervisor
 
     return idle_from + LlamaServerSupervisor.IDLE_UNLOAD_S + 2 * _SWEEP_EVERY_S
 
@@ -310,7 +310,7 @@ def _confidence(verdict: _Verdict, previous: Optional[CacheEvent], carried: bool
 
 
 def _route_key(provider: Any, base_url: Any, model: Any) -> tuple[str, str, str]:
-    from hermes_cli.route_identity import normalize_route_base_url
+    from zeus_cli.route_identity import normalize_route_base_url
     return (str(provider or ""), normalize_route_base_url(str(base_url or "")), str(model or ""))
 
 
@@ -575,7 +575,7 @@ def _declared_tier(route_class: str, requested_ttl: Optional[str], write_tokens:
 
 
 def record_unobserved_cache_response(agent: Any, usage: Any, *, reason: str) -> Optional[CacheEvent]:
-    """A runtime whose requests Hermes does not build (the Codex app-server sets its own cache
+    """A runtime whose requests Zeus does not build (the Codex app-server sets its own cache
     options): the cache moved but its window cannot be known, so it is recorded ``unknown`` and no
     older window outlives it."""
     read, write = int(getattr(usage, "cache_read_tokens", 0) or 0), int(getattr(usage, "cache_write_tokens", 0) or 0)

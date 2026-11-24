@@ -13,12 +13,12 @@ description: >-
   user's model provider. The tool list comes from Dynamoi's server at run time, so the pinned commit
   doesn't cover it. Write-capable tools can change the signed-in Dynamoi account (Smart Links, team,
   artist setup, campaign drafts, distribution applications); the server is declared untrusted so
-  Hermes asks before every write-capable call. Campaign launches, budget changes and checkout are not
+  Zeus asks before every write-capable call. Campaign launches, budget changes and checkout are not
   exposed.
 maintainer: Dynamoi
 tier: community
 category: tools
-requires_hermes: ">=0.23.1"
+requires_zeus: ">=0.23.1"
 docs_url: https://github.com/getDynamoi/agent-plugins#readme
 version: "1.1.0"
 platforms: []

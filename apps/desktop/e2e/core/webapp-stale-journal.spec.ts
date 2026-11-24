@@ -42,7 +42,7 @@ const U = (n: number) => `U${n}-journal${nonce}`
 const A = (n: number) => `A${n}-journal${nonce}`
 
 function readState<T>(sandbox: CoreSandbox, read: (db: DatabaseSync) => T, fallback: T): T {
-  const db = new DatabaseSync(path.join(sandbox.hermesHome, 'state.db'), { readOnly: true })
+  const db = new DatabaseSync(path.join(sandbox.zeusHome, 'state.db'), { readOnly: true })
 
   try {
     return read(db)

@@ -21,7 +21,7 @@ maintainer: EconLearn
 tier: community
 category: tools
 docs_url: https://github.com/EconLearn/hermes-heats#readme
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 version: "0.4.1"
 platforms: [linux, macos]
 capabilities:

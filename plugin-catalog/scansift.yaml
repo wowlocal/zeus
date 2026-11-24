@@ -17,11 +17,11 @@ description: >-
   subprocess (never runs an analyzer), no third-party dependencies, no
   self-update.
   Disclosure: reads the local SARIF paths you pass it (read-only), only regular
-  files, and honours Hermes' core read denylist.
+  files, and honours Zeus' core read denylist.
 maintainer: rodricksz4h5
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_zeus: ">=0.22.0"
 docs_url: https://github.com/rodricksz4h5/scansift/tree/ace9188d760ec4767240f6c59e3c05ae9dfdc52b
 capabilities:
   provides_tools:

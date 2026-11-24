@@ -1,6 +1,6 @@
 import { $gateway } from '@/store/gateway'
 import { approvalKindFields, isCommandApproval, receiveApprovalRequest, replayPendingApproval } from '@/store/prompts'
-import type { SessionResumeResult } from '@/types/hermes'
+import type { SessionResumeResult } from '@/types/zeus'
 
 /** Re-park a resume snapshot's pending approval. True when the session's turn waits on it: a
  *  command approval. A folder or site card marks its session by being parked. */

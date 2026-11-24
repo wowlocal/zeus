@@ -19,7 +19,7 @@ description: >-
 maintainer: zolvaagent
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_zeus: ">=0.22.0"
 docs_url: https://zolvaagent.app/docs/mcp
 version: "1.0.0"
 platforms: []

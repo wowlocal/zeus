@@ -7,7 +7,7 @@
 // case-fold + slug test) without pulling desktop-profile's fs/path imports
 // into the pure spawn-arg builders that need it.
 
-// Relative, not `@hermes/shared/profile-id`: esbuild bundles electron/ without tsconfig paths.
+// Relative, not `@zeus/shared/profile-id`: esbuild bundles electron/ without tsconfig paths.
 import { PROFILE_ID_ARG_RE } from '../../shared/src/profile-id'
 
 /**
@@ -25,6 +25,6 @@ export function backendProfileArg(profile: unknown): string | null {
     return null
   }
 
-  // `default` is the RE-legal alias for ~/.hermes itself; every other id is a slug.
+  // `default` is the RE-legal alias for ~/.zeus itself; every other id is a slug.
   return name === 'default' || PROFILE_ID_ARG_RE.test(name) ? name : null
 }

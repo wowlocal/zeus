@@ -1,7 +1,7 @@
 """Additive state.db schema drift: detection, the one-shot browse reconcile, and explicit repair.
 
 Drift (a declared table/column missing) is not corruption. Browsing catches an unowned store up
-once, additive DDL only (:func:`reconcile_drift_for_browse`); ``hermes sessions repair`` reconciles
+once, additive DDL only (:func:`reconcile_drift_for_browse`); ``zeus sessions repair`` reconciles
 a protected snapshot so failed DDL never leaves the store partly upgraded or escalates into FTS
 surgery (:func:`repair_declarative_schema`). Neither runs while a gateway owns the store.
 """
@@ -16,7 +16,7 @@ from contextlib import closing
 from pathlib import Path
 from typing import Any, Optional
 
-import hermes_constants
+import zeus_constants
 
 from persistence.sqlite._state.dbfile import _connect_tracked_db
 from persistence.core.admin import BROWSE_RECONCILE_BUDGET_S, BROWSE_RECONCILE_PURPOSE
@@ -25,7 +25,7 @@ from persistence.core.errors import CorruptStoreError, DeclarativeDrift
 from .._schema import apply_declared_schema, declared_schema_drift, schema_read_probe_statements
 
 # Main's logger name for reconciliation warnings.
-logger = logging.getLogger("hermes_state_reconcile")
+logger = logging.getLogger("zeus_state_reconcile")
 
 
 def schema_drift_reason(path: Path):
@@ -106,7 +106,7 @@ def _reconcile_locked(path, backup, report):
 # The full integrity scan is read-only and scales with file size, so it runs BEFORE the lock, on the
 # same 3 s budget (BROWSE_INTEGRITY_BUDGET_S); a gateway booting meanwhile simply takes the lock. A
 # store too large to verify and catch up in that budget is refused with a retryable 503 that names
-# `hermes sessions repair` (repair_declarative_schema: same additive catch-up, no time limit). The
+# `zeus sessions repair` (repair_declarative_schema: same additive catch-up, no time limit). The
 # scan is tied to the file's (size, mtime) signature: if the store changed by the time the lock is
 # held, the scan no longer vouches for it and nothing is written. Under the lock only the cheap drift
 # re-check and the DDL run, cut off by BROWSE_RECONCILE_BUDGET_S (a sqlite progress handler; the DDL
@@ -120,15 +120,15 @@ def canonical_home(home: Path) -> Path:
     return Path(os.path.normcase(str(Path(home).expanduser().resolve())))
 
 
-def _canonical_hermes_home(path: Path | str) -> Path:
-    """Stable absolute HERMES_HOME path for persisted identity data."""
+def _canonical_zeus_home(path: Path | str) -> Path:
+    """Stable absolute ZEUS_HOME path for persisted identity data."""
     return Path(path).expanduser().resolve(strict=False)
 
 
-def _same_hermes_home(left: Path | str, right: Path | str) -> bool:
-    """Compare HERMES_HOME paths with the host platform's case semantics."""
-    left_c = os.path.normcase(str(_canonical_hermes_home(left)))
-    return left_c == os.path.normcase(str(_canonical_hermes_home(right)))
+def _same_zeus_home(left: Path | str, right: Path | str) -> bool:
+    """Compare ZEUS_HOME paths with the host platform's case semantics."""
+    left_c = os.path.normcase(str(_canonical_zeus_home(left)))
+    return left_c == os.path.normcase(str(_canonical_zeus_home(right)))
 
 
 _PROFILE_LABEL_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
@@ -137,15 +137,15 @@ _PROFILE_LABEL_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 def _profile_label_for_home(home: Path | str) -> Optional[str]:
     """Best-effort label: ``<root>/profiles/<name>`` -> name, root home -> "default", else None."""
     try:
-        canonical = _canonical_hermes_home(home)
+        canonical = _canonical_zeus_home(home)
     except Exception:  # health: allow BLE001 -- a home that cannot be canonicalized has no label
         return None
     if canonical.parent.name == "profiles" and _PROFILE_LABEL_RE.match(canonical.name):
         return canonical.name
-    default_homes = (hermes_constants.get_default_hermes_root, hermes_constants._get_platform_default_hermes_home)
+    default_homes = (zeus_constants.get_default_zeus_root, zeus_constants._get_platform_default_zeus_home)
     for default_home in default_homes:
         with contextlib.suppress(Exception):
-            if _same_hermes_home(canonical, default_home()):
+            if _same_zeus_home(canonical, default_home()):
                 return "default"
     return None
 
@@ -175,39 +175,39 @@ def _read_json_file(path: Path, *, bare_pid_ok: bool = False) -> Optional[dict[s
 
 
 def _repair_command(home: Path) -> str:
-    """The `hermes sessions repair` invocation that targets *home* (no time limit, additive only)."""
+    """The `zeus sessions repair` invocation that targets *home* (no time limit, additive only)."""
     label = _profile_label_for_home(home)
     if label == 'default':
-        return 'hermes sessions repair'
+        return 'zeus sessions repair'
     if label:
-        return f'hermes -p {label} sessions repair'
-    return f'HERMES_HOME={home} hermes sessions repair'
+        return f'zeus -p {label} sessions repair'
+    return f'ZEUS_HOME={home} zeus sessions repair'
 
 
 def _owner_remedy(home: Path) -> tuple[str, str]:
     label = _profile_label_for_home(home)
     if label and label != 'default':
-        return label, f'hermes -p {label} gateway restart'
-    return label or str(home), 'hermes gateway restart'
+        return label, f'zeus -p {label} gateway restart'
+    return label or str(home), 'zeus gateway restart'
 
 
 def _owning_gateway_restart(home: Path) -> str:
     """Restart command for the gateway that holds *home*'s lock. A multiplexer launched from another
-    home (usually the default) records that home in ``hermes_home``; `hermes -p <named> gateway
+    home (usually the default) records that home in ``zeus_home``; `zeus -p <named> gateway
     restart` is refused there ("Manage the host gateway instead"), so name the owner's own command."""
     record = _read_json_file(canonical_home(home) / 'gateway.lock', bare_pid_ok=True) or {}
-    owner_home = record.get('hermes_home')
+    owner_home = record.get('zeus_home')
     if isinstance(owner_home, str) and owner_home and canonical_home(Path(owner_home)) != canonical_home(home):
         return _owner_remedy(Path(owner_home))[1]
     return _owner_remedy(home)[1]
 
 
 def _lockless_gateway_holder(path: Path) -> str | None:
-    """A Hermes gateway process holding *path* open without this profile's gateway.lock: a pre-v0.22.1
+    """A Zeus gateway process holding *path* open without this profile's gateway.lock: a pre-v0.22.1
     multiplexer serves named profiles without reserving their per-profile lock, so the lock alone
-    misses it. Only holders whose command line is a Hermes ``gateway`` run count; plain readers
+    misses it. Only holders whose command line is a Zeus ``gateway`` run count; plain readers
     (Desktop, sibling browses, CLI reads) are not owners. Returns a description, else None."""
-    from persistence.sqlite._state.holders import _looks_like_hermes, _read_proc_argv, describe_holder_pid, foreign_state_db_holders
+    from persistence.sqlite._state.holders import _looks_like_zeus, _read_proc_argv, describe_holder_pid, foreign_state_db_holders
     for pid, _target in foreign_state_db_holders(path):
         if pid <= 0:
             continue
@@ -218,7 +218,7 @@ def _lockless_gateway_holder(path: Path) -> str | None:
                 argv = psutil.Process(pid).cmdline() or None
             except (ImportError, OSError, psutil.Error):  # gone, denied, or no psutil: not provably ours
                 argv = None
-        if argv and _looks_like_hermes(argv) and 'gateway' in argv[1:]:
+        if argv and _looks_like_zeus(argv) and 'gateway' in argv[1:]:
             return describe_holder_pid(pid)
     return None
 
@@ -299,7 +299,7 @@ _BROWSE_SIBLING_POLL_S = 0.1
 
 class _LaggingStoreDamaged(CorruptStoreError):
     """The lagging store is also damaged: browsing must not write DDL into it. Worded like sqlite's
-    own malformed-image error so every caller maps it to the corrupt-store status (``hermes doctor``)."""
+    own malformed-image error so every caller maps it to the corrupt-store status (``zeus doctor``)."""
 
     def __init__(self, detail: str):
         super().__init__(f'database disk image is malformed (integrity_check: {detail})')
@@ -367,7 +367,7 @@ def _reserving(home: Path):
             stack.enter_context(exclusive_maintenance([home], purpose=BROWSE_RECONCILE_PURPOSE))
         except OSError as exc:
             raise DeclarativeDrift(
-                f'Session store is behind this Hermes version, but its gateway.lock cannot be used '
+                f'Session store is behind this Zeus version, but its gateway.lock cannot be used '
                 f'({exc}); nothing was changed.') from exc
         yield
 
@@ -445,15 +445,15 @@ def reconcile_drift_for_browse(path: Path) -> bool:
         except RuntimeError as exc:
             raise DeclarativeDrift(
                 f'Session store is missing its history tables ({reason}); this is not upgrade drift. '
-                'Run `hermes sessions recover`.') from exc
+                'Run `zeus sessions recover`.') from exc
     home = path.parent
     label, _ = _owner_remedy(home)
 
     def owned(drift, holder=None):
-        restart = 'hermes gateway restart' if holder else _owning_gateway_restart(home)
+        restart = 'zeus gateway restart' if holder else _owning_gateway_restart(home)
         who = f' ({holder})' if holder else ''
         return DeclarativeDrift(
-            f"Session store for profile '{label}' is behind this Hermes version ({drift}), and a "
+            f"Session store for profile '{label}' is behind this Zeus version ({drift}), and a "
             f'running gateway owns it{who}, so browsing will not write to it. Restart that gateway '
             f'(`{restart}`) to bring the store up to date.', owned=True)
 
@@ -464,7 +464,7 @@ def reconcile_drift_for_browse(path: Path) -> bool:
         # Otherwise no gateway owns the store: never tell the user to restart one that is not
         # running. The repair path has no time limit.
         return DeclarativeDrift(
-            f"Session store for profile '{label}' is behind this Hermes version ({reason}) and is too "
+            f"Session store for profile '{label}' is behind this Zeus version ({reason}) and is too "
             f'large to verify and update within {BROWSE_RECONCILE_BUDGET_S:.0f}s while browsing. Your '
             f'history is untouched: nothing was changed and the list was not cleared. Run '
             f'`{_repair_command(home)}` to bring it up to date (it has no time limit), then reload.')
@@ -498,7 +498,7 @@ def reconcile_drift_for_browse(path: Path) -> bool:
                         f'({reason}); nothing was changed. Retry in a moment; the list was not cleared.')
                 def not_writable(why):
                     return DeclarativeDrift(
-                        f"Session store for profile '{label}' is behind this Hermes version ({reason}), "
+                        f"Session store for profile '{label}' is behind this Zeus version ({reason}), "
                         f'but {why} is not writable by this user, so browsing cannot add the missing '
                         f'tables/columns; nothing was changed. Fix the permissions, then reload.')
                 # The shared column reconciler logs a readonly ALTER failure and continues, so check
@@ -514,19 +514,19 @@ def reconcile_drift_for_browse(path: Path) -> bool:
                     raise
                 except DeclarativeDrift as exc:
                     raise DeclarativeDrift(
-                        f"Session store for profile '{label}' is behind this Hermes version and could not "
-                        f'be caught up ({exc}); nothing was changed. Run `hermes sessions repair` for that '
+                        f"Session store for profile '{label}' is behind this Zeus version and could not "
+                        f'be caught up ({exc}); nothing was changed. Run `zeus sessions repair` for that '
                         'profile.') from exc
         except BrowseBudgetExceeded as exc:
             raise too_slow() from exc
         except _SiblingStillBusy as exc:
             raise DeclarativeDrift(
-                f"Session store for profile '{label}' is being brought up to date by another Hermes "
+                f"Session store for profile '{label}' is being brought up to date by another Zeus "
                 f'process ({exc}). Retry in a moment; the list was not cleared.') from exc
     if after := schema_drift_reason(path):
         raise DeclarativeDrift(
-            f"Session store for profile '{label}' is behind this Hermes version and could not be "
-            f'caught up ({after}). Run `hermes sessions repair` for that profile.')
+            f"Session store for profile '{label}' is behind this Zeus version and could not be "
+            f'caught up ({after}). Run `zeus sessions repair` for that profile.')
     logger.warning(
         'state.db at %s lagged SCHEMA_SQL (%s); added the missing tables/columns for browsing', path, reason)
     return True

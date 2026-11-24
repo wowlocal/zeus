@@ -16,7 +16,7 @@ description: >-
 maintainer: rodricksz4h5
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_zeus: ">=0.22.0"
 docs_url: https://github.com/rodricksz4h5/logmine/tree/217cc696b4d41272b391d2fd6dd3183089e44d42
 capabilities:
   provides_tools:

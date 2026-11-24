@@ -2,11 +2,11 @@
 name: weekly-review-planning
 description: "Weekly reset: commitments, stalled work, next-week plan."
 version: 0.1.0
-author: Ben Barclay (benbarclay), Hermes Agent
+author: Ben Barclay (benbarclay), ZeusAgent
 license: MIT
 platforms: [linux, macos, windows]
 metadata:
-  hermes:
+  zeus:
     tags: [Weekly-Review, Planning, Tasks, Calendar, Productivity]
     related_skills: [obsidian, google-workspace, email-inbox-triage]
 ---

@@ -17,7 +17,7 @@ description: >-
 maintainer: faze39
 tier: community
 category: general
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 docs_url: https://github.com/faze39/dioramic
 version: "0.1.0"
 

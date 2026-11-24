@@ -1,5 +1,5 @@
 /**
- * `hermes:fs:desktopPluginsRoot` builds the app's plugin root from the profile homes. A home a sandbox can
+ * `zeus:fs:desktopPluginsRoot` builds the app's plugin root from the profile homes. A home a sandbox can
  * write must not feed it: the handler asks the check `registerFsIpc` is given, for every profile.
  */
 import fs from 'node:fs'
@@ -24,7 +24,7 @@ vi.mock('./desktop-plugin-install', () => ({ installDesktopPluginFromGit: vi.fn(
 
 import { registerFsIpc } from './fs-ipc'
 
-const home = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-fs-ipc-root-'))
+const home = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-fs-ipc-root-'))
 
 afterAll(() => fs.rmSync(home, { force: true, recursive: true }))
 
@@ -42,14 +42,14 @@ it('the plugin root takes nothing from a home the sandbox check names', async ()
   registerFsIpc({
     directoryExists: value => fs.existsSync(value),
     expandUserPath: value => value,
-    hermesHome: home,
+    zeusHome: home,
     isLaunchedProfile: profile => profile === 'work',
     readActiveDesktopProfile: () => null,
     resolveGitBinary: () => 'git',
     resolveRequestedPathForIpc: value => value
   })
 
-  const root = String(await electron.handlers.get('hermes:fs:desktopPluginsRoot')!({}))
+  const root = String(await electron.handlers.get('zeus:fs:desktopPluginsRoot')!({}))
 
   expect(root).toBe(path.join(home, 'desktop-plugins'))
   expect(fs.existsSync(path.join(root, 'fine', 'plugin.js'))).toBe(true)

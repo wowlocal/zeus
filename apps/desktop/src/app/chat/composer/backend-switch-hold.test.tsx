@@ -13,7 +13,7 @@ import { act, cleanup, fireEvent, render } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import type { HermesConnection } from '@/global'
+import type { ZeusConnection } from '@/global'
 import { I18nProvider } from '@/i18n'
 import { clearProfileBackend, setProfileBackend } from '@/sdk/profile-backend'
 import {
@@ -159,20 +159,20 @@ async function typeAndEnter(editor: HTMLElement, text: string) {
 const placeholder = (editor: HTMLElement) => editor.getAttribute('data-placeholder')
 
 beforeEach(() => {
-  window.localStorage.removeItem('hermes.desktop.composerQueue.v1')
+  window.localStorage.removeItem('zeus.desktop.composerQueue.v1')
   resetFrozenQueuedTransportsForTests()
   setSessionsLoading(false)
   setGatewayState('open')
   // This computer's backend owns its chats' queues (the gateway FIFO): nothing may be put there
   // while the profile leaves that backend.
-  $connection.set({ mode: 'local', wsUrl: 'ws://localhost/api/ws?native_dial=unminted' } as HermesConnection)
+  $connection.set({ mode: 'local', wsUrl: 'ws://localhost/api/ws?native_dial=unminted' } as ZeusConnection)
 })
 
 afterEach(() => {
   cleanup()
   resetBackendTransitionsForTests()
   $activeGatewayProfile.set('default')
-  delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
+  delete (window as unknown as { zeusDesktop?: unknown }).zeusDesktop
   $queuedPromptsBySession.set({})
   resetFrozenQueuedTransportsForTests()
   mainComposerScope.clear()
@@ -501,7 +501,7 @@ describe('a message during the plugin switch, end to end', () => {
       ...overrides
     }
 
-    ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = bridge
+    ;(window as unknown as { zeusDesktop: unknown }).zeusDesktop = bridge
 
     return bridge
   }

@@ -5,7 +5,7 @@ names to private ranges); cloud metadata hostnames/IPs are **always** blocked. A
 that answers DNS with a fake-ip block (Mihomo/Clash fake-ip, Surge enhanced) declares that block
 in ``security.fake_ip_ranges`` so its sentinel answers are dialable instead of looking private;
 the list is empty by default, so the sentinel stays blocked for everyone else. DNS rebinding
-(TOCTOU) is closed for Hermes-owned httpx paths by ``create_ssrf_safe_[async_]client()``, which
+(TOCTOU) is closed for Zeus-owned httpx paths by ``create_ssrf_safe_[async_]client()``, which
 re-apply the policy at TCP connect and dial the validated IP while preserving Host/SNI. Redirect
 bypass is mitigated by response hooks re-validating each target (``redirect_target_from_response``).
 """
@@ -20,7 +20,7 @@ from contextlib import contextmanager
 from typing import Any, Optional
 from urllib.parse import quote, unquote, urljoin, urlparse, urlsplit, urlunsplit
 
-from hermes_constants import get_hermes_home_override
+from zeus_constants import get_zeus_home_override
 from utils import is_truthy_value
 
 logger = logging.getLogger(__name__)
@@ -36,7 +36,7 @@ def _proxy_is_configured() -> bool:
 
 
 def normalize_url_for_request(url: str) -> str:
-    """ASCII-safe HTTP URL for Hermes-owned URL tools (IRI -> URI, e.g. ``https://wttr.in/Köln``).
+    """ASCII-safe HTTP URL for Zeus-owned URL tools (IRI -> URI, e.g. ``https://wttr.in/Köln``).
     Preserves URL syntax and existing percent escapes while IDNA-encoding the host and
     percent-encoding non-ASCII path/query/fragment text. URL tool inputs only — never shell commands."""
     if not isinstance(url, str):
@@ -127,12 +127,12 @@ _fake_ip_resolved, _cached_fake_ip_ranges = False, ()
 
 def _global_allow_private_urls() -> bool:
     """True when the user has opted out of private-IP blocking. Priority: a managed-scope pin, then
-    ``HERMES_ALLOW_PRIVATE_URLS`` env, ``security.allow_private_urls``, legacy
-    ``browser.allow_private_urls``. Profile-scoped turns (``get_hermes_home_override()`` set) bypass the
+    ``ZEUS_ALLOW_PRIVATE_URLS`` env, ``security.allow_private_urls``, legacy
+    ``browser.allow_private_urls``. Profile-scoped turns (``get_zeus_home_override()`` set) bypass the
     process-global cache — a multiplex gateway serves several profiles in one process; the first
     profile's opt-out must not disable blocking for later ones."""
     global _allow_private_resolved, _cached_allow_private
-    if get_hermes_home_override() is not None:
+    if get_zeus_home_override() is not None:
         return _resolve_allow_private_urls()
     if not _allow_private_resolved:
         _allow_private_resolved, _cached_allow_private = True, _resolve_allow_private_urls()
@@ -144,7 +144,7 @@ def _resolve_allow_private_urls() -> bool:
     pinned = _managed_allow_private_urls()
     if pinned is not None:
         return pinned  # an administrator's pin outranks the environment variable and the profile's keys
-    env_val = os.getenv("HERMES_ALLOW_PRIVATE_URLS", "").strip().lower()
+    env_val = os.getenv("ZEUS_ALLOW_PRIVATE_URLS", "").strip().lower()
     if env_val in {"true", "1", "yes"}:
         return True
     if env_val in {"false", "0", "no"}:
@@ -152,7 +152,7 @@ def _resolve_allow_private_urls() -> bool:
     try:
         # The profile's own keys, not the managed scope laid over them: it pinned neither spelling
         # (decided above), and a null there, which pins nothing, would erase the profile's value.
-        from hermes_cli.config import read_raw_config
+        from zeus_cli.config import read_raw_config
         cfg = read_raw_config()
         for section in ("security", "browser"):  # preferred, then legacy
             block = cfg.get(section, {})
@@ -167,12 +167,12 @@ def _managed_allow_private_urls() -> Optional[bool]:
     """The managed scope's own value for the toggle, or None when it pins neither spelling.
 
     Read apart from the profile so a pin is resolved before everything the user controls:
-    ``HERMES_ALLOW_PRIVATE_URLS`` (shell or profile ``.env``) and the profile's two keys, either of
+    ``ZEUS_ALLOW_PRIVATE_URLS`` (shell or profile ``.env``) and the profile's two keys, either of
     which opts in. ``security.allow_private_urls`` first, then the legacy
     ``browser.allow_private_urls``; a null value pins nothing.
     """
     try:
-        from hermes_cli.managed_scope import apply_managed_overlay
+        from zeus_cli.managed_scope import apply_managed_overlay
     except ImportError:
         return None  # managed scope unavailable (early import): nothing is pinned
     managed = apply_managed_overlay({})  # fail-open: {} without a scope or when its file cannot be read
@@ -187,12 +187,12 @@ def _managed_allow_private_urls() -> Optional[bool]:
 def _policy_config() -> dict:
     """config.yaml with managed scope laid on top, as ``load_config()`` lays it.
 
-    ``read_raw_config()`` alone never sees ``/etc/hermes/config.yaml``, so an operator who pinned
+    ``read_raw_config()`` alone never sees ``/etc/zeus/config.yaml``, so an operator who pinned
     ``security.fake_ip_ranges`` or ``security.allow_private_urls`` there got the profile's own
     value. Raises like ``read_raw_config()``; the callers keep their secure defaults on failure.
     """
-    from hermes_cli.config import read_raw_config
-    from hermes_cli.managed_scope import apply_managed_overlay
+    from zeus_cli.config import read_raw_config
+    from zeus_cli.managed_scope import apply_managed_overlay
 
     return apply_managed_overlay(read_raw_config())
 
@@ -238,7 +238,7 @@ def _global_fake_ip_ranges() -> tuple:
     """Process-lifetime cache with the same profile-scope bypass as ``_global_allow_private_urls``:
     a multiplex gateway must not apply the first profile's declaration to later ones."""
     global _fake_ip_resolved, _cached_fake_ip_ranges
-    if get_hermes_home_override() is not None:
+    if get_zeus_home_override() is not None:
         return _resolve_fake_ip_ranges()
     if not _fake_ip_resolved:
         _fake_ip_resolved, _cached_fake_ip_ranges = True, _resolve_fake_ip_ranges()
@@ -611,7 +611,7 @@ def _install_ssrf_guard_on_transport(transport: Any, schemes_by_origin_var: Any,
     """Swap the transport's pool network backend for the SSRF-guarded one (idempotent). Only the
     direct transport is guarded; proxy mounts delegate final-target resolution to the trusted proxy."""
     state = getattr(transport, "__dict__", {}) if transport is not None else {}
-    if transport is None or state.get("_hermes_ssrf_guarded", False):
+    if transport is None or state.get("_zeus_ssrf_guarded", False):
         return
     label = "async httpx transport" if is_async else "httpx transport"
     pool = state.get("_pool")
@@ -632,21 +632,21 @@ def _install_ssrf_guard_on_transport(transport: Any, schemes_by_origin_var: Any,
         with _origin_scope(schemes_by_origin_var, request):
             return handle(request)
     setattr(transport, method_name, guarded_async if is_async else guarded_sync)
-    transport._hermes_ssrf_guarded = True
+    transport._zeus_ssrf_guarded = True
 
 
 def _install_ssrf_guard_on_client(client: Any, *, is_async: bool = False) -> None:
     """Guard ``client._transport`` only; ``_mounts`` (env/explicit proxies) stay untouched."""
     import contextvars
-    var_name = "hermes_ssrf_async_origin_schemes" if is_async else "hermes_ssrf_origin_schemes"
+    var_name = "zeus_ssrf_async_origin_schemes" if is_async else "zeus_ssrf_origin_schemes"
     _install_ssrf_guard_on_transport(
         getattr(client, "__dict__", {}).get("_transport"), contextvars.ContextVar(var_name), is_async=is_async)
 
 
-# Identifying UA for Hermes-owned direct downloads: CDNs with basic bot detection
+# Identifying UA for Zeus-owned direct downloads: CDNs with basic bot detection
 # (upload.wikimedia.org, #89260) 403 the bare ``python-httpx/x`` default. Names the agent
 # rather than spoofing a browser (Wikimedia's User-Agent policy asks clients to identify).
-DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; HermesAgent/1.0)"
+DEFAULT_USER_AGENT = "Mozilla/5.0 (compatible; ZeusAgent/1.0)"
 
 
 def _with_default_user_agent(kwargs: dict) -> dict:

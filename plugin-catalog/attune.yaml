@@ -5,7 +5,7 @@ description: "Daily learning that drives evidence-linked, permission-bound proje
 maintainer: five0nit
 tier: community
 category: automation
-requires_hermes: ">=0.22.5"
+requires_zeus: ">=0.22.5"
 version: "0.3.1"
 title: Attune
 docs_url: https://github.com/five0nit/hermes-attune#readme

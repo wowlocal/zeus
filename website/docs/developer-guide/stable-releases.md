@@ -178,7 +178,7 @@ What a release publishes follows what it built:
   on the previous full release. Source checkouts of the official repository on
   `stable`, their default channel, do not stay: that channel is GitHub's latest
   published `vX.Y.Z` release (`_resolve_stable` in
-  `hermes_cli/source_releases.py`) and reads no R2 pointer, so every published
+  `zeus_cli/source_releases.py`) and reads no R2 pointer, so every published
   release moves them, whatever its lanes.
 - **Finished.** A release that advances the desktop channel is finished when
   the protected R2 head names it. One that only moves Docker is finished when
@@ -379,8 +379,8 @@ Only Stable Release's `publish-canary` job publishes a canary. A direct dispatch
 any other workflow as a canary publisher. The canary Docker aliases (`:canary`,
 `:canary-desktop`) move only after `publish-canary` succeeds, so they follow the
 claim's green policy and lanes like every other canary channel. The canary's
-Termux packages go to `hermes-canary` under a pool prefix named by its tag, just
-as a stable attempt's go to `hermes-stable` under its attempt ref.
+Termux packages go to `zeus-canary` under a pool prefix named by its tag, just
+as a stable attempt's go to `zeus-stable` under its attempt ref.
 
 Pull requests and pushes to `main` run no E2E suite. Each daily `Canary Release`
 dispatches `Stable Release` with the canary claim tag, running full CI with
@@ -395,10 +395,10 @@ remains available for manual dry-run preview/replay).
 ## Canary and one-off desktop identities
 
 `release.py --canary` builds the separate canary application. Its package
-identity and CLI command (`hermes-canary`) differ from stable; the existing
+identity and CLI command (`zeus-canary`) differ from stable; the existing
 canary feed updates that application only. One-off builds use
 `release.py --build-commit REV --remote REMOTE` (add `--publish` to dispatch).
-Their application identity and CLI command (`hermes-<7-character-sha>`) include
+Their application identity and CLI command (`zeus-<7-character-sha>`) include
 the pinned commit. Two different commit builds do not replace each other.
 A commit build runs the Stable Release pipeline itself (see
 [Commit builds](#commit-builds)).
@@ -412,7 +412,7 @@ subscription is published for them, and both the GUI and bundled CLI refuse
 update requests. They direct the recipient to ask the developer for a new
 build. Source checkouts are separate: an official-repository checkout follows
 `stable` and a fork or mirror follows `main`, until
-`hermes update --set-channel` picks another channel.
+`zeus update --set-channel` picks another channel.
 
 ### Commit builds
 
@@ -505,14 +505,14 @@ python scripts/release.py --channel pm-preview --build-commit my-branch --remote
 python scripts/release.py --channels --remote origin
 ```
 
-By default a preview channel installs as its own side-by-side app (`Hermes
+By default a preview channel installs as its own side-by-side app (`Zeus
 NAME`, its own package ID). To test an exact commit as the regular app instead,
 create the channel with `--branding stable`: it copies the published stable
 channel's name, icon and package ID, so the build installs over the official
 app, shares its desktop settings, and later updates follow the channel. Branding is fixed when the channel is
 created; repeat the flag on every dispatch of that channel and use a new channel
 name to change it. `--branding` needs `--channel`, since a plain one-off commit
-build always carries its `Hermes Agent <sha>` identity.
+build always carries its `ZeusAgent <sha>` identity.
 
 ```sh
 python scripts/release.py --channel my-commit --branding stable --build-commit SHA --remote origin --publish

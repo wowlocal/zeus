@@ -25,9 +25,9 @@ const gatewayMocks = vi.hoisted(() => {
   }
 })
 
-vi.mock('@/hermes', () => ({
+vi.mock('@/zeus', () => ({
   setApiRequestConnection: vi.fn(),
-  HermesGateway: class {
+  ZeusGateway: class {
     connectionState = 'closed'
     close = vi.fn(() => {
       this.connectionState = 'closed'
@@ -82,7 +82,7 @@ const {
 } = await import('./gateway')
 
 function installDesktop(stub: Record<string, unknown>): void {
-  ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = stub
+  ;(window as unknown as { zeusDesktop: unknown }).zeusDesktop = stub
 }
 
 beforeEach(() => {
@@ -96,7 +96,7 @@ afterEach(() => {
   vi.clearAllMocks()
   vi.restoreAllMocks()
   vi.useRealTimers()
-  delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
+  delete (window as unknown as { zeusDesktop?: unknown }).zeusDesktop
 })
 
 describe('ensureGatewayForProfile — secondary connect failure surfaces (#81094)', () => {
@@ -348,12 +348,12 @@ describe('secondary connection timeout (#93454)', () => {
 
   it('surfaces a rejected shared-primary route lookup instead of retrying it as a secondary dial', async () => {
     const getConnection = vi.fn(async () => {
-      throw new Error('Hermes gateway did not start')
+      throw new Error('Zeus gateway did not start')
     })
 
     installDesktop({ getConnection })
 
-    await expect(ensureGatewayForProfile('work')).rejects.toThrow('Hermes gateway did not start')
+    await expect(ensureGatewayForProfile('work')).rejects.toThrow('Zeus gateway did not start')
     expect(getConnection).toHaveBeenCalledTimes(1)
     expect(gatewayMocks.instances).toHaveLength(0)
   })

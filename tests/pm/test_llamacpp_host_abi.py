@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 
 import pm
-from hermes_cli.local_runtime import binaries, bootstrap
+from zeus_cli.local_runtime import binaries, bootstrap
 from pm import cli, install, paths, store
 from pm.lock import Facts, Lockfile
 
@@ -19,8 +19,8 @@ def payload(tmp_path, monkeypatch):
     root = tmp_path / "payload" / "tools"
     root.mkdir(parents=True)
     (root.parent / "manifest.json").write_text("{}")
-    monkeypatch.setenv("HERMES_RUNTIME_DIR", str(root))
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("ZEUS_RUNTIME_DIR", str(root))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path / "home"))
     monkeypatch.setattr(Path, "home", lambda: tmp_path)
     monkeypatch.setattr(store, "_native_machine", lambda: "x86_64")
     if pm.current_target() != "linux-x64":

@@ -70,7 +70,7 @@ def selected_tool_inputs(request: BuildRequest) -> list[Path]:
 
 def validate_channel_request(value: dict) -> dict:
     """Add native packaging constraints to the shared release protocol."""
-    from hermes_cli.release_channels import validate_request
+    from zeus_cli.release_channels import validate_request
     from scripts.releases.bundle_env import validate
 
     validate_request(value)
@@ -128,7 +128,7 @@ class BuildRequest:
         if bool(tag) == bool(commit):
             raise ValueError("exactly one of --tag or --commit is required")
         bundle_env = validate(bundle_env)
-        from hermes_cli.update_channel import is_commit_tag
+        from zeus_cli.update_channel import is_commit_tag
 
         # A commit build bakes its defaults whether it is tagless or runs the release pipeline on
         # its claim (commit.<stamp>-vX.Y.Z); a stable or canary release never does.
@@ -152,7 +152,7 @@ class BuildRequest:
                 git(source, "rev-parse", "--verify", f"refs/tags/{tag}^{{commit}}")
         release_epoch = None
         if tag:
-            from hermes_cli.update_channel import canary_timestamp, commit_timestamp
+            from zeus_cli.update_channel import canary_timestamp, commit_timestamp
 
             # A canary's or commit build's claim carries its build time.
             canary = canary_timestamp(tag) or commit_timestamp(tag)
@@ -309,7 +309,7 @@ def prepare(request: BuildRequest, *, clean: bool = False) -> Path:
 def _prepare(request: BuildRequest) -> Path:
     from scripts.bundles.desktop_toolchain import run_preparation
     from pm.lock import _write
-    from hermes_cli.runtime_state import _lock
+    from zeus_cli.runtime_state import _lock
 
     require_source(request.source, request.commit)
     owner = request.work / ".desktop-preparation"

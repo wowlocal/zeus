@@ -45,7 +45,7 @@ class _Entry:
 
 
 # One core name imported plainly, and one pair of names behind a try whose fallback is the OLD module; the
-# public MemoryProvider import is a plain one too. hermes_state_wal is a real Hermes top-level, so the
+# public MemoryProvider import is a plain one too. zeus_state_wal is a real Zeus top-level, so the
 # parser counts it as core.
 PLUGIN = """\
 from agent.memory_provider import MemoryProvider
@@ -53,15 +53,15 @@ from tools.registry import registry_helper
 try:
     from sqlite_support import apply_wal_with_fallback, wal_mode
 except ImportError:
-    from hermes_state_wal import apply_wal_with_fallback, wal_mode
+    from zeus_state_wal import apply_wal_with_fallback, wal_mode
 def data_dir():
     try:
         from plugins.plugin_storage import plugin_data_dir
     except Exception:
         try:
-            from hermes_constants import get_hermes_home
+            from zeus_constants import get_zeus_home
         except Exception:
-            get_hermes_home = None
+            get_zeus_home = None
 """
 
 
@@ -89,11 +89,11 @@ def core(tmp_path: Path):
     base = _commit(repo, {
         "agent/memory_provider.py": "class MemoryProvider: ...\n",
         "tools/registry.py": "def registry_helper(): ...\n",
-        "hermes_state_wal.py": WAL,
+        "zeus_state_wal.py": WAL,
         "sqlite_support.py": WAL,
-        "hermes_agent/compat/moves.py": "MOVES: dict[str, str] = {}\n",
+        "zeus_agent/compat/moves.py": "MOVES: dict[str, str] = {}\n",
         "plugins/plugin_storage.py": "def plugin_data_dir(name): ...\n",
-        "hermes_constants.py": "def get_hermes_home(): ...\n",
+        "zeus_constants.py": "def get_zeus_home(): ...\n",
     })
     return repo, base
 
@@ -113,19 +113,19 @@ def test_removing_a_name_a_pinned_plugin_imports_is_named_and_a_kept_spelling_is
     _commit(repo, {"tools/registry.py": "def registry_helper(): ...\n"})
 
     # The removed module only ever stood in for sqlite_support behind the plugin's own try: nothing breaks.
-    assert _check(repo, index, {"hermes_state_wal.py": None}) == []
+    assert _check(repo, index, {"zeus_state_wal.py": None}) == []
     # A compat move keeps a moved module importable under its old name.
     assert _check(repo, index, {
         "tools/registry.py": None, "tools/registry_core.py": "def registry_helper(): ...\n",
-        "hermes_agent/compat/moves.py": 'MOVES: dict[str, str] = {"tools.registry": "tools.registry_core"}\n'}) == []
+        "zeus_agent/compat/moves.py": 'MOVES: dict[str, str] = {"tools.registry": "tools.registry_core"}\n'}) == []
     # A try is judged branch by branch: with one name gone from BOTH spellings, neither import line works,
     # even though the other name still resolves in each.
     assert _check(repo, index, {"sqlite_support.py": "def apply_wal_with_fallback(conn): ...\n",
-                                "hermes_state_wal.py": "def apply_wal_with_fallback(conn): ...\n"}) == [
+                                "zeus_state_wal.py": "def apply_wal_with_fallback(conn): ...\n"}) == [
         ("__init__.py:4", "sqlite_support.wal_mode")]
     # Reading globals() binds no names: removing one from such a module is still a break.
     _commit(repo, {"tools/registry.py": "def registry_helper(): ...\n", "tools/registry_core.py": None,
-                   "hermes_agent/compat/moves.py": "MOVES: dict[str, str] = {}\n"})
+                   "zeus_agent/compat/moves.py": "MOVES: dict[str, str] = {}\n"})
     assert _check(repo, index, {"tools/registry.py": "def read():\n    return globals().get('x')\n"}) == [
         ("__init__.py:2", "tools.registry.registry_helper")]
 
@@ -141,8 +141,8 @@ ELSE_AND_TYPING = ("from typing import TYPE_CHECKING\nif TYPE_CHECKING:\n    fro
 
 @pytest.mark.parametrize("plugin, base, change, expected", [
     # Dropping a compat key, with no other file touched, unmaps the old module name.
-    ("from tools.old import helper\n", {"tools/new.py": "helper = 1\n", "hermes_agent/compat/moves.py": MOVED},
-     {"hermes_agent/compat/moves.py": "MOVES: dict[str, str] = {}\n"}, [("__init__.py:1", "tools.old.helper")]),
+    ("from tools.old import helper\n", {"tools/new.py": "helper = 1\n", "zeus_agent/compat/moves.py": MOVED},
+     {"zeus_agent/compat/moves.py": "MOVES: dict[str, str] = {}\n"}, [("__init__.py:1", "tools.old.helper")]),
     # ``from package import submodule`` is the submodule's file.
     ("from tools import registry\n", {"tools/__init__.py": "", "tools/registry.py": ""}, {"tools/registry.py": None},
      [("__init__.py:1", "tools.registry")]),
@@ -166,7 +166,7 @@ def test_what_counts_as_a_lost_import(tmp_path, plugin, base, change, expected):
     _git(source, "init", "-q")
     _git(core, "init", "-q")
     index = {"demo": cci.index_entry(_Entry(source, _commit(source, {"__init__.py": plugin})), tmp_path / "work")}
-    _commit(core, {"hermes_agent/compat/moves.py": "MOVES: dict[str, str] = {}\n", **base})
+    _commit(core, {"zeus_agent/compat/moves.py": "MOVES: dict[str, str] = {}\n", **base})
     assert _check(core, index, change) == expected
 
 
@@ -184,7 +184,7 @@ def test_a_symlink_in_the_plugin_repository_is_not_followed(tmp_path):
 def test_a_fallback_nested_in_the_handler_keeps_the_plugin_working(index, core):
     assert _check(core[0], index, {"plugins/plugin_storage.py": None}) == []
     # With the nested fallback gone too, the plugin runs on neither: the surviving branch is named.
-    assert _check(core[0], index, {"hermes_constants.py": None}) == [("__init__.py:12", "hermes_constants.get_hermes_home")]
+    assert _check(core[0], index, {"zeus_constants.py": None}) == [("__init__.py:12", "zeus_constants.get_zeus_home")]
 
 
 # A PEP 562 __getattr__ like core's facades: it serves a lookup table through a helper and caches what it serves.
@@ -233,9 +233,9 @@ def test_a_break_is_a_warning_naming_the_core_name_and_the_plugins_catalog_recor
     repo, _base = core
     # Judged against the BASE's published API: this tree publishes MemoryProvider and nothing else.
     api = json.dumps({"groups": [{"entries": ["agent.memory_provider:MemoryProvider"]}]})
-    base = _commit(repo, {"hermes_cli/data/plugin_api.json": api})
+    base = _commit(repo, {"zeus_cli/data/plugin_api.json": api})
     head = _commit(repo, {"agent/memory_provider.py": "class Other: ...\n",
-                          "hermes_state_wal.py": None, "sqlite_support.py": None})
+                          "zeus_state_wal.py": None, "sqlite_support.py": None})
     sha = next(iter(index.values())).sha
     catalog = tmp_path / "catalog"
     catalog.mkdir()
@@ -252,13 +252,13 @@ def test_a_break_is_a_warning_naming_the_core_name_and_the_plugins_catalog_recor
     out = capsys.readouterr().out
     # The core name, whether a plugin may rely on it, and who imports it.
     assert "`agent.memory_provider.MemoryProvider` (public API): 1 plugin: demo" in out
-    assert "`hermes_state_wal.wal_mode` (private): 1 plugin: demo" in out
+    assert "`zeus_state_wal.wal_mode` (private): 1 plugin: demo" in out
     # The plugin's catalog record: repo, subdir and pin, catalog file, and a link to the import line.
     assert f"repo: https://github.com/acme/demo-plugin (subdir `plugin`) @ `{sha[:12]}`" in out
     assert "plugin-catalog/demo.yaml" in out and "maintainer `acme`" in out and "1.4.0" in out
     assert f"https://github.com/acme/demo-plugin/blob/{sha}/plugin/__init__.py#L1" in out
     assert "::warning title=Breaks catalog plugin demo::" in out
-    assert "hermes_state_wal.wal_mode" in (tmp_path / "summary.md").read_text(encoding="utf-8")
+    assert "zeus_state_wal.wal_mode" in (tmp_path / "summary.md").read_text(encoding="utf-8")
     status = (tmp_path / "runner" / "review-status" / "catalog-core-imports" / "review-status.json").read_text(
         encoding="utf-8")
     (entry,) = json.loads(status.removeprefix("review_status="))

@@ -1,5 +1,5 @@
-import type { MouseTrackingMode } from '@hermes/ink'
-import type { ConfigFullResponse, ConfigMtimeResponse, ReloadMcpResponse } from '@hermes/shared/gateway-types'
+import type { MouseTrackingMode } from '@zeus/ink'
+import type { ConfigFullResponse, ConfigMtimeResponse, ReloadMcpResponse } from '@zeus/shared/gateway-types'
 import { useEffect, useRef } from 'react'
 
 import { resolveDetailsMode, resolveSections } from '../domain/details.js'
@@ -48,7 +48,7 @@ export const normalizeStatusBarFields = (raw: unknown): null | ReadonlySet<strin
 const BUSY_MODES = new Set<BusyInputMode>(['interrupt', 'queue', 'steer'])
 
 // TUI defaults to `queue` even though the framework default
-// (`hermes_cli/config.py`) is `interrupt`.  Rationale: in a full-screen
+// (`zeus_cli/config.py`) is `interrupt`.  Rationale: in a full-screen
 // TUI you're typically authoring the next prompt while the agent is
 // still streaming, and an unintended interrupt loses work.  Set
 // `display.busy_input_mode: interrupt` (or `steer`) explicitly to
@@ -379,7 +379,7 @@ export const applyDisplay = (
 }
 
 /** T9: on the shared owner the voice bit is the session's gateway `/voice` mode (`config.get
- *  key=voice`), not the owner process's HERMES_VOICE env, which Ink's own env never reflected. */
+ *  key=voice`), not the owner process's ZEUS_VOICE env, which Ink's own env never reflected. */
 export const hydrateVoiceMode = async (
   gw: GatewayClient,
   setVoiceEnabled: (v: boolean) => void,
@@ -419,7 +419,7 @@ export function useConfigSync({
     // can run long enough to delay prompt.submit on the single stdio RPC pipe.
     // Environment flags are enough to initialize the UI bit; the heavier status
     // check still runs when the user opens /voice.
-    setVoiceEnabled(process.env.HERMES_VOICE === '1')
+    setVoiceEnabled(process.env.ZEUS_VOICE === '1')
     void hydrateVoiceMode(gw, setVoiceEnabled, scope)
     quietRpc<ConfigMtimeResponse>(gw, 'config.get', { key: 'mtime', session_id: sid }).then(r => {
       if (!scope.isCurrent()) {return}

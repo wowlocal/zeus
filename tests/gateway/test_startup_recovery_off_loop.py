@@ -20,13 +20,13 @@ async def test_startup_recovery_reads_the_store_off_the_event_loop(tmp_path, mon
     from gateway.run_runtime import recover_profile_native_sessions
     from gateway.session_authority import initialize_session_authority
     from gateway.session_ingress_context import native_callback, register_transport_home
-    from hermes_constants import get_hermes_home
+    from zeus_constants import get_zeus_home
     from tests.gateway.test_command_bypass_active_session import _StubAdapter
 
-    monkeypatch.setenv('HERMES_HOME', str(tmp_path))
+    monkeypatch.setenv('ZEUS_HOME', str(tmp_path))
     monkeypatch.setenv('TELEGRAM_ALLOWED_USERS', '42')
-    monkeypatch.setattr('gateway.run._hermes_home', tmp_path)
-    monkeypatch.setattr('hermes_state.DEFAULT_DB_PATH', tmp_path / 'state.db')  # conftest repoints it per test
+    monkeypatch.setattr('gateway.run._zeus_home', tmp_path)
+    monkeypatch.setattr('zeus_state.DEFAULT_DB_PATH', tmp_path / 'state.db')  # conftest repoints it per test
     runner = GatewayRunner(GatewayConfig(multiplex_profiles=False, sessions_dir=tmp_path / 'sessions'))
     adapter = _StubAdapter(PlatformConfig(enabled=True, token='fixture', typing_indicator=False), Platform.TELEGRAM)
 
@@ -42,7 +42,7 @@ async def test_startup_recovery_reads_the_store_off_the_event_loop(tmp_path, mon
     first._schedule = lambda ref: None
     first.register(source)
     head = MessageEvent(text='queued while the owner went away', source=source, message_id='head')
-    with native_callback(runner, head, get_hermes_home()):
+    with native_callback(runner, head, get_zeus_home()):
         await first.admit_native(head)
 
     # The restart's owner: the queued row is in its store, the route is in this chat's index.

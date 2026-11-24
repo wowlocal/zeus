@@ -1,6 +1,6 @@
 """The session snapshot on disk never holds a secret, and the shell still keeps it (#62336).
 
-``hermes-snap-*.sh`` carries a terminal session's exports from one command to the next. A
+``zeus-snap-*.sh`` carries a terminal session's exports from one command to the next. A
 service credential an agent exported, or one the profile's ``.env`` defines, used to land in it
 in plaintext and come back after every delete. The values now travel in memory instead; these
 run the real local backend and real bash, and read the file itself.
@@ -31,7 +31,7 @@ def env(tmp_path, monkeypatch, request):
     home = tmp_path / "home"
     home.mkdir()
     (home / ".env").write_text("PORTAL_CLIENT_SECRET=SYNTH-dotenv\nODD_CUSTOM_NAME=SYNTH-dotenv-custom\n")
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
     monkeypatch.setenv("PORTAL_CLIENT_SECRET", "SYNTH-dotenv")
     monkeypatch.setenv("ODD_CUSTOM_NAME", "SYNTH-dotenv-custom")
     monkeypatch.setenv("TMPDIR", str(tmp_path))
@@ -51,7 +51,7 @@ def test_secret_exports_never_reach_the_snapshot_file(env):
         env.execute("export CHILD_API_KEY=SYNTH-child")
     # A name the session ever held stays a secret after it is unset, leaves .env and comes back.
     env.execute("unset ODD_CUSTOM_NAME")
-    (Path(os.environ["HERMES_HOME"]) / ".env").write_text("")
+    (Path(os.environ["ZEUS_HOME"]) / ".env").write_text("")
     env.execute("export ODD_CUSTOM_NAME=SYNTH-reintroduced")
     # A command that leaves IFS empty, then failed publishes, must neither leak nor lose them.
     env.execute("export IFS=''")

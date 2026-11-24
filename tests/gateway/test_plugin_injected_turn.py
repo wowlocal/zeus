@@ -23,7 +23,7 @@ import threading
 from pathlib import Path
 from types import SimpleNamespace
 
-import hermes_yaml as yaml
+import zeus_yaml as yaml
 import pytest
 
 from tests.waiting import async_wait_until
@@ -40,7 +40,7 @@ import json
 import sys
 import threading
 
-from hermes_cli.plugins import get_pre_tool_call_directive
+from zeus_cli.plugins import get_pre_tool_call_directive
 from tools.terminal_tool import _get_approval_callback
 
 
@@ -70,10 +70,10 @@ LIVE_TURN_VIEW = {"turn_origin": None, "caller_scoped": None, "approval": None, 
 
 
 def _load_plugin():
-    import hermes_cli.plugins as plugins_mod
-    from hermes_constants import get_hermes_home
+    import zeus_cli.plugins as plugins_mod
+    from zeus_constants import get_zeus_home
 
-    home = Path(get_hermes_home())
+    home = Path(get_zeus_home())
     plugin_dir = home / "plugins" / PLUGIN
     plugin_dir.mkdir(parents=True)
     (plugin_dir / "plugin.yaml").write_text(yaml.safe_dump(

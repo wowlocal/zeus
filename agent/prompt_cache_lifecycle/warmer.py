@@ -497,7 +497,7 @@ class PromptCacheWarmer:
             return decision.warm_cost
 
     def _refresh(self, run: _Run) -> None:
-        from hermes_logging import set_session_context
+        from zeus_logging import set_session_context
 
         set_session_context(run.billing.get("session_id") or "")  # the timer thread's log lines name the chat
         with run.lock:

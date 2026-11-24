@@ -19,7 +19,7 @@ description: >-
 maintainer: salismt
 tier: community
 category: tools
-requires_hermes: ">=0.23"
+requires_zeus: ">=0.23"
 docs_url: https://github.com/salismt/hermes-system-one#readme
 version: "0.4.1"
 platforms: []

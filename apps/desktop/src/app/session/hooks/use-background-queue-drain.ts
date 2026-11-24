@@ -29,7 +29,7 @@ import {
   sessionMatchesStoredId
 } from '@/store/session'
 import { $workingSessionIds } from '@/store/session-states'
-import type { SessionInfo } from '@/types/hermes'
+import type { SessionInfo } from '@/types/zeus'
 
 import type { SubmitTextOptions } from './use-prompt-actions/utils'
 

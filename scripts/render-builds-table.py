@@ -1,5 +1,5 @@
-#!/usr/bin/env -S bash -c 'exec "$BASH" "$(dirname "$0")/run-in-hermes-env" python3 "$0" "$@"'
-"""Render the release download tables into <!-- HERMES_BUILDS_TABLE -->, and
+#!/usr/bin/env -S bash -c 'exec "$BASH" "$(dirname "$0")/run-in-zeus-env" python3 "$0" "$@"'
+"""Render the release download tables into <!-- ZEUS_BUILDS_TABLE -->, and
 the same rows as standalone pages in the bucket.
 
 Runs after the build jobs of desktop-bundled-release.yml finish, including
@@ -20,7 +20,7 @@ so a build can be read straight from the download origin:
   releases/commit/<sha>/index.html  commit mode: every expected binary of
                                     one commit build, built or not
 
-Tables: Hermes Desktop (bundled) and Hermes Light, one row per (OS,
+Tables: Zeus Desktop (bundled) and Zeus Light, one row per (OS,
 arch). Feed manifests (latest*/light*/canary*.yml), blockmaps and mac .zip
 (an electron-updater delta target, not a user download) stay out of the
 tables on purpose; they still live in the bucket for the updater to
@@ -56,16 +56,16 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from scripts.releases import handoff, job_groups, r2, semver, stable, versioning
 from scripts.releases.desktop_targets import TARGETS as DESKTOP_TARGETS
 
-MARKER = "<!-- HERMES_BUILDS_TABLE -->"
-END_MARKER = "<!-- /HERMES_BUILDS_TABLE -->"
+MARKER = "<!-- ZEUS_BUILDS_TABLE -->"
+END_MARKER = "<!-- /ZEUS_BUILDS_TABLE -->"
 DEFAULT_REPO = "NousResearch/hermes-agent"
 
 # Asset name shapes (electron-builder artifactName in
 # apps/desktop/electron-builder.config.cjs):
-#   Hermes-0.28.0-mac-arm64.dmg        (bundled)
-#   HermesBundled-0.28.0-win-x64.msix  (bundled)
+#   Zeus-0.28.0-mac-arm64.dmg        (bundled)
+#   ZeusBundled-0.28.0-win-x64.msix  (bundled)
 _ASSET_RE = re.compile(
-    r"^(?P<app>HermesBundled|HermesLight)-(?P<version>[^-]+)"
+    r"^(?P<app>ZeusBundled|ZeusLight)-(?P<version>[^-]+)"
     r"-(?P<os>mac|win|linux)-(?P<arch>x64|arm64)\.(?P<ext>dmg|msix|AppImage)$"
 )
 
@@ -91,7 +91,7 @@ def parse_assets(names: list[str]) -> dict[str, dict[tuple[str, str], tuple[str,
     the basename, but the stored name keeps the full key so the download
     link points at the object's real location.
     """
-    out: dict[str, dict[tuple[str, str], tuple[str, str]]] = {"HermesBundled": {}, "HermesLight": {}}
+    out: dict[str, dict[tuple[str, str], tuple[str, str]]] = {"ZeusBundled": {}, "ZeusLight": {}}
     for name in names:
         base = name.rsplit("/", 1)[-1]
         m = _ASSET_RE.match(base)
@@ -107,7 +107,7 @@ def table_rows(assets_by_app: dict) -> list[tuple[str, list[tuple[str, str, str,
     a row exists only for an object that is actually in the bucket.
     """
     sections: list[tuple[str, list[tuple[str, str, str, str]]]] = []
-    for app, title in (("HermesBundled", "Hermes Desktop"), ("HermesLight", "Hermes Light (remote-only client)")):
+    for app, title in (("ZeusBundled", "Zeus Desktop"), ("ZeusLight", "Zeus Light (remote-only client)")):
         rows = []
         for key in _ROW_ORDER:
             entry = assets_by_app.get(app, {}).get(key)
@@ -178,15 +178,15 @@ def filter_names_for_version(names: list[str], version: str) -> list[str]:
 # A row needs a unique receipt-listed artifact and its uploaded object.
 _COMMIT_EXPECTED = [
     ("Windows x64 (MSIX)", "win32-x64",
-     r"^HermesBundled-[^-]+-win-x64\.msix$"),
+     r"^ZeusBundled-[^-]+-win-x64\.msix$"),
     ("Windows ARM64 (MSIX)", "win32-arm64",
-     r"^HermesBundled-[^-]+-win-arm64\.msix$"),
+     r"^ZeusBundled-[^-]+-win-arm64\.msix$"),
     ("Windows universal bundle (MSIXBUNDLE)", "windows-universal",
-     r"^HermesBundled-[^-]+-win\.msixbundle$"),
+     r"^ZeusBundled-[^-]+-win\.msixbundle$"),
     ("macOS Apple Silicon (DMG)", "darwin-arm64",
-     r"^HermesBundled-[^-]+-mac-arm64\.dmg$"),
+     r"^ZeusBundled-[^-]+-mac-arm64\.dmg$"),
     ("macOS Apple Silicon (ZIP)", "darwin-arm64",
-     r"^HermesBundled-[^-]+-mac-arm64\.zip$"),
+     r"^ZeusBundled-[^-]+-mac-arm64\.zip$"),
     ("Termux aarch64 (.deb)", "termux", r"^.*\.deb$"),
 ]
 
@@ -372,14 +372,14 @@ _PAGE_STYLE = (
 
 # The record a channel page keeps of the release it describes; the write
 # guard reads it back so an older tag re-run never regresses the page.
-_BUILD_META_RE = re.compile(r'<meta name="hermes-build" content="([^"]*)"')
+_BUILD_META_RE = re.compile(r'<meta name="zeus-build" content="([^"]*)"')
 
 
 def _page(title: str, build: str, body: list[str]) -> str:
     return (
         '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8">\n'
         '<meta name="viewport" content="width=device-width, initial-scale=1">\n'
-        f'<meta name="hermes-build" content="{html.escape(build, quote=True)}">\n'
+        f'<meta name="zeus-build" content="{html.escape(build, quote=True)}">\n'
         f"<title>{html.escape(title)}</title>\n<style>{_PAGE_STYLE}</style>\n</head>\n<body>\n"
         + "\n".join(body)
         + "\n</body>\n</html>\n"
@@ -418,11 +418,11 @@ def _bundle_env_html(bundle_env: dict[str, str | None] | None) -> list[str]:
 # Stable Release commit page keeps every downloadable artifact the legacy commit page listed
 # (including universal .msixbundle, macOS .zip and Termux .deb, which _ASSET_RE omits).
 _COMMIT_CLAIM_ASSETS = (
-    ("Windows", "Universal (x64 + arm64)", "MSIXBUNDLE", r"^HermesBundled-[^-]+-win\.msixbundle$"),
-    ("Windows", "x86 (64-bit)", "MSIX", r"^HermesBundled-[^-]+-win-x64\.msix$"),
-    ("Windows", "ARM (arm64 / aarch64)", "MSIX", r"^HermesBundled-[^-]+-win-arm64\.msix$"),
-    ("macOS", "Apple Silicon (M-series)", "DMG", r"^HermesBundled-[^-]+-mac-arm64\.dmg$"),
-    ("macOS", "Apple Silicon (M-series)", "ZIP", r"^HermesBundled-[^-]+-mac-arm64\.zip$"),
+    ("Windows", "Universal (x64 + arm64)", "MSIXBUNDLE", r"^ZeusBundled-[^-]+-win\.msixbundle$"),
+    ("Windows", "x86 (64-bit)", "MSIX", r"^ZeusBundled-[^-]+-win-x64\.msix$"),
+    ("Windows", "ARM (arm64 / aarch64)", "MSIX", r"^ZeusBundled-[^-]+-win-arm64\.msix$"),
+    ("macOS", "Apple Silicon (M-series)", "DMG", r"^ZeusBundled-[^-]+-mac-arm64\.dmg$"),
+    ("macOS", "Apple Silicon (M-series)", "ZIP", r"^ZeusBundled-[^-]+-mac-arm64\.zip$"),
     ("Termux (Android)", "ARM64 (aarch64)", ".deb", r"^.*\.deb$"),
 )
 
@@ -459,7 +459,7 @@ def render_page(tag: str, assets_by_app: dict, base_url: str,
                 bundle_env: dict[str, str | None] | None = None,
                 commit_files: list[str] | None = None) -> str:
     """The tag/channel page: the release-body download table as HTML."""
-    from hermes_cli.update_channel import is_commit_tag
+    from zeus_cli.update_channel import is_commit_tag
 
     commit_page = is_commit_tag(tag)
     if commit_page:
@@ -469,7 +469,7 @@ def render_page(tag: str, assets_by_app: dict, base_url: str,
             raise ValueError("A commit build page needs its exact source commit")
         commit_url = f"https://github.com/{quote(repo, safe='/')}/commit/{commit}"
         body = [
-            "<h1>Hermes Desktop commit build</h1>",
+            "<h1>Zeus Desktop commit build</h1>",
             f"<p>Commit build <code>{html.escape(tag)}</code> of {_link(commit_url)}<code>{commit}</code></a>. "
             "It updates nothing: no release, channel, feed or Store listing. Only objects this build "
             "actually staged in the bucket are listed.</p>",
@@ -479,7 +479,7 @@ def render_page(tag: str, assets_by_app: dict, base_url: str,
             raise ValueError("Only a commit build page lists bundle defaults")
         tag_url = f"https://github.com/{quote(repo, safe='/')}/releases/tag/{quote(tag, safe='')}"
         body = [
-            f"<h1>Hermes Desktop {r2.channel_for_tag(tag)} builds</h1>",
+            f"<h1>Zeus Desktop {r2.channel_for_tag(tag)} builds</h1>",
             f"<p>Release {_link(tag_url)}<code>{html.escape(tag)}</code></a>. Only objects this release "
             "actually staged in the bucket are listed.</p>",
         ]
@@ -527,7 +527,7 @@ def render_page(tag: str, assets_by_app: dict, base_url: str,
         ))
     body.extend(smoke_html(smoke_results))
     body.extend(_bundle_env_html(bundle_env))
-    title = "Hermes Desktop commit build" if commit_page else f"Hermes Desktop {r2.channel_for_tag(tag)} builds"
+    title = "Zeus Desktop commit build" if commit_page else f"Zeus Desktop {r2.channel_for_tag(tag)} builds"
     return _page(title, tag, body)
 
 
@@ -545,14 +545,14 @@ def render_commit_page(commit: str, names: list[str], base_url: str,
         cell = (f"{_link(url)}{html.escape(link_text)}</a>" if url and link_text else "—")
         rows.append([html.escape(label), html.escape(status), cell])
     body = [
-        f"<h1>Hermes commit build <code>{html.escape(commit[:12])}</code></h1>",
+        f"<h1>Zeus commit build <code>{html.escape(commit[:12])}</code></h1>",
         f"<p>Commit {_link(commit_url)}<code>{html.escape(commit)}</code></a>. Every expected binary is listed; "
         "built rows link to downloads; incomplete rows link to the build run when available.</p>",
         *_table(("Binary", "Status", "Download / diagnostics"), rows),
         *_bundle_env_html(bundle_env),
     ]
     body.extend(smoke_html(smoke_results))
-    return _page(f"Hermes commit build {commit[:12]}", commit, body)
+    return _page(f"Zeus commit build {commit[:12]}", commit, body)
 
 
 def recorded_build(page: str | None) -> str | None:
@@ -573,7 +573,7 @@ def supersedes(existing_page: str | None, tag: str) -> bool:
     recorded = recorded_build(existing_page)
     if not recorded:
         return True
-    from hermes_cli.update_channel import canary_timestamp, published_canary_timestamp
+    from zeus_cli.update_channel import canary_timestamp, published_canary_timestamp
     recorded_stamp = published_canary_timestamp(recorded)
     tag_stamp = canary_timestamp(tag)
     if (recorded_stamp is not None) != (tag_stamp is not None):
@@ -638,7 +638,7 @@ def r2_object_names(tag: str) -> list[str]:
 
     keys = r2_object_names_under(f"releases/tag/{tag}/")
     parsed = parse_attempt_ref(tag)
-    from hermes_cli.update_channel import release_version
+    from zeus_cli.update_channel import release_version
 
     return filter_names_for_version(keys, parsed[0] if parsed else (release_version(tag) or tag.lstrip("v")))
 
@@ -707,7 +707,7 @@ def _write_tag_page(args, archive: str, assets: dict, incomplete: list[str],
                     smoke_results: dict, *, commit_files: list[str] | None = None) -> None:
     """The archive's own page. A commit build's page links its commit, lists every staged
     downloadable artifact and lists its bundle defaults."""
-    from hermes_cli.update_channel import is_commit_tag
+    from zeus_cli.update_channel import is_commit_tag
     from scripts.releases.bundle_env import decode
 
     commit_page = is_commit_tag(archive)
@@ -756,7 +756,7 @@ def main() -> int:
                         help="With --summary-commit: comma-separated failed job names, "
                              "blamed on the Not built rows")
     parser.add_argument("--repo", default=DEFAULT_REPO)
-    parser.add_argument("--bundle-env-json", default=os.environ.get("HERMES_BUNDLE_ENV_JSON", ""),
+    parser.add_argument("--bundle-env-json", default=os.environ.get("ZEUS_BUNDLE_ENV_JSON", ""),
                         help="Explicit non-secret commit desktop bundle overrides, not the CI environment")
     parser.add_argument("--run-url", default=None,
                         help="Actual workflow run URL for incomplete-build diagnostics")
@@ -787,7 +787,7 @@ def main() -> int:
     archive = args.archive or args.tag
 
     if args.channel_build:
-        from hermes_cli.release_channels import ChannelReader
+        from zeus_cli.release_channels import ChannelReader
         from scripts.releases.channel_publish import read_request
         if args.tag or args.summary_commit or not args.summary_out or not args.r2_base_url:
             parser.error("Channel summary needs --summary-out and --r2-base-url; no tag/commit mode")
@@ -814,7 +814,7 @@ def main() -> int:
     if not args.tag:
         parser.error("--tag is required (or use --summary-commit for a commit build summary)")
 
-    from hermes_cli.update_channel import is_commit_tag
+    from zeus_cli.update_channel import is_commit_tag
 
     commit_claim = is_commit_tag(args.tag)
     incomplete: list[str] = []
@@ -864,7 +864,7 @@ def main() -> int:
     if not args.pending_run_url and not args.dry_run and not incomplete and names and not args.no_channel_page:
         write_channel_page(args.tag, assets, args.r2_base_url, repo=args.repo, smoke_results=smoke_results)
     if MARKER not in body:
-        print("::warning::release body has no HERMES_BUILDS_TABLE marker; leaving it unchanged")
+        print("::warning::release body has no ZEUS_BUILDS_TABLE marker; leaving it unchanged")
         return 0
 
     new_body = splice(body, block)

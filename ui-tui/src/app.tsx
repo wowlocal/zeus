@@ -1,4 +1,4 @@
-import { useStdout } from '@hermes/ink'
+import { useStdout } from '@zeus/ink'
 import { useStore } from '@nanostores/react'
 
 import { GatewayProvider } from './app/gatewayContext.js'

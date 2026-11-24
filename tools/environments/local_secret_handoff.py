@@ -1,6 +1,6 @@
 """Secret exports a local shell carries between commands in memory, never in the snapshot file.
 
-The session snapshot (``hermes-snap-*.sh``) carries a terminal session's exported variables
+The session snapshot (``zeus-snap-*.sh``) carries a terminal session's exported variables
 from one command to the next on disk. Secret values never go there (#62336): the dump sends each
 secret export's ``declare -p`` text to an inherited pipe and writes only its generation id as the
 file's first line (``base_session_env._secret_handoff_snippet``). This store keeps declarations by
@@ -26,7 +26,7 @@ _MAX_HANDOFF_BYTES = 16 * 1024 * 1024
 # Unpublished dumps kept per snapshot file besides the one it names: with overlapping commands the
 # last to report need not be the last to publish, and a failed publish leaves one that never will.
 _PENDING_KEPT = 8
-_GEN_PREFIX = b"__hermes_sgen="
+_GEN_PREFIX = b"__zeus_sgen="
 
 
 def profile_secret_names() -> tuple[str, ...]:
@@ -35,11 +35,11 @@ def profile_secret_names() -> tuple[str, ...]:
     needs no naming convention). The bound scope under multiplex, else the active home's file;
     ``load_env_file`` is memoised on the file's bytes, so a call per command costs one read."""
     from agent.secret_scope import current_secret_scope, load_env_file
-    from hermes_cli.env_loader import source_supplied_names
-    from hermes_constants import get_hermes_home
+    from zeus_cli.env_loader import source_supplied_names
+    from zeus_constants import get_zeus_home
 
     scope = current_secret_scope()
-    names = set(scope) if scope is not None else set(load_env_file(get_hermes_home() / ".env"))
+    names = set(scope) if scope is not None else set(load_env_file(get_zeus_home() / ".env"))
     names.update(source_supplied_names())
     return tuple(sorted(n for n in names if isinstance(n, str) and _SHELL_ENV_NAME_RE.fullmatch(n)))
 
@@ -91,7 +91,7 @@ def _pipe_with(data: bytes) -> int:
         feed()
     else:
         # health: allow HX012 -- writes bytes already in hand to a pipe; reads no scope, config or home
-        threading.Thread(target=feed, name="hermes-secret-restore", daemon=True).start()
+        threading.Thread(target=feed, name="zeus-secret-restore", daemon=True).start()
     return read_fd
 
 
@@ -149,7 +149,7 @@ class SecretHandoff:
         os.set_inheritable(write_fd, True)
         # health: allow HX012 -- reads one pipe into this object; no secret scope, config or home is read
         reader = threading.Thread(
-            target=self._collect, args=(read_fd, snapshot_path, generation), name="hermes-secret-handoff",
+            target=self._collect, args=(read_fd, snapshot_path, generation), name="zeus-secret-handoff",
             daemon=True)
         reader.start()
         return write_fd, reader

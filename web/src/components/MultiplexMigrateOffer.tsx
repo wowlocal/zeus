@@ -3,7 +3,7 @@ import { CardContent } from "@nous-research/ui/ui/components/card";
 import type { GatewayMigratePlan } from "@/lib/api";
 
 /**
- * Gateway card footer offering `hermes gateway migrate --multiplex` when several profiles each run their
+ * Gateway card footer offering `zeus gateway migrate --multiplex` when several profiles each run their
  * own gateway (with the plan's blockers). Renders nothing when there is nothing to offer.
  */
 export function MultiplexMigrateOffer({ plan, onMigrate }: { plan: GatewayMigratePlan; onMigrate: () => void }) {

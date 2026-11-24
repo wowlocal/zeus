@@ -251,7 +251,7 @@ class TestClassifier:
         assert "vaultSecret" not in js
         assert "data-vault-secret" not in js
         assert "elements[f.index]" not in js
-        assert '"data-hermes-vault-slot-" + nonce' in js and """'="' + f.index""" in js
+        assert '"data-zeus-vault-slot-" + nonce' in js and """'="' + f.index""" in js
         assert 'f.token === "current-password" && el.type !== "password"' in js  # a password fill never lands in a text box
         # unmasking moved to build_fill_verify_js: the fill cannot know what the page kept
         assert "removeAttribute(" not in js
@@ -778,7 +778,7 @@ class TestBrowserVaultTools:
         with p[0], p[1], p[2], p[3]:
             out = json.loads(browser_vault_tool.browser_vault_fill(meta.id, task_id="t", with_identifier=False))
         assert out["success"] is True
-        inspection = [sid for expr, sid in sup.sent if 'setAttribute("data-hermes-vault-slot-" + nonce' in expr]
+        inspection = [sid for expr, sid in sup.sent if 'setAttribute("data-zeus-vault-slot-" + nonce' in expr]
         unstamp = [sid for expr, sid in sup.sent if "unstamped" in expr]
         assert inspection == ["S1"] and unstamp == ["S1"]
 
@@ -1587,12 +1587,12 @@ class TestVaultHardening:
     def test_read_block_vault_dir_and_contents(self, tmp_path, monkeypatch):
         import agent.file_safety as fs
 
-        home = tmp_path / "hermes_home"
+        home = tmp_path / "zeus_home"
         vault = home / "vault"
         vault.mkdir(parents=True)
         (vault / "vault.key").write_text("k", encoding="utf-8")
         (vault / "vault.json.enc").write_text("blob", encoding="utf-8")
-        monkeypatch.setattr(fs, "_hermes_home_path", lambda: home)
+        monkeypatch.setattr(fs, "_zeus_home_path", lambda: home)
 
         for target in (vault, vault / "vault.key", vault / "vault.json.enc"):
             err = fs.get_read_block_error(str(target))
@@ -1601,16 +1601,16 @@ class TestVaultHardening:
     def test_read_block_leaves_sibling_dirs_alone(self, tmp_path, monkeypatch):
         import agent.file_safety as fs
 
-        home = tmp_path / "hermes_home"
+        home = tmp_path / "zeus_home"
         other = home / "vaults-notes"
         other.mkdir(parents=True)
         f = other / "notes.txt"
         f.write_text("hi", encoding="utf-8")
-        monkeypatch.setattr(fs, "_hermes_home_path", lambda: home)
+        monkeypatch.setattr(fs, "_zeus_home_path", lambda: home)
         assert fs.get_read_block_error(str(f)) is None
 
     def test_backup_secret_names_include_vault_files(self):
-        from hermes_cli.backup import _SECRET_FILE_NAMES
+        from zeus_cli.backup import _SECRET_FILE_NAMES
 
         assert "vault.key" in _SECRET_FILE_NAMES
         assert "vault.json.enc" in _SECRET_FILE_NAMES
@@ -1806,7 +1806,7 @@ class TestTwoFactor:
                          "type": "password"}]
 
         def run(expression):
-            if 'setAttribute("data-hermes-vault-slot-"' in expression:
+            if 'setAttribute("data-zeus-vault-slot-"' in expression:
                 page["stamped"] = True
                 return {"success": True, "result": json.dumps(controls)}
             if "removeAttribute(slot)" in expression and "unstamped" in expression:
@@ -1875,7 +1875,7 @@ class TestTwoFactor:
 
         def retarget_after_inspection(expression, **kw):
             out = inspect(expression, **kw)
-            if 'setAttribute("data-hermes-vault-slot-" + nonce' in expression:
+            if 'setAttribute("data-zeus-vault-slot-" + nonce' in expression:
                 sup.sid = "S2"  # e.g. focus_page from a concurrent browser call
             return out
 

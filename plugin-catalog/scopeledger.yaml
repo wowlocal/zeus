@@ -7,7 +7,7 @@ version: "0.3.7"
 maintainer: 221h0lmes
 tier: community
 category: tools
-requires_hermes: ">=0.23.1"
+requires_zeus: ">=0.23.1"
 platforms: [linux]
 readme: true
 known_issues:

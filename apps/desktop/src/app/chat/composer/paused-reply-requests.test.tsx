@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ReviewShipBar } from '@/app/right-sidebar/review/ship-bar'
 import { PaneVisibleContext } from '@/components/pane-shell/pane-visibility'
-import type { HermesReviewFile } from '@/global'
+import type { ZeusReviewFile } from '@/global'
 import { I18nProvider } from '@/i18n'
 import { en } from '@/i18n/en'
 import { $parkedQueueSessions, $queuedPromptsBySession, getQueuedPrompts } from '@/store/composer-queue'
@@ -106,7 +106,7 @@ function Screen({ busy, sent }: { busy: boolean; sent: Sent }) {
   )
 }
 
-const file: HermesReviewFile = { added: 1, path: 'a.ts', removed: 0, staged: false, status: 'M' }
+const file: ZeusReviewFile = { added: 1, path: 'a.ts', removed: 0, staged: false, status: 'M' }
 const queuedTexts = () => getQueuedPrompts(STORED).map(({ text }) => text)
 const settle = () => act(async () => void (await new Promise(resolve => setTimeout(resolve, 25))))
 
@@ -122,7 +122,7 @@ function renderScreen(busy: boolean) {
   return { sent, setBusy: (next: boolean) => view.rerender(<Screen busy={next} sent={sent} />) }
 }
 
-const askHermesToShip = () => fireEvent.click(screen.getByText(coding.agentShip))
+const askZeusToShip = () => fireEvent.click(screen.getByText(coding.agentShip))
 
 describe("the review pane's ship request while the chat's reply is paused for its continuation", () => {
   beforeEach(() => {
@@ -149,7 +149,7 @@ describe("the review pane's ship request while the chat's reply is paused for it
   it('is sent at once when no reply is paused', async () => {
     const { sent } = renderScreen(false)
 
-    askHermesToShip()
+    askZeusToShip()
 
     await waitFor(() => expect(sent.onSubmit).toHaveBeenCalledTimes(1))
     expect(sent.onSubmit.mock.calls[0]![0]).toBe(coding.agentShipPrompt)
@@ -160,7 +160,7 @@ describe("the review pane's ship request while the chat's reply is paused for it
     markReplyPaused(STORED)
     const { sent, setBusy } = renderScreen(false)
 
-    askHermesToShip()
+    askZeusToShip()
     await settle()
 
     // Not ahead of the continuation.
@@ -196,7 +196,7 @@ describe("the review pane's ship request while the chat's reply is paused for it
     continueReplyPause(STORED)
     const { sent, setBusy } = renderScreen(true)
 
-    askHermesToShip()
+    askZeusToShip()
     await settle()
 
     expect(sent.onSteer).not.toHaveBeenCalled()

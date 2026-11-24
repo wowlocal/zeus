@@ -77,7 +77,7 @@ vi.mock('electron', () => {
   }
 
   return {
-    app: { getPath: () => '/nonexistent-hermes-test', isReady: () => true },
+    app: { getPath: () => '/nonexistent-zeus-test', isReady: () => true },
     BrowserWindow: FakeWindow,
     net: {},
     session: {
@@ -92,7 +92,7 @@ vi.mock('electron', () => {
 const { fetchLinkTitle } = await import('./link-metadata')
 
 const curlReply = (status: number, location: string) =>
-  `\nhermes-content-type:text/html\nhermes-url-effective:x\nhermes-url-redirect:${location}\nhermes-http-code:${status}`
+  `\nzeus-content-type:text/html\nzeus-url-effective:x\nzeus-url-redirect:${location}\nzeus-http-code:${status}`
 
 const hookVerdict = (url: string) =>
   new Promise<boolean>(resolve => h.hook!({ resourceType: 'mainFrame', url }, ({ cancel }) => resolve(cancel)))

@@ -12,16 +12,16 @@ def test_first_party_model_routes_keep_capabilities_and_reasoning(monkeypatch, m
     from agent import models_dev
     from agent.model_metadata import _resolve_codex_oauth_context_length_with_source, has_codex_context_variant
     from agent.reasoning_effort import codex_supported_efforts, is_astra_model
-    from hermes_cli.codex_models import get_codex_model_ids
-    from hermes_cli.model_normalize import normalize_model_for_provider
-    from hermes_cli import models
+    from zeus_cli.codex_models import get_codex_model_ids
+    from zeus_cli.model_normalize import normalize_model_for_provider
+    from zeus_cli import models
     from run_agent import AIAgent
 
     monkeypatch.setattr(models_dev, "fetch_models_dev", lambda *a, **k: {})
     monkeypatch.setattr("agent.process_bootstrap.OpenAI", lambda **k: SimpleNamespace())
     monkeypatch.setattr("model_tools.get_tool_definitions", lambda *a, **k: [])
-    monkeypatch.setattr("hermes_cli.codex_models._read_default_model", lambda *a: None)
-    monkeypatch.setattr("hermes_cli.codex_models._read_cache_models", lambda *a: [])
+    monkeypatch.setattr("zeus_cli.codex_models._read_default_model", lambda *a: None)
+    monkeypatch.setattr("zeus_cli.codex_models._read_cache_models", lambda *a: [])
     monkeypatch.setattr(models, "fetch_api_models", lambda *a, **k: [model, "text-embedding-3-large"])
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     monkeypatch.delenv("OPENAI_BASE_URL", raising=False)
@@ -29,10 +29,10 @@ def test_first_party_model_routes_keep_capabilities_and_reasoning(monkeypatch, m
     assert models.provider_model_ids("openai-api", force_refresh=True) == [model]
     # Offline hints and stale catalogs aren't proof that the account offers GPT-6.2.
     assert model not in get_codex_model_ids()
-    monkeypatch.setattr("hermes_cli.codex_models._read_cache_models", lambda *a: [model, "gpt-6-sol"])
-    monkeypatch.setattr("hermes_cli.codex_models._read_default_model", lambda *a: model)
+    monkeypatch.setattr("zeus_cli.codex_models._read_cache_models", lambda *a: [model, "gpt-6-sol"])
+    monkeypatch.setattr("zeus_cli.codex_models._read_default_model", lambda *a: model)
     assert model not in get_codex_model_ids()
-    monkeypatch.setattr("hermes_cli.codex_models._fetch_models_from_api", lambda *a, **k: [model])
+    monkeypatch.setattr("zeus_cli.codex_models._fetch_models_from_api", lambda *a, **k: [model])
     assert model in get_codex_model_ids(access_token="test-token")
     assert not is_astra_model(model)  # GPT-6 Astra's preview entitlement gate must not hide 6.2.
     assert not has_codex_context_variant(model)  # No unverified 900K opt-in.
@@ -79,7 +79,7 @@ def test_first_party_model_routes_keep_capabilities_and_reasoning(monkeypatch, m
 @pytest.mark.parametrize("model,rate", [("gpt-6.2-astra", Decimal(8)), ("gpt-6.2-sol", Decimal(2))])
 def test_published_tiers_price_the_served_request_not_the_subscription(monkeypatch, model, rate):
     from agent import usage_pricing as pricing
-    from hermes_cli.models import resolve_fast_mode_overrides
+    from zeus_cli.models import resolve_fast_mode_overrides
 
     # The launch discount changes at midnight Pacific on March 1, not midnight UTC.
     for now, multiplier in ((datetime(2027, 3, 1, 7, 59, tzinfo=UTC), 3),
@@ -111,7 +111,7 @@ def test_published_tiers_price_the_served_request_not_the_subscription(monkeypat
 
 def test_new_contract_does_not_capture_predecessors_or_invent_variants():
     from agent.reasoning_effort import CODEX_LEGACY_EFFORTS, codex_supported_efforts
-    from hermes_cli.models import model_supports_ultrafast, resolve_fast_mode_overrides
+    from zeus_cli.models import model_supports_ultrafast, resolve_fast_mode_overrides
 
     assert "none" in codex_supported_efforts("gpt-6-sol")
     for model in ("gpt-6.2-astra-pro", "gpt-6.2-sol-mini", "gpt-6.2-sol-900k", "gpt-6.20-sol"):
@@ -139,7 +139,7 @@ def test_gpt62_plus_moves_system_prompt_to_leading_developer_item(model):
     from agent.transports.codex import ResponsesApiTransport
 
     transport = ResponsesApiTransport()
-    prompt = "You are Hermes. Follow repository conventions."
+    prompt = "You are Zeus. Follow repository conventions."
     msgs = [{"role": "system", "content": prompt}, {"role": "user", "content": "Hi"}]
     kwargs = transport.build_kwargs(
         model=model, messages=msgs, tools=[], session_id="sess-62",
@@ -180,7 +180,7 @@ def test_pre_gpt62_and_xai_keep_top_level_instructions(model, is_xai):
     from agent.transports.codex import ResponsesApiTransport
 
     transport = ResponsesApiTransport()
-    prompt = "You are Hermes."
+    prompt = "You are Zeus."
     kwargs = transport.build_kwargs(
         model=model,
         messages=[{"role": "system", "content": prompt}, {"role": "user", "content": "Hi"}],
@@ -197,7 +197,7 @@ def test_gpt62_places_developer_prompt_after_compaction_checkpoint():
     from agent.transports.codex import ResponsesApiTransport
 
     transport = ResponsesApiTransport()
-    prompt = "You are Hermes."
+    prompt = "You are Zeus."
     history = [
         {"role": "system", "content": prompt},
         {"role": "user", "content": "Earlier ask"},
@@ -271,7 +271,7 @@ def test_gpt62_preserves_developer_prompt_when_request_overrides_replaces_input(
     from agent.transports.codex import ResponsesApiTransport
 
     transport = ResponsesApiTransport()
-    prompt = "You are Hermes."
+    prompt = "You are Zeus."
     kwargs = transport.build_kwargs(
         model="gpt-6.2-sol",
         messages=[{"role": "system", "content": prompt}, {"role": "user", "content": "Original"}],
@@ -320,7 +320,7 @@ def test_codex_auxiliary_moves_system_prompt_to_developer_item_for_gpt62_plus():
     client = SimpleNamespace(
         responses=SimpleNamespace(),
         base_url="https://api.openai.com/v1",
-        _hermes_aux_effective_provider="openai-api",
+        _zeus_aux_effective_provider="openai-api",
     )
     msgs = [
         {"role": "system", "content": "Summarize the transcript accurately."},

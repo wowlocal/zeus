@@ -103,7 +103,7 @@ function add(root, tag, props) {
 function shadowHost(root) {
   const host = add(root, "div"); host.shadowRoot = new Root(host); return host;
 }
-function stamp(n, index) { n.setAttribute("data-hermes-vault-slot-__NONCE__", String(index)); return n; }
+function stamp(n, index) { n.setAttribute("data-zeus-vault-slot-__NONCE__", String(index)); return n; }
 function select(root, options, selected) {
   const s = add(root, "select");
   s.options = options.map(([value, text]) => ({ value, textContent: text }));
@@ -309,7 +309,7 @@ class TestOverlappingOperations:
                 "const second = " + build_fill_verify_js(fills, nonce="n2", expected_origin=ORIGIN, unstamp=False) + "; "
                 + build_unstamp_js("n2") + "; "
                 "const left = document.all().filter((n) => Object.keys(n.attrs).some((k) => k.startsWith("
-                "'data-hermes-vault-slot'))).length; "
+                "'data-zeus-vault-slot'))).length; "
                 "return { first, second, left }; })()")
         landed = {"landed": 1, "reverted": 0, "missing": []}
         assert json.loads(_node(setup, expr)) == {"first": landed, "second": landed, "left": 0}

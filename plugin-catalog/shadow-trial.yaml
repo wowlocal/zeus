@@ -2,25 +2,25 @@ name: shadow-trial
 repo: https://github.com/akinduroifedayo/shadow
 sha: "e2174545b1c5f7f6c7f92bf81ddee6c10b0c04b0"
 description: >-
-  Try a model on your real Hermes conversations with blind judging in both
+  Try a model on your real Zeus conversations with blind judging in both
   orders and switch models with undo, warning first if a saved test does not
   back the switch. Reads recent saved conversation turns, context, and
   working-folder metadata from the active profile. Replays read files inside
   their original working folders and block writes, sends, and commands.
   Replays, judging, and setup checks spend your provider tokens through
-  Hermes. Optional web lookups use Hermes web tools and are on by default.
+  Zeus. Optional web lookups use Zeus web tools and are on by default.
   Stores scrubbed test records and switch state in the plugin's profile-local
   data folder. The live isolation check reads memory and fingerprints profile
   data locally. It compares credential-file metadata without reading their
   contents. To show which models are signed in it checks credential env var
-  names (not values) and uses only the logged-in flag from Hermes's read-only
+  names (not values) and uses only the logged-in flag from Zeus's read-only
   Codex login-status check; credentials are never printed or stored. Makes no
   network calls of its own. No telemetry. Switching writes model defaults
-  through Hermes config commands. Tests run in background Hermes controllers.
+  through Zeus config commands. Tests run in background Zeus controllers.
 maintainer: akinduroifedayo
 tier: community
 category: models
-requires_hermes: ">=0.23.1"
+requires_zeus: ">=0.23.1"
 version: "0.1.1"
 title: "Shadow"
 platforms: [macos, linux]

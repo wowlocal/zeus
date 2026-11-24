@@ -17,8 +17,8 @@ test('a commit claim keeps the same native identity as its tagless SHA', () => {
 
 test.each(['darwin', 'win32'])('the real %s commit claim stamp passes fresh-install smoke but never enables updates', platform => {
   const stamp = buildStampPayload({ commit, source: 'commit-build', dirty: false, branch: null },
-    { HERMES_DESKTOP_VARIANT: 'bundled', HERMES_BUILD_COMMIT: commit, HERMES_PAYLOAD_TAG: tag },
-    platform, { runtime: { commands: { hermes: { executable: 'python', args: [] } } } })
+    { ZEUS_DESKTOP_VARIANT: 'bundled', ZEUS_BUILD_COMMIT: commit, ZEUS_PAYLOAD_TAG: tag },
+    platform, { runtime: { commands: { zeus: { executable: 'python', args: [] } } } })
   const options = { commit, tag, platform }
   expect(verifyBundleStamp(stamp, options)).toBe(releaseVersion(tag))
   for (const [key, value] of [['source', 'git'], ['branch', 'main'],
@@ -31,7 +31,7 @@ test.each(['darwin', 'win32'])('the real %s commit claim stamp passes fresh-inst
   }
   if (platform === 'darwin') {
     const plist = { CFBundleIdentifier: bundleIdentity(commit, tag).appId,
-      CFBundleShortVersionString: releaseVersion(tag), CFBundleExecutable: 'Hermes' }
+      CFBundleShortVersionString: releaseVersion(tag), CFBundleExecutable: 'Zeus' }
     expect(verifyMacMetadata(plist, stamp, options)).toBe(releaseVersion(tag))
   }
 })

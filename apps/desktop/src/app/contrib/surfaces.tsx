@@ -47,7 +47,7 @@ export function LegacySessionRedirect() {
   return <Navigate replace to={sessionId ? sessionRoute(sessionId) : NEW_CHAT_ROUTE} />
 }
 
-/** The retired Move to Hermes Cloud page, which the portal's link still opens. */
+/** The retired Move to Zeus Cloud page, which the portal's link still opens. */
 function MoveToCloudRedirect() {
   return <Navigate replace to={backupSettingsHrefForLegacy(useLocation().search)} />
 }

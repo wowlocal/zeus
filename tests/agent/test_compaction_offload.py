@@ -4,7 +4,7 @@ Threshold ``compress()``, the prepared pass (``compression.prepare_ahead``) and 
 (``compress_now``, also the cache-expiry and gateway-hygiene owners) all plan through the write-free
 ``_plan_compaction_window``; the summarizer reads the window's original results (``summary_view``), and only
 once a summary exists is each tool result the compaction removed or shortened written byte-exact to
-``$HERMES_HOME/cache/pruned/`` with its stub naming the file (and the summary row listing it). A failed or
+``$ZEUS_HOME/cache/pruned/`` with its stub naming the file (and the summary row listing it). A failed or
 aborted summary writes nothing; a failed write keeps that result whole and the compaction still commits; a
 sandboxed backend (which cannot ``read_file`` host paths) keeps plain stubs and writes nothing.
 """
@@ -28,7 +28,7 @@ _SUMMARY = "## Goal\nRead the files.\n## Progress\nRead them."
 
 @pytest.fixture
 def home(tmp_path, monkeypatch):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     monkeypatch.setenv("TERMINAL_ENV", "local")
     return tmp_path
 
@@ -93,7 +93,7 @@ def _archived(home) -> list[Path]:
 
 
 def _archived_dir() -> list[Path]:
-    return _archived(Path(os.environ["HERMES_HOME"]))
+    return _archived(Path(os.environ["ZEUS_HOME"]))
 
 
 def _assert_pointers_name_byte_exact_originals(home, originals, rows):
@@ -288,8 +288,8 @@ def test_only_a_backend_that_can_open_archives_gets_archive_pointers(home, monke
     assert ARCHIVE_POINTER_SEP not in prompt
 
 
-@pytest.mark.parametrize(("backend", "visible"), [("docker", "/root/.hermes/cache/pruned/"),
-                                                 ("ssh", "~/.hermes/cache/pruned/")])
+@pytest.mark.parametrize(("backend", "visible"), [("docker", "/root/.zeus/cache/pruned/"),
+                                                 ("ssh", "~/.zeus/cache/pruned/")])
 def test_the_summary_window_offload_names_the_sandbox_path_on_a_publishing_backend(home, monkeypatch, backend, visible):
     """The results a summary replaces are archived on a sandboxed backend too, with the path its read_file opens."""
     monkeypatch.setenv("TERMINAL_ENV", backend)

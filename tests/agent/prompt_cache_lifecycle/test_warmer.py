@@ -204,7 +204,7 @@ def test_timer_delay_keeps_a_ten_second_margin():
 def test_chat_completions_gateway_is_warmed_on_the_tier_it_keeps(priced, tmp_path, monkeypatch):
     """A Claude request through a Chat Completions gateway (Nous Portal, OpenRouter) is replayed on
     that wire on the ``1h`` schedule it asked for: the Portal keeps 1h like Anthropic."""
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     agent = _agent(api_mode="chat_completions", provider="nous", _cache_ttl="1h", client=_Client())
     request = {
         "model": "anthropic/claude-opus-5.5", "max_tokens": 8192, "stream": True,
@@ -226,7 +226,7 @@ def test_warming_needs_no_config_and_slow_responses_refresh_sooner(priced, tmp_p
     finish refreshes 200 s sooner: the entry's lifetime started when the request was sent."""
     import time as _time
 
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     (tmp_path / "config.yaml").write_text("{}\n")
     agent = _agent()
     warmer = pcw.get_prompt_cache_warmer(agent)

@@ -1,6 +1,6 @@
 # Catalog entry for privacy-shield (subdir of the MOTHR/security-suite monorepo).
 # Owner submission (Rule 5): submitted by MOTHR, owner of the plugin repo.
-# Validated with `hermes plugins validate` + `hermes plugins doctor --ci`
+# Validated with `zeus plugins validate` + `zeus plugins doctor --ci`
 # at this exact commit against a fresh clone.
 name: privacy-shield
 repo: https://github.com/MOTHR/hermes-security-suite
@@ -12,7 +12,7 @@ tier: community
 category: general
 docs_url: https://github.com/MOTHR/hermes-security-suite#readme
 version: "1.9.6"
-requires_hermes: ">=0.21.5"
+requires_zeus: ">=0.21.5"
 readme: true
 platforms: []
 known_issues:

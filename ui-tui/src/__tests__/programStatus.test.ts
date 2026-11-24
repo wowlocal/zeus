@@ -23,10 +23,10 @@ describe('OSC 7501 program status', () => {
   it('matches the classic CLI encoder and strips every control the spec refuses', () => {
     const seq = encodeProgramStatus('blocked', 'permission', 'Allow\ncommand?\u0085 x')
 
-    expect(seq.startsWith('\x1b]7501;state=blocked:app=hermes:kind=permission:msg=')).toBe(true)
+    expect(seq.startsWith('\x1b]7501;state=blocked:app=zeus:kind=permission:msg=')).toBe(true)
     expect(seq.endsWith('\x1b\\')).toBe(true)
     expect(decode(seq)).toBe('Allow command? x')
-    expect(encodeProgramStatus('working', 'permission')).toBe('\x1b]7501;state=working:app=hermes\x1b\\')
+    expect(encodeProgramStatus('working', 'permission')).toBe('\x1b]7501;state=working:app=zeus\x1b\\')
   })
 
   it('a prompt outranks busy, and an answered prompt falls back to working, then the turn outcome', () => {

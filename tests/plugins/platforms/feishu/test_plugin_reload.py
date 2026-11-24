@@ -1,6 +1,6 @@
 """A Feishu plugin load must run the card helpers from the plugin directory it loads.
 
-The directory loader imports a plugin as ``hermes_plugins.<slug>`` and evicts that namespace on
+The directory loader imports a plugin as ``zeus_plugins.<slug>`` and evicts that namespace on
 reload; a module imported by absolute path lands under ``plugins.platforms.feishu.*`` instead, so
 neither a reload nor a plugin copy elsewhere ever reaches its code. Every lane that calls the
 ``cards`` helpers (the adapter itself, clarify/choice cards, synthetic events) is checked.
@@ -14,9 +14,9 @@ from types import SimpleNamespace
 
 import pytest
 
-from hermes_cli.plugins import PluginManager
-from hermes_cli.plugins_loader import _evict_modules
-from hermes_cli.plugins_manifest import PluginManifest
+from zeus_cli.plugins import PluginManager
+from zeus_cli.plugins_loader import _evict_modules
+from zeus_cli.plugins_manifest import PluginManifest
 
 _FEISHU_DIR = Path(__file__).resolve().parents[4] / "plugins" / "platforms" / "feishu"
 # Appended to the copy's cards/authz.py: later definitions win, so the reloaded helpers answer
@@ -45,7 +45,7 @@ def validate_card_action(adapter, *, event, state, label, ident):
 def plugin_copy(tmp_path):
     plugin_dir = tmp_path / "feishu"
     shutil.copytree(_FEISHU_DIR, plugin_dir, ignore=shutil.ignore_patterns("__pycache__"))
-    manager = PluginManager(scope_key=str(tmp_path / "hermes"))
+    manager = PluginManager(scope_key=str(tmp_path / "zeus"))
     manifest = PluginManifest(name="feishu-platform", key="feishu-platform", kind="platform",
                               source="bundled", path=str(plugin_dir))
     loaded: set[str] = set()

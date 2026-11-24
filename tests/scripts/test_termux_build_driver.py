@@ -168,8 +168,8 @@ def test_release_workflow_runs_the_shared_sequence(build_fixture, job_name, iden
     (repo / "termux-build/payload").symlink_to(payload, target_is_directory=True)
     tools = log.parent / "tools"
     (tools / "python3").symlink_to(sys.executable)
-    env.update(HERMES_BUILD_COMMIT=identity[1] if identity[0] == "--commit" else "",
-               HERMES_PAYLOAD_TAG=identity[1] if identity[0] == "--tag" else "")
+    env.update(ZEUS_BUILD_COMMIT=identity[1] if identity[0] == "--commit" else "",
+               ZEUS_PAYLOAD_TAG=identity[1] if identity[0] == "--tag" else "")
     workflow = YAML(typ="safe").load((ROOT / ".github/workflows/desktop-bundled-release.yml").read_text())
     call = next(step for step in workflow["jobs"][job_name]["steps"]
                 if str(step.get("uses", "")).endswith("/.github/actions/build-termux-deb"))
@@ -214,7 +214,7 @@ def test_builder_image_identity_covers_all_inputs(tmp_path, changed_input):
         return result.stdout.splitlines()[-1]
 
     original = image()
-    assert original.startswith("ghcr.io/fixture/hermes-termux-builder:")
+    assert original.startswith("ghcr.io/fixture/zeus-termux-builder:")
     assert image() == original
     changed = scripts / "termux-builder.Dockerfile" if changed_input == "Dockerfile" else repo / "pm/lock.json"
     before = changed.read_bytes()
@@ -270,4 +270,4 @@ def test_builder_image_no_push_falls_back_to_digest_pinned_base_image(tmp_path, 
     image = result.stdout.splitlines()[-1]
     assert image == f"termux/termux-docker@{termux_docker_digest()}", image
     calls = docker_log.read_text(encoding="utf-8").splitlines()
-    assert len(calls) == 1 and calls[0].startswith("manifest inspect ghcr.io/nousresearch/hermes-termux-builder:")
+    assert len(calls) == 1 and calls[0].startswith("manifest inspect ghcr.io/nousresearch/zeus-termux-builder:")

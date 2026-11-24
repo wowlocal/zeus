@@ -6,7 +6,7 @@ from typing import Any, Callable
 
 from . import r2 as r2_module
 from .semver import compare, is_release_version
-from hermes_cli.update_channel import canary_timestamp, is_canary_tag, published_canary_timestamp
+from zeus_cli.update_channel import canary_timestamp, is_canary_tag, published_canary_timestamp
 
 ARCHES = ("arm64",)  # Apple Silicon only: no Intel macOS build ships
 _HASH_PATTERN = re.compile(r"^[A-Za-z0-9+/]{86}==$")
@@ -25,7 +25,7 @@ def _darwin_feed(channel: str, light: bool = False) -> dict[str, Any]:
 # ---------------------------------------------------------------------------
 
 def parse_mac_feed(text: str) -> dict[str, Any]:
-    import hermes_yaml as yaml  # lazy: YAML support loads only on the feed path
+    import zeus_yaml as yaml  # lazy: YAML support loads only on the feed path
 
     feed = yaml.safe_load(text)
     if (
@@ -83,14 +83,14 @@ def merge_mac_feeds(legs: dict[str, str], tag: str, light: bool = False,
     artifact URLs into the immutable per-release tag namespace. `archive` keys
     that namespace (the attempt ref for stable attempts); `tag` stays the
     version identity."""
-    import hermes_yaml as yaml  # lazy
+    import zeus_yaml as yaml  # lazy
 
-    from hermes_cli.update_channel import release_version
+    from zeus_cli.update_channel import release_version
 
     version = release_version(tag) or ""
     if not is_release_version(version):
         raise ValueError("Invalid macOS release tag")
-    from hermes_cli.update_channel import is_commit_tag
+    from zeus_cli.update_channel import is_commit_tag
 
     if is_commit_tag(tag):
         raise ValueError("Commit builds have no macOS feed")
@@ -104,7 +104,7 @@ def merge_mac_feeds(legs: dict[str, str], tag: str, light: bool = False,
         leg = parse_mac_feed(legs[name])
         if str(leg.get("version")) != version:
             raise ValueError(f"Feed version does not match {tag}")
-        prefix = f"{'HermesLight' if light else 'HermesBundled'}-{version}-mac-{ARCHES[index]}"
+        prefix = f"{'ZeusLight' if light else 'ZeusBundled'}-{version}-mac-{ARCHES[index]}"
         if not any(f.get("url") == f"{prefix}.zip" for f in leg["files"]):
             raise ValueError(f"Missing native ZIP for {ARCHES[index]}")
         for file_entry in leg["files"]:

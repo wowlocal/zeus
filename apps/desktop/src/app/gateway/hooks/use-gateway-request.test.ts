@@ -1,4 +1,4 @@
-import type { GatewayWsUrlResult } from '@hermes/shared'
+import type { GatewayWsUrlResult } from '@zeus/shared'
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -11,10 +11,10 @@ const gatewayMocks = vi.hoisted(() => ({
   }>
 }))
 
-vi.mock('@/hermes', async importOriginal => {
-  const actual = await importOriginal<typeof HermesModule>()
+vi.mock('@/zeus', async importOriginal => {
+  const actual = await importOriginal<typeof ZeusModule>()
 
-  class FakeHermesGateway {
+  class FakeZeusGateway {
     connectionState = 'closed'
     wsUrl = ''
     request = vi.fn()
@@ -47,7 +47,7 @@ vi.mock('@/hermes', async importOriginal => {
     }
   }
 
-  return { ...actual, HermesGateway: FakeHermesGateway }
+  return { ...actual, ZeusGateway: FakeZeusGateway }
 })
 
 // A secondary's reopen does `await import('@/store/session-states')` (store/gateway.ts). Load that
@@ -55,8 +55,8 @@ vi.mock('@/hermes', async importOriginal => {
 // out on a loaded runner.
 import '@/store/session-states'
 
-import type * as HermesModule from '@/hermes'
-import type { HermesGateway } from '@/hermes'
+import type * as ZeusModule from '@/zeus'
+import type { ZeusGateway } from '@/zeus'
 import {
   backendTransitionFor,
   beginBackendTransition,
@@ -84,7 +84,7 @@ interface TestGateway {
   wsUrl?: string
 }
 
-const fakeGateway = { connectionState: 'open' } as unknown as HermesGateway
+const fakeGateway = { connectionState: 'open' } as unknown as ZeusGateway
 
 const remoteConnection = {
   authMode: 'oauth' as const,
@@ -132,7 +132,7 @@ function installRemoteDesktop() {
     }
   )
 
-  Object.defineProperty(window, 'hermesDesktop', {
+  Object.defineProperty(window, 'zeusDesktop', {
     configurable: true,
     value: { getConnection, getConnectionFor, getGatewayWsUrl, getGatewayWsUrlFor }
   })
@@ -161,7 +161,7 @@ function installPrimaryDesktop(authMode: 'oauth' | 'token') {
   const getConnectionFor = vi.fn()
   const getGatewayWsUrlFor = vi.fn()
 
-  Object.defineProperty(window, 'hermesDesktop', {
+  Object.defineProperty(window, 'zeusDesktop', {
     configurable: true,
     value: { getConnection, getConnectionFor, getGatewayWsUrl, getGatewayWsUrlFor }
   })
@@ -181,8 +181,8 @@ async function activateRemoteGateway() {
   const desktop = installRemoteDesktop()
   const primary = makePrimaryGateway()
 
-  setPrimaryGateway(primary as unknown as HermesGateway, 'default')
-  $gateway.set(primary as unknown as HermesGateway)
+  setPrimaryGateway(primary as unknown as ZeusGateway, 'default')
+  $gateway.set(primary as unknown as ZeusGateway)
   await ensureGatewayForAgent('ssh-source', 'research')
 
   const gateway = $gateway.get() as unknown as TestGateway
@@ -243,7 +243,7 @@ afterEach(() => {
   $connection.set(null)
   $gatewayState.set('idle')
   $activeGatewayProfile.set('default')
-  Reflect.deleteProperty(window, 'hermesDesktop')
+  Reflect.deleteProperty(window, 'zeusDesktop')
 })
 
 describe('useGatewayRequest', () => {
@@ -269,8 +269,8 @@ describe('useGatewayRequest', () => {
     const primary = makePrimaryGateway()
     primary.request.mockRejectedValueOnce(new Error('connection closed')).mockResolvedValueOnce({ recovered: true })
 
-    setPrimaryGateway(primary as unknown as HermesGateway, 'default')
-    $gateway.set(primary as unknown as HermesGateway)
+    setPrimaryGateway(primary as unknown as ZeusGateway, 'default')
+    $gateway.set(primary as unknown as ZeusGateway)
     $gatewayState.set('open')
 
     const { result } = renderHook(() => useGatewayRequest())
@@ -289,8 +289,8 @@ describe('useGatewayRequest', () => {
     primary.connectionState = 'closed'
     primary.request.mockRejectedValueOnce(new Error('connection closed')).mockResolvedValueOnce({ recovered: true })
 
-    setPrimaryGateway(primary as unknown as HermesGateway, 'default')
-    $gateway.set(primary as unknown as HermesGateway)
+    setPrimaryGateway(primary as unknown as ZeusGateway, 'default')
+    $gateway.set(primary as unknown as ZeusGateway)
     $gatewayState.set('open')
 
     const { result } = renderHook(() => useGatewayRequest())
@@ -344,8 +344,8 @@ describe('useGatewayRequest', () => {
           rejectRequest = reject
         })
     )
-    setPrimaryGateway(primary as unknown as HermesGateway, 'default')
-    $gateway.set(primary as unknown as HermesGateway)
+    setPrimaryGateway(primary as unknown as ZeusGateway, 'default')
+    $gateway.set(primary as unknown as ZeusGateway)
     $gatewayState.set('open')
     const { result } = renderHook(() => useGatewayRequest())
 
@@ -380,8 +380,8 @@ describe('useGatewayRequest', () => {
           finishRecovery = resolve
         })
     )
-    setPrimaryGateway(primary as unknown as HermesGateway, 'default')
-    $gateway.set(primary as unknown as HermesGateway)
+    setPrimaryGateway(primary as unknown as ZeusGateway, 'default')
+    $gateway.set(primary as unknown as ZeusGateway)
     $gatewayState.set('closed')
     const { result } = renderHook(() => useGatewayRequest())
     const pending = result.current.requestGateway('prompt.submit', { text: 'local-only' }).catch(error => error)
@@ -418,8 +418,8 @@ describe('useGatewayRequest', () => {
               outcome === 'resolves' ? resolve(localConnection) : reject(new Error('local backend unavailable'))
           })
       )
-      setPrimaryGateway(primary as unknown as HermesGateway, 'default')
-      $gateway.set(primary as unknown as HermesGateway)
+      setPrimaryGateway(primary as unknown as ZeusGateway, 'default')
+      $gateway.set(primary as unknown as ZeusGateway)
       $gatewayState.set('closed')
       const { result } = renderHook(() => useGatewayRequest())
       const pending = result.current.requestGateway('prompt.submit', { text: 'local-only' }).catch(error => error)
@@ -453,8 +453,8 @@ describe('useGatewayRequest', () => {
           releaseMint = () => resolve({ ok: true as const, wsUrl: 'ws://127.0.0.1:5151/api/ws?token=fresh-local' })
         })
     )
-    setPrimaryGateway(primary as unknown as HermesGateway, 'default')
-    $gateway.set(primary as unknown as HermesGateway)
+    setPrimaryGateway(primary as unknown as ZeusGateway, 'default')
+    $gateway.set(primary as unknown as ZeusGateway)
     $gatewayState.set('closed')
     const { result } = renderHook(() => useGatewayRequest())
     const pending = result.current.requestGateway('prompt.submit', { text: 'local-only' }).catch(error => error)
@@ -516,7 +516,7 @@ describe('useGatewayRequest', () => {
 
   it('surfaces a missing optional scoped mint bridge without falling back to a stale ticket or local lookup', async () => {
     const { desktop, gateway } = await activateRemoteGateway()
-    Reflect.deleteProperty(window.hermesDesktop, 'getGatewayWsUrlFor')
+    Reflect.deleteProperty(window.zeusDesktop, 'getGatewayWsUrlFor')
 
     const { result } = renderHook(() => useGatewayRequest())
 
@@ -535,8 +535,8 @@ describe('useGatewayRequest', () => {
     const primary = makePrimaryGateway()
     primary.request.mockRejectedValueOnce(new Error('connection closed')).mockResolvedValueOnce({ recovered: true })
 
-    setPrimaryGateway(primary as unknown as HermesGateway, 'default')
-    $gateway.set(primary as unknown as HermesGateway)
+    setPrimaryGateway(primary as unknown as ZeusGateway, 'default')
+    $gateway.set(primary as unknown as ZeusGateway)
     $gatewayState.set('closed')
 
     const { result } = renderHook(() => useGatewayRequest())
@@ -567,12 +567,12 @@ describe('useGatewayRequest', () => {
         })
       }
 
-      Object.defineProperty(window, 'hermesDesktop', { configurable: true, value: desktop })
+      Object.defineProperty(window, 'zeusDesktop', { configurable: true, value: desktop })
 
       const primary = makePrimaryGateway()
       primary.request.mockRejectedValueOnce(new Error('connection closed')).mockResolvedValueOnce({ recovered: true })
-      setPrimaryGateway(primary as unknown as HermesGateway, connection.profile)
-      $gateway.set(primary as unknown as HermesGateway)
+      setPrimaryGateway(primary as unknown as ZeusGateway, connection.profile)
+      $gateway.set(primary as unknown as ZeusGateway)
       $activeGatewayProfile.set(connection.profile)
       $gatewayState.set('closed')
 
@@ -603,11 +603,11 @@ describe('useGatewayRequest', () => {
     const dropped = {
       connectionState: 'closed',
       request: vi.fn().mockRejectedValue(new Error('connection closed'))
-    } as unknown as HermesGateway
+    } as unknown as ZeusGateway
 
     const getConnection = vi.fn(() => new Promise(() => undefined))
 
-    ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = { getConnection }
+    ;(window as unknown as { zeusDesktop: unknown }).zeusDesktop = { getConnection }
     $gateway.set(dropped)
 
     const { result } = renderHook(() => useGatewayRequest())
@@ -635,9 +635,9 @@ describe('a planned sandbox restart of a plugin-run profile', () => {
     $profileRemoteOverrides.set({
       work: { host: '127.0.0.1:47972', launcher: { plugin: 'openshell' }, url: 'http://127.0.0.1:47972' }
     })
-    setPrimaryGateway(primary as unknown as HermesGateway, 'work')
+    setPrimaryGateway(primary as unknown as ZeusGateway, 'work')
     $activeGatewayRoute.set('work')
-    $gateway.set(primary as unknown as HermesGateway)
+    $gateway.set(primary as unknown as ZeusGateway)
     $gatewayState.set('open')
 
     return primary
@@ -699,8 +699,8 @@ describe('a planned sandbox restart of a plugin-run profile', () => {
     primary.request.mockRejectedValueOnce(silent).mockResolvedValueOnce({ token: 'a second run' })
 
     if (!launched) {
-      setPrimaryGateway(primary as unknown as HermesGateway, 'default')
-      $gateway.set(primary as unknown as HermesGateway)
+      setPrimaryGateway(primary as unknown as ZeusGateway, 'default')
+      $gateway.set(primary as unknown as ZeusGateway)
       $gatewayState.set('open')
     }
 
@@ -720,7 +720,7 @@ describe('a write the old backend already received, cut off during a planned tra
   afterEach(() => $activeGatewayRoute.set('default'))
 
   const HEARTBEAT_CUT = 'WebSocket heartbeat acknowledgement timed out'
-  const CLOSED_CUT = 'Hermes gateway connection closed'
+  const CLOSED_CUT = 'Zeus gateway connection closed'
 
   // The primary socket of a plugin-run profile. The first request reaches the backend the profile is
   // on now, which runs it; its answer is lost in the cut. Everything after reaches the backend the
@@ -743,9 +743,9 @@ describe('a write the old backend already received, cut off during a planned tra
     $profileRemoteOverrides.set({
       work: { host: '127.0.0.1:47972', launcher: { plugin: 'some-plugin' }, url: 'http://127.0.0.1:47972' }
     })
-    setPrimaryGateway(primary as unknown as HermesGateway, 'work')
+    setPrimaryGateway(primary as unknown as ZeusGateway, 'work')
     $activeGatewayRoute.set('work')
-    $gateway.set(primary as unknown as HermesGateway)
+    $gateway.set(primary as unknown as ZeusGateway)
     $gatewayState.set('open')
 
     return { primary, ran }
@@ -837,9 +837,9 @@ describe('a write the old backend already received, cut off during a planned tra
     $profileRemoteOverrides.set({
       work: { host: '127.0.0.1:47972', launcher: { plugin: 'some-plugin' }, url: 'http://127.0.0.1:47972' }
     })
-    setPrimaryGateway(primary as unknown as HermesGateway, 'work')
+    setPrimaryGateway(primary as unknown as ZeusGateway, 'work')
     $activeGatewayRoute.set('work')
-    $gateway.set(primary as unknown as HermesGateway)
+    $gateway.set(primary as unknown as ZeusGateway)
     $gatewayState.set('open')
     beginBackendTransition('work', 'restarting', { source: 'launcher' })
 
@@ -865,14 +865,14 @@ describe('a write the old backend already received, cut off during a planned tra
 
       // The socket was already down: the request was refused before anything was written to it.
       primary.request
-        .mockRejectedValueOnce(new Error('Hermes gateway is not connected'))
+        .mockRejectedValueOnce(new Error('Zeus gateway is not connected'))
         .mockResolvedValueOnce({ ok: true })
       $profileRemoteOverrides.set({
         work: { host: '127.0.0.1:47972', launcher: { plugin: 'some-plugin' }, url: 'http://127.0.0.1:47972' }
       })
-      setPrimaryGateway(primary as unknown as HermesGateway, 'work')
+      setPrimaryGateway(primary as unknown as ZeusGateway, 'work')
       $activeGatewayRoute.set('work')
-      $gateway.set(primary as unknown as HermesGateway)
+      $gateway.set(primary as unknown as ZeusGateway)
       $gatewayState.set('open')
       beginBackendTransition('work', kind, { source })
 

@@ -110,11 +110,11 @@ const EXPLICIT_DOWNLOAD_ROUTES: Record<string, string[]> = {
 /** A renderer-supplied download route, when it is an allow-listed one; anything else throws, so
  *  the save never fetches an arbitrary gateway path. */
 export function explicitDownloadPath(raw: unknown): string {
-  const parsed = new URL(String(raw ?? ''), 'http://hermes.local')
+  const parsed = new URL(String(raw ?? ''), 'http://zeus.local')
   const keys = EXPLICIT_DOWNLOAD_ROUTES[parsed.pathname]
 
   if (
-    parsed.origin !== 'http://hermes.local' ||
+    parsed.origin !== 'http://zeus.local' ||
     !keys ||
     [...parsed.searchParams.keys()].some(key => !keys.includes(key)) ||
     !keys.every(key => parsed.searchParams.get(key))
@@ -169,7 +169,7 @@ export async function resolveGatewayFileBackend<T>(
 // concurrent saves into the same directory from sharing a temp file. The leading
 // dot hides the in-flight file in Finder/ls while it exists.
 export function downloadTempPath(destPath: string): string {
-  return path.join(path.dirname(destPath), `.hermes-download-${crypto.randomBytes(4).toString('hex')}.part`)
+  return path.join(path.dirname(destPath), `.zeus-download-${crypto.randomBytes(4).toString('hex')}.part`)
 }
 
 // Stream `res` to `destPath`, honoring backpressure. Bytes land in a sibling
@@ -456,7 +456,7 @@ export function destroyStalledBody(res: StallWatchableBody, idleMs: number): voi
 
   const arm = (): void => {
     stop()
-    timer = setTimeout(() => res.destroy(new Error(`Hermes backend download stalled: no data for ${idleMs}ms`)), idleMs)
+    timer = setTimeout(() => res.destroy(new Error(`Zeus backend download stalled: no data for ${idleMs}ms`)), idleMs)
   }
 
   const watch = (): void => {

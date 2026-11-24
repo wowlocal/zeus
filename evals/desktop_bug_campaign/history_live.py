@@ -20,7 +20,7 @@ out = Path(args.output).resolve()
 out.mkdir(parents=True, exist_ok=False)
 home = Path(tempfile.mkdtemp(prefix='history-'+tag+'-', dir=out))
 os.environ['HOME'] = str(home)
-os.environ['HERMES_HOME'] = str(home)
+os.environ['ZEUS_HOME'] = str(home)
 from persistence.conversation.messages import NewMessage
 from persistence.conversation.sessions import NewSession
 from persistence_assembly import open_persistence, profile_scope
@@ -36,15 +36,15 @@ with open_persistence(profile_scope(home=home), eager=True) as store:
     store.messages.append('history-control', NewMessage(role='user', content='CONTROL_USER'))
     store.messages.append('history-control', NewMessage(role='assistant', content='CONTROL_REPLY'))
 env = {k: v for k, v in os.environ.items() if k in ['PATH', 'HOME', 'LANG', 'USER', 'VIRTUAL_ENV']}
-env.update(HOME=str(home), HERMES_HOME=str(home), HERMES_DASHBOARD_SESSION_TOKEN='history-fixture-token', PYTHONPATH=repo, HERMES_NONINTERACTIVE='1')
-cmd=[sys.executable, '-m', 'hermes_cli.main', 'serve', '--host', '127.0.0.1', '--port', str(args.port), '--isolated']
+env.update(HOME=str(home), ZEUS_HOME=str(home), ZEUS_DASHBOARD_SESSION_TOKEN='history-fixture-token', PYTHONPATH=repo, ZEUS_NONINTERACTIVE='1')
+cmd=[sys.executable, '-m', 'zeus_cli.main', 'serve', '--host', '127.0.0.1', '--port', str(args.port), '--isolated']
 log=open(out/(tag+'-serve.log'),'w',encoding='utf-8')
 p=subprocess.Popen(cmd,cwd=repo,env=env,stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT)
 frames=[]
 try:
     for _ in range(120):
         try:
-            req=urllib.request.Request(f'http://127.0.0.1:{args.port}/api/status',headers={'X-Hermes-Token':'history-fixture-token'})
+            req=urllib.request.Request(f'http://127.0.0.1:{args.port}/api/status',headers={'X-Zeus-Token':'history-fixture-token'})
             status=json.load(urllib.request.urlopen(req,timeout=2));break
         except Exception:
             if p.poll() is not None: raise RuntimeError('serve exited')

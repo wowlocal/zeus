@@ -25,7 +25,7 @@ def test_linux_workflow_shell_selects_the_right_userland(tmp_path, target):
     result = subprocess.run([arg.replace("{0}", str(step_file)) for arg in shlex.split(shell)],
                             env={**os.environ, **env, "GITHUB_WORKSPACE": str(tmp_path),
                                  "GITHUB_ENV": str(tmp_path / "env"), "GITHUB_PATH": str(tmp_path / "paths"),
-                                 "HERMES_NODE": "", "HERMES_PYTHON": "", "X64_BOOTSTRAP_PYTHON": ""},
+                                 "ZEUS_NODE": "", "ZEUS_PYTHON": "", "X64_BOOTSTRAP_PYTHON": ""},
                             capture_output=True, text=True, check=False)
     assert result.returncode != 0
     if target == "linux-arm64":
@@ -60,7 +60,7 @@ def test_accept_forwards_appimage_digest_to_checks_worker(tmp_path):
     script = Path(__file__).resolve().parents[2] / "scripts/ci/linux_x64_userland.sh"
     release = tmp_path / "apps/desktop/release"
     release.mkdir(parents=True)
-    appimage = release / "HermesBundled-0.1.0-linux-x64.AppImage"
+    appimage = release / "ZeusBundled-0.1.0-linux-x64.AppImage"
     payload = b"AppImage-fixture-bytes"
     appimage.write_bytes(payload)
     expected_digest = hashlib.sha256(payload).hexdigest()

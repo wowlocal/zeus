@@ -19,7 +19,7 @@ from pathlib import Path
 
 import pytest
 
-from hermes_cli.runtime_state import collect_generations, lease_directory, leases_held, runtime_lock
+from zeus_cli.runtime_state import collect_generations, lease_directory, leases_held, runtime_lock
 from pm.environments import activate_dependencies, install_state_dir, runtime_facts_path, site_packages
 from pm.filesystem import lock_fd
 from pm.install_states import collect_orphan_install_states
@@ -34,7 +34,7 @@ non_root = pytest.mark.skipif(getattr(os, "geteuid", lambda: 1)() == 0, reason="
 def install(tmp_path, monkeypatch):
     project = tmp_path / "project"
     project.mkdir()
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path / "home"))
     return project, install_state_dir(project)
 
 

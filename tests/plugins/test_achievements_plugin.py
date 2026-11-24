@@ -1,4 +1,4 @@
-"""Tests for the bundled hermes-achievements dashboard plugin.
+"""Tests for the bundled zeus-achievements dashboard plugin.
 
 These target the two behaviors that matter for official integration:
 
@@ -10,9 +10,9 @@ These target the two behaviors that matter for official integration:
   takes minutes.
 
 The upstream repo ships its own unittest suite under
-``plugins/hermes-achievements/tests/`` covering the achievement engine
+``plugins/zeus-achievements/tests/`` covering the achievement engine
 internals (tier math, secret-state handling, catalog invariants). These
-tests live at the hermes-agent level and focus on the integration
+tests live at the zeus-agent level and focus on the integration
 contract: the plugin scans ALL of your sessions, not the first 200.
 """
 from __future__ import annotations
@@ -31,7 +31,7 @@ import pytest
 PLUGIN_MODULE_PATH = (
     Path(__file__).resolve().parents[2]
     / "plugins"
-    / "hermes-achievements"
+    / "zeus-achievements"
     / "dashboard"
     / "plugin_api.py"
 )
@@ -39,7 +39,7 @@ PLUGIN_MODULE_PATH = (
 
 @pytest.fixture
 def plugin_api(tmp_path, monkeypatch):
-    """Load plugin_api with isolated ~/.hermes so state/snapshot files don't collide.
+    """Load plugin_api with isolated ~/.zeus so state/snapshot files don't collide.
 
     We load the module fresh per test because the plugin keeps module-level
     caches (``_SNAPSHOT_CACHE``, ``_SCAN_STATUS``, background thread handle).
@@ -304,7 +304,7 @@ def test_scan_sessions_never_opens_a_writable_session_db(plugin_api, tmp_path, m
     from persistence_assembly import open_persistence, profile_scope
     from tests.fixtures.storage_seed import seed_messages, seed_session
 
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     with open_persistence(profile_scope(home=tmp_path)) as seed:
         seed_session(seed, "s1", "cli")
         seed_messages(seed, "s1", {"role": "user", "content": "hello"})
@@ -345,7 +345,7 @@ def test_data_dir_refuses_a_deleted_or_renamed_profile_home(plugin_api, tmp_path
     from tests.fixtures.dead_profile_home import dead_named_home
 
     home = dead_named_home(tmp_path / "dead", move)
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
     with pytest.raises(FileNotFoundError, match="Named profile home does not exist"):
         plugin_api._data_dir()
     assert not home.exists()
@@ -359,9 +359,9 @@ def test_data_dir_falls_back_only_when_plugin_storage_is_missing(plugin_api, tmp
     from tests.fixtures.dead_profile_home import dead_named_home
 
     home = dead_named_home(tmp_path / "dead", move)
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
     fallback = []
-    monkeypatch.setattr(plugin_api, "mkdir_under_hermes_home", lambda path: fallback.append(path) or path)
+    monkeypatch.setattr(plugin_api, "mkdir_under_zeus_home", lambda path: fallback.append(path) or path)
     with pytest.raises(FileNotFoundError, match="Named profile home does not exist"):
         plugin_api._data_dir()
     assert fallback == []
@@ -372,8 +372,8 @@ def test_data_dir_falls_back_only_when_plugin_storage_is_missing(plugin_api, tmp
             raise ImportError(name)
         return real_import(name, *args, **kwargs)
     monkeypatch.setattr(builtins, "__import__", no_plugin_storage)
-    assert plugin_api._data_dir() == home / "plugin-data" / "hermes-achievements"
-    assert fallback == [home / "plugin-data" / "hermes-achievements"]
+    assert plugin_api._data_dir() == home / "plugin-data" / "zeus-achievements"
+    assert fallback == [home / "plugin-data" / "zeus-achievements"]
 
 
 @pytest.mark.parametrize("move", ("delete", "rename"))
@@ -382,12 +382,12 @@ def test_write_json_does_not_recreate_a_home_removed_after_its_dir_resolved(plug
     deleted or renamed in between."""
     import shutil
 
-    from hermes_constants import mark_named_profile_deleted
+    from zeus_constants import mark_named_profile_deleted
 
-    home = tmp_path / "live" / ".hermes" / "profiles" / "b"
+    home = tmp_path / "live" / ".zeus" / "profiles" / "b"
     home.mkdir(parents=True)
     (home / "config.yaml").write_text("{}\n", encoding="utf-8")
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
     resolve = plugin_api._data_file
 
     def resolve_then_move(name):

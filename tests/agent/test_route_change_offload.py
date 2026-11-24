@@ -129,6 +129,6 @@ def test_early_turn_exit_ends_machine_warming():
 
 def test_list_cache_ttl_falls_back_to_short_tier():
     agent = SimpleNamespace(_anthropic_prompt_cache_policy=lambda: (True, False), platform="cli")
-    with patch("hermes_cli.config.load_config_readonly", return_value={"prompt_caching": {"cache_ttl": []}}):
+    with patch("zeus_cli.config.load_config_readonly", return_value={"prompt_caching": {"cache_ttl": []}}):
         _init_prompt_cache_config(agent)
     assert agent._cache_ttl == "5m" and not agent._cache_disabled

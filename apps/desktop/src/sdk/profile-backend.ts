@@ -44,7 +44,7 @@ export interface ClearProfileBackendInput {
 export const profileBackendFeatures = Object.freeze({ beforeApply: true, prepare: true, purpose: true })
 
 function profileBackendBridge() {
-  const desktop = window.hermesDesktop
+  const desktop = window.zeusDesktop
 
   if (
     !desktop?.setProfileBackend ||
@@ -52,7 +52,7 @@ function profileBackendBridge() {
     !desktop.clearProfileBackend ||
     !desktop.confirmClearProfileBackend
   ) {
-    throw new Error('This build of Hermes Desktop cannot run a profile through a plugin.')
+    throw new Error('This build of Zeus Desktop cannot run a profile through a plugin.')
   }
 
   return desktop as Required<

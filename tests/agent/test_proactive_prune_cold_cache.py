@@ -294,7 +294,7 @@ def test_unflushed_tool_results_keep_their_original_on_disk(tmp_path, monkeypatc
     stored only the stub and the original was gone)."""
     from agent.context_compressor import _DB_PERSISTED_MARKER
 
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     db = open_persistence(profile_scope(home=tmp_path), eager=True)
     seed_session(db, "s1", "cli", model="test")
     seed_messages(db, "s1", {"role": "user", "content": "Previous turn"})
@@ -343,7 +343,7 @@ def test_legacy_session_resumed_while_warm_is_not_pruned(tmp_path, monkeypatch):
     """Invariant: a pre-clock session's window is rebuilt from TODAY's TTL, not the one it was cached at,
     so it never licenses a cold prune. Cached for 1h, resumed 10 min later under a 5m setting: still warm."""
     import time
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     db = open_persistence(profile_scope(home=tmp_path), eager=True)
     try:
         seed_session(db, "s1", "cli")

@@ -1,11 +1,11 @@
 /**
- * Transfer this agent into a Hermes Cloud agent: `hermes backup` on the source, stream the archive
- * chunk by chunk to the cloud agent, which restores it with `hermes import --keep-host` (it keeps
- * its own Nous Portal sign-in, model and provider, Hermes Cloud tools and scheduler).
+ * Transfer this agent into a Zeus Cloud agent: `zeus backup` on the source, stream the archive
+ * chunk by chunk to the cloud agent, which restores it with `zeus import --keep-host` (it keeps
+ * its own Nous Portal sign-in, model and provider, Zeus Cloud tools and scheduler).
  * Pure async over an injected `request`, so it is tested without Electron. Never opens a dialog.
  */
 
-import type { HermesApiRequest } from '@/global'
+import type { ZeusApiRequest } from '@/global'
 
 /** Which gateway and profile a call acts on. Captured once per flow, so a profile switch
  *  mid-transfer cannot split it across two profiles. */
@@ -15,7 +15,7 @@ export interface TransferEndpoint {
   profile: string
 }
 
-export type TransferRequestFn = <T>(owner: TransferEndpoint, request: HermesApiRequest) => Promise<T>
+export type TransferRequestFn = <T>(owner: TransferEndpoint, request: ZeusApiRequest) => Promise<T>
 
 export interface ActionStatus {
   exit_code: null | number
@@ -23,7 +23,7 @@ export interface ActionStatus {
   running: boolean
   /** A keep-host import's undo point once it has written it; still present if the import fails. */
   undo_archive?: null | string
-  /** The messaging platforms a transfer's restore switched off (`hermes import --messaging-off`). */
+  /** The messaging platforms a transfer's restore switched off (`zeus import --messaging-off`). */
   messaging_off?: string[]
   /** Set when the restore finished but the agent's gateway did not start again. */
   gateway_down?: string
@@ -59,7 +59,7 @@ export class TransferRestoreError extends Error {
   }
 }
 
-/** A Hermes Cloud agent hosts one profile. */
+/** A Zeus Cloud agent hosts one profile. */
 export const cloudEndpoint = (connectionId: string): TransferEndpoint => ({ connectionId, profile: 'default' })
 
 export const CHUNK_BYTES = 8 * 1024 * 1024
@@ -186,7 +186,7 @@ export function failureText(lines: string[]): string {
   return lines.slice(-3).join('\n')
 }
 
-/** `hermes backup` on `owner`; resolves to the archive path on that backend. */
+/** `zeus backup` on `owner`; resolves to the archive path on that backend. */
 export async function runBackup(
   request: TransferRequestFn,
   owner: TransferEndpoint,
@@ -373,7 +373,7 @@ export async function transferAgent(
   const status = await request<null | { import_keep_host?: number }>(target, { path: '/api/status' })
 
   if (!status?.import_keep_host) {
-    throw new Error('This cloud agent needs a Hermes update before it can receive a transfer.')
+    throw new Error('This cloud agent needs a Zeus update before it can receive a transfer.')
   }
 
   onProgress({ phase: 'backup' })

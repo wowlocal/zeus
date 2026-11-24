@@ -7,7 +7,7 @@ version: "0.1.0"
 description: Durable collaboration records, mutual contributions and evidence-backed commitments.
 tier: community
 category: tools
-requires_hermes: ">=0.23.1,<0.24"
+requires_zeus: ">=0.23.1,<0.24"
 readme: true
 known_issues:
   - Applying proposals relies on conversational user approval, not an independently authenticated approval gate.

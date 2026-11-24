@@ -1,5 +1,5 @@
 import { AssistantRuntimeProvider, type ThreadMessage, useExternalStoreRuntime } from '@assistant-ui/react'
-import type { GatewayEvent } from '@hermes/shared'
+import type { GatewayEvent } from '@zeus/shared'
 import { QueryClient } from '@tanstack/react-query'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { type ReactNode, useRef } from 'react'
@@ -9,7 +9,7 @@ import { rehydrateLiveSessionStatuses } from '@/app/contrib/hooks/use-background
 import { useMessageStream } from '@/app/session/hooks/use-message-stream'
 import { useSessionStateCache } from '@/app/session/hooks/use-session-state-cache'
 import { PendingApprovalStack } from '@/components/assistant-ui/tool/approval'
-import type { HermesGateway } from '@/hermes'
+import type { ZeusGateway } from '@/zeus'
 import { $gateway } from '@/store/gateway'
 import { respondToApprovalAction } from '@/store/native-notifications'
 import { $profileDotStateByScope, profileDotSummaryFor } from '@/store/profile-dot-state'
@@ -25,7 +25,7 @@ import {
   recordSessionEventScope
 } from '@/store/session-states'
 import { stubMenuDomApis, stubResizeObserver } from '@/test/jsdom'
-import type { SessionInfo } from '@/types/hermes'
+import type { SessionInfo } from '@/types/zeus'
 
 // A folder or site card outlives the turn that raised it. The chat it belongs to is marked as
 // waiting for an answer for as long as the card is parked, and no longer: in the sidebar, on the
@@ -63,7 +63,7 @@ function Chat() {
     ...cache,
     queryClient,
     hydrateFromStoredSession: noop,
-    refreshHermesConfig: noop,
+    refreshZeusConfig: noop,
     refreshSessions: noop
   })
 
@@ -127,7 +127,7 @@ function openChat({
     request: vi.fn(async (method: string) =>
       method === 'approval.pending' ? { approvals: pendingList } : { ok: true }
     )
-  } as unknown as HermesGateway)
+  } as unknown as ZeusGateway)
   render(<Chat />)
   // The window knows this chat: its runtime is bound to the stored id of the sidebar row.
   send('session.info', { running: false, stored_session_id: STORED, ...(reported ? { model: 'model-1' } : {}) })

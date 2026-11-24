@@ -11,7 +11,7 @@ afterEach(() => {
   $activeGatewayProfile.set('default')
 })
 
-it("names the profile's sandbox restart instead of 'Reconnecting to Hermes…' while the socket is down", () => {
+it("names the profile's sandbox restart instead of 'Reconnecting to Zeus…' while the socket is down", () => {
   $activeGatewayProfile.set('work')
   beginBackendTransition('work', 'restarting', { source: 'launcher' })
 
@@ -24,7 +24,7 @@ it("names the profile's sandbox restart instead of 'Reconnecting to Hermes…' w
   expect(result.current).toBe('Restarting sandbox…')
 
   rerender({ disabled: true, profile: 'default', reconnecting: true, sessionId: 's1' })
-  expect(result.current).toBe('Reconnecting to Hermes…')
+  expect(result.current).toBe('Reconnecting to Zeus…')
 })
 
 it("names the profile's sandbox start while the connection is still open", () => {

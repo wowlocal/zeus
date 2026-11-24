@@ -77,7 +77,7 @@ import {
 import { requestForSessionProfile } from '@/store/session-request-router'
 import { knownOwnerForSession } from '@/store/session-states'
 
-const originalBridge = window.hermesDesktop
+const originalBridge = window.zeusDesktop
 const created = { session_id: 'created-runtime', stored_session_id: 'created-stored', info: {} }
 
 function connection(profile: string, connectionId?: string) {
@@ -177,7 +177,7 @@ beforeEach(() => {
   setSelectedStoredSessionId(null)
   setConnection(connection('default') as never)
   window.history.replaceState(null, '', '/')
-  window.hermesDesktop = {
+  window.zeusDesktop = {
     getConnection: vi.fn(async (profile: string) => connection(profile)),
     getConnectionFor: vi.fn(async ({ connectionId, profile }: { connectionId: string; profile: string }) => connection(profile, connectionId)),
     getConnectionConfig: vi.fn(async () => ({ mode: 'remote' }))
@@ -198,7 +198,7 @@ afterEach(async () => {
   setSelectedStoredSessionId(null)
   setConnection(null)
   setSessions([])
-  window.hermesDesktop = originalBridge
+  window.zeusDesktop = originalBridge
 })
 
 describe('switch assurances follow the send owner', () => {

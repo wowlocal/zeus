@@ -36,10 +36,10 @@ class _Adapter:
 
 @pytest.fixture
 def served(tmp_path, monkeypatch):
-    root = tmp_path / '.hermes'
+    root = tmp_path / '.zeus'
     root.mkdir(mode=0o700)
     monkeypatch.setattr(Path, 'home', lambda: tmp_path)
-    monkeypatch.setenv('HERMES_HOME', str(root))
+    monkeypatch.setenv('ZEUS_HOME', str(root))
     config = GatewayConfig()
     config._runtime_profile_homes = (('default', root),)
     runner = GatewayRunner(config)

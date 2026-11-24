@@ -150,7 +150,7 @@ def list_sender_deliveries(
 ) -> list[dict]:
     """Every unsettled local delivery ``sender`` made, newest first.
 
-    ``root`` is the install root (``bot_mode_probe._hermes_root``); ``profiles`` overrides the
+    ``root`` is the install root (``bot_mode_probe._zeus_root``); ``profiles`` overrides the
     roster (``bot_mode_probe._roster``) for callers that already hold it. Settled replies drop
     off; failed ones stay for ``FAILED_VISIBLE_SECONDS``."""
     from tools.bot_mode_probe import _handle, _roster

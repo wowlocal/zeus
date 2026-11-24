@@ -31,14 +31,14 @@ test('Webapp model pill omits Ultrafast on an unsupported model with agent.servi
 
   const provider = await startScriptedProvider()
   const sandbox = createCoreSandbox('pill-tier')
-  writeProviderHome(sandbox.hermesHome, provider.url, 'agent:\n  service_tier: ultrafast\n')
+  writeProviderHome(sandbox.zeusHome, provider.url, 'agent:\n  service_tier: ultrafast\n')
   const port = await freePort()
-  fs.appendFileSync(path.join(sandbox.hermesHome, 'config.yaml'), `\nwebapp:\n  enabled: true\n  port: ${port}\n`)
+  fs.appendFileSync(path.join(sandbox.zeusHome, 'config.yaml'), `\nwebapp:\n  enabled: true\n  port: ${port}\n`)
   let browser: Browser | null = null
 
   try {
     const link = webappLaunchLink(sandbox)
-    browser = await chromium.launch({ executablePath: process.env.HERMES_E2E_CHROMIUM || undefined })
+    browser = await chromium.launch({ executablePath: process.env.ZEUS_E2E_CHROMIUM || undefined })
     const page = await (await browser.newContext({ viewport: { width: 1280, height: 860 } })).newPage()
     const ws = recordWebSockets(page)
 

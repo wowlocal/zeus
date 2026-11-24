@@ -10,7 +10,7 @@ def test_aux_cost_survives_config_reload_failure(monkeypatch):
     def unavailable_config():
         raise OSError("config temporarily unreadable")
 
-    monkeypatch.setattr("hermes_cli.config.load_config", unavailable_config)
+    monkeypatch.setattr("zeus_cli.config.load_config", unavailable_config)
     calls = []
 
     def estimate(model, usage, **kwargs):
@@ -45,12 +45,12 @@ def test_aux_cost_survives_config_reload_failure(monkeypatch):
 def test_aux_cost_survives_an_unavailable_config_backend(monkeypatch):
     """The config backend's outage is a SystemExit subtype; the optional pricing-key lookup must not
     let it abort a successful auxiliary call or drop the row."""
-    from hermes_cli.config_backend import ConfigBackendUnavailable
+    from zeus_cli.config_backend import ConfigBackendUnavailable
 
     def unavailable_config():
         raise ConfigBackendUnavailable("remote config unavailable")
 
-    monkeypatch.setattr("hermes_cli.config.load_config", unavailable_config)
+    monkeypatch.setattr("zeus_cli.config.load_config", unavailable_config)
     calls = []
     monkeypatch.setattr(usage_pricing, "estimate_usage_cost",
                         lambda model, usage, **kw: calls.append(kw) or SimpleNamespace(amount_usd=0.125))
@@ -73,7 +73,7 @@ def _serving_vs_saved_route(monkeypatch, *, async_mode):
     saved one; that endpoint's /models prices the model only for the serving key."""
     from unittest.mock import AsyncMock, MagicMock
 
-    from hermes_cli.config import save_config
+    from zeus_cli.config import save_config
 
     base = "http://127.0.0.1:47970/v1"
     monkeypatch.setenv("LAB_LLAMA_KEY", "saved-key-1111")
@@ -129,7 +129,7 @@ def test_aux_pricing_mints_nothing_for_a_credential_source_client(monkeypatch):
     minted = []
     client = OpenAI(api_key=lambda: minted.append(1) or "minted", base_url="http://127.0.0.1:47970/v1")
     monkeypatch.setenv("LAB_LLAMA_KEY", "saved-key-1111")
-    from hermes_cli.config import save_config
+    from zeus_cli.config import save_config
     save_config({"model": {"default": "m", "provider": "custom", "base_url": "http://127.0.0.1:47970/v1",
                            "key_env": "LAB_LLAMA_KEY"}})
     keys = []
@@ -196,7 +196,7 @@ def test_async_aux_pricing_after_a_same_provider_retry_uses_the_serving_key(monk
 
 def _priced_keys(monkeypatch, serving, base_url="http://127.0.0.1:47970/v1"):
     """Pricing-lookup keys for one aux response at *base_url*, whose saved model key is ``saved-key-1111``."""
-    from hermes_cli.config import save_config
+    from zeus_cli.config import save_config
 
     monkeypatch.setenv("LAB_LLAMA_KEY", "saved-key-1111")
     save_config({"model": {"default": "m", "provider": "custom", "base_url": base_url, "key_env": "LAB_LLAMA_KEY"}})

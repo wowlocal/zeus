@@ -23,7 +23,7 @@ from agent.prepared_compaction import PreparedCompaction
 
 @pytest.fixture
 def home(tmp_path, monkeypatch):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     monkeypatch.setenv("TERMINAL_ENV", "local")
     return tmp_path
 

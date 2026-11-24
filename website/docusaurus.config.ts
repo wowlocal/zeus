@@ -4,7 +4,7 @@ import type * as Preset from '@docusaurus/preset-classic';
 import relativeDocLinks from './src/remark/relativeDocLinks';
 
 const config: Config = {
-  title: 'Hermes Agent',
+  title: 'ZeusAgent',
   tagline: 'The self-improving AI agent',
   favicon: 'img/favicon.ico',
 
@@ -12,7 +12,7 @@ const config: Config = {
   baseUrl: '/docs/',
 
   organizationName: 'NousResearch',
-  projectName: 'hermes-agent',
+  projectName: 'zeus-agent',
 
   onBrokenLinks: 'warn',
 
@@ -76,12 +76,12 @@ const config: Config = {
             to: '/user-guide/skills/optional/research/research-llm-wiki',
           },
           {
-            from: '/user-guide/skills/bundled/software-development/software-development-hermes-agent-skill-authoring',
-            to: '/user-guide/skills/optional/software-development/software-development-hermes-agent-skill-authoring',
+            from: '/user-guide/skills/bundled/software-development/software-development-zeus-agent-skill-authoring',
+            to: '/user-guide/skills/optional/software-development/software-development-zeus-agent-skill-authoring',
           },
           {
-            from: '/user-guide/skills/bundled/software-development/software-development-inspecting-hermes-desktop-dom',
-            to: '/user-guide/skills/optional/software-development/software-development-inspecting-hermes-desktop-dom',
+            from: '/user-guide/skills/bundled/software-development/software-development-inspecting-zeus-desktop-dom',
+            to: '/user-guide/skills/optional/software-development/software-development-inspecting-zeus-desktop-dom',
           },
           {
             from: '/user-guide/skills/bundled/software-development/software-development-node-inspect-debugger',
@@ -99,7 +99,7 @@ const config: Config = {
           {
             // Moved when the Plugins subcategory was created under
             // Developer Guide > Extending (docs restructure, July 2026)
-            from: '/guides/build-a-hermes-plugin',
+            from: '/guides/build-a-zeus-plugin',
             to: '/developer-guide/plugins',
           },
           {
@@ -144,7 +144,7 @@ const config: Config = {
   ],
 
   themeConfig: {
-    image: 'img/hermes-agent-banner.png',
+    image: 'img/zeus-agent-banner.png',
     // Algolia DocSearch (replaces @easyops-cn/docusaurus-search-local).
     // The local plugin shipped a ~16 MB client-side lunr index that every
     // visitor downloaded and hydrated before their first result; DocSearch
@@ -156,7 +156,7 @@ const config: Config = {
     algolia: {
       appId: '2JLBVEYZN5',
       apiKey: '9629ec26628d1a126535fd5ef408990d',
-      indexName: 'hermes docs',
+      indexName: 'zeus docs',
       contextualSearch: true,
     },
     colorMode: {
@@ -170,9 +170,9 @@ const config: Config = {
       },
     },
     navbar: {
-      title: 'Hermes Agent',
+      title: 'ZeusAgent',
       logo: {
-        alt: 'Hermes Agent',
+        alt: 'ZeusAgent',
         src: 'img/logo.png',
         srcDark: 'img/logo-dark.png',
       },
@@ -238,7 +238,7 @@ const config: Config = {
           title: 'More',
           items: [
             { label: 'Desktop Download', href: 'https://hermes-agent.nousresearch.com/' },
-            { label: 'Compare Hermes Agent', href: 'https://hermes-agent.nousresearch.com/compare' },
+            { label: 'Compare ZeusAgent', href: 'https://hermes-agent.nousresearch.com/compare' },
             { label: 'GitHub', href: 'https://github.com/NousResearch/hermes-agent' },
             { label: 'Nous Research', href: 'https://nousresearch.com' },
           ],

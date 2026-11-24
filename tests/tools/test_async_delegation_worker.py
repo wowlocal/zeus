@@ -6,7 +6,7 @@ import time
 import pytest
 import psutil
 
-from hermes_cli.process_identity import worker_birth
+from zeus_cli.process_identity import worker_birth
 from gateway.session_worker_delegation import _probe
 from persistence.core.errors import AuthorityRefusal
 from persistence.sqlite.workers import _gateway

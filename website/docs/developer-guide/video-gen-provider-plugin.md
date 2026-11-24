@@ -1,7 +1,7 @@
 ---
 sidebar_position: 12
 title: "Video Generation Provider Plugins"
-description: "How to build a video-generation backend plugin for Hermes Agent"
+description: "How to build a video-generation backend plugin for ZeusAgent"
 ---
 
 # Building a Video Generation Provider Plugin
@@ -23,13 +23,13 @@ Edit and extend are intentionally out of scope. Most backends don't support them
 
 ## How discovery works
 
-Hermes scans for video-gen backends in three places:
+Zeus scans for video-gen backends in three places:
 
 1. **Bundled** — `<repo>/plugins/video_gen/<name>/` (auto-loaded with `kind: backend`)
-2. **User** — `~/.hermes/plugins/video_gen/<name>/` (opt-in via `plugins.enabled`)
-3. **Pip** — packages declaring a `hermes_agent.plugins` entry point
+2. **User** — `~/.zeus/plugins/video_gen/<name>/` (opt-in via `plugins.enabled`)
+3. **Pip** — packages declaring a `zeus_agent.plugins` entry point
 
-Each plugin's `register(ctx)` function calls `ctx.register_video_gen_provider(...)`. The active provider is picked by `video_gen.provider` in `config.yaml`; `hermes tools` → Video Generation walks users through selection. Unlike `image_generate`, there is no in-tree legacy backend — every provider is a plugin.
+Each plugin's `register(ctx)` function calls `ctx.register_video_gen_provider(...)`. The active provider is picked by `video_gen.provider` in `config.yaml`; `zeus tools` → Video Generation walks users through selection. Unlike `image_generate`, there is no in-tree legacy backend — every provider is a plugin.
 
 ## Directory structure
 
@@ -101,7 +101,7 @@ class MyVideoGenProvider(VideoGenProvider):
         return {
             "name": "My Backend",
             "badge": "paid",
-            "tag": "Short description shown in `hermes tools`",
+            "tag": "Short description shown in `zeus tools`",
             "env_vars": [
                 {
                     "key": "MY_API_KEY",
@@ -182,9 +182,9 @@ The tool exposes one schema across every backend. Providers ignore parameters th
 
 There is deliberately no `model` parameter: the backend and model are user configuration (`video_gen.provider` / `video_gen.model`), never an agent choice. Your `generate()` still receives `model=` — it is the configured model, resolved by the tool layer.
 
-The provider's `capabilities()` advertises which of these are honored. The agent sees the active backend's capabilities in the tool description, dynamically rebuilt when the user changes backend via `hermes tools`.
+The provider's `capabilities()` advertises which of these are honored. The agent sees the active backend's capabilities in the tool description, dynamically rebuilt when the user changes backend via `zeus tools`.
 
-Local image paths never reach your `generate()`: the tool layer reads them through Hermes' guarded resolver and passes `data:image/...;base64,...` URLs (HTTPS URLs and existing `data:` URLs arrive unchanged). If your API caps the request body, return `"max_inline_image_chars": N` from `capabilities()` and the tool layer downscales inlined images until they fit N characters in total; without it, images are sent at full size.
+Local image paths never reach your `generate()`: the tool layer reads them through Zeus' guarded resolver and passes `data:image/...;base64,...` URLs (HTTPS URLs and existing `data:` URLs arrive unchanged). If your API caps the request body, return `"max_inline_image_chars": N` from `capabilities()` and the tool layer downscales inlined images until they fit N characters in total; without it, images are sent at full size.
 
 ## Model families and endpoint routing (the FAL pattern)
 
@@ -205,7 +205,7 @@ def generate(self, prompt, *, image_url=None, model=None, **kwargs):
     # ... build payload from family's declared capability flags, call endpoint ...
 ```
 
-The user picks `veo3.1` once in `hermes tools`. The agent never thinks about endpoints — it just passes (or doesn't pass) `image_url`.
+The user picks `veo3.1` once in `zeus tools`. The agent never thinks about endpoints — it just passes (or doesn't pass) `image_url`.
 
 ## Selection precedence
 
@@ -228,7 +228,7 @@ Error keys: `success`, `video` (None), `error`, `error_type`, `model`, `prompt`,
 
 ## Where to save artifacts
 
-If your backend returns base64, use `save_b64_video()` to write under `$HERMES_HOME/cache/videos/`. For raw bytes from a follow-up HTTP fetch, use `save_bytes_video()`. Otherwise return the upstream URL directly — the gateway resolves remote URLs on delivery.
+If your backend returns base64, use `save_b64_video()` to write under `$ZEUS_HOME/cache/videos/`. For raw bytes from a follow-up HTTP fetch, use `save_bytes_video()`. Otherwise return the upstream URL directly — the gateway resolves remote URLs on delivery.
 
 ## Testing
 

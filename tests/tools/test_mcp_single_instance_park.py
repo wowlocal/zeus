@@ -4,7 +4,7 @@ Each revival of a never-connected server costs ONE spawn (not the whole initial-
 the wait before the next self-probe doubles up to a cap, and routine discovery
 (``register_mcp_servers`` on every new session / cron tick) wakes a parked server only once per
 park streak. Re-running the ladder on every wake respawned a doomed ``npx`` 4x every 300 s forever
-(hermes-official-plugins#401). A ``single_instance`` server parks with no timed self-probe at all.
+(zeus-official-plugins#401). A ``single_instance`` server parks with no timed self-probe at all.
 """
 
 import asyncio
@@ -75,7 +75,7 @@ async def _stop(task, run_task):
 def test_single_instance_conflict_parks_quietly_and_never_self_probes(monkeypatch, tmp_path):
     """A single-instance server that never connects parks with no timed self-probe, routine
     discovery does not wake it, and an explicit reconnect still revives it."""
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     from tools import mcp_tool
 
     monkeypatch.setattr(mcp_tool, "_MAX_INITIAL_CONNECT_RETRIES", 1)
@@ -107,7 +107,7 @@ def test_parked_initial_failure_spawns_once_per_wake_with_backoff(monkeypatch, t
     """A server that never connects runs the initial ladder ONCE; every later revival spawns a
     single child, the self-probe wait doubles up to the cap, and routine discovery wakes the
     parked server only for the first revival of the streak."""
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     from tools import mcp_tool
 
     monkeypatch.setattr(mcp_tool, "_PARKED_RETRY_INTERVAL", 100)

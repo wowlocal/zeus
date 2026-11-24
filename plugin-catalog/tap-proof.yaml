@@ -13,13 +13,13 @@ description: >-
 maintainer: ladyFaye1998
 tier: community
 category: tools
-requires_hermes: ">=0.23.1"
+requires_zeus: ">=0.23.1"
 docs_url: https://github.com/ladyFaye1998/hermes-tap-proof#readme
 version: "0.1.0"
 readme: true
 platforms: [windows]
 known_issues:
-  - Requires a local Windows Hermes backend, Microsoft Edge, Node.js 20+, and a manual npm ci in the installed plugin's browser directory.
+  - Requires a local Windows Zeus backend, Microsoft Edge, Node.js 20+, and a manual npm ci in the installed plugin's browser directory.
   - Measures the target center at one viewport height and page state. A check covers up to 800 integer CSS widths.
   - Requires a same-origin loopback HTTP page. Redirects and cross-origin resources are unsupported.
 capabilities:

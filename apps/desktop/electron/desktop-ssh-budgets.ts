@@ -53,11 +53,11 @@ export function readDesktopSshBudgets(
 
     if (ms === undefined) {
       log.warn(
-        `[hermes] config.yaml: desktop.${key} was ignored. It takes a whole number of seconds (up to 120); keeping 15.`
+        `[zeus] config.yaml: desktop.${key} was ignored. It takes a whole number of seconds (up to 120); keeping 15.`
       )
     } else {
       budgets[KEYS[key as keyof typeof KEYS]] = ms
-      log.log(`[hermes] desktop.${key} from config.yaml: ${ms / 1000}s`)
+      log.log(`[zeus] desktop.${key} from config.yaml: ${ms / 1000}s`)
     }
   }
 

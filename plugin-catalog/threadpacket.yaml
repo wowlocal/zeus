@@ -7,12 +7,12 @@ description: "Send a packet (structured Markdown brief plus verbatim original fi
 maintainer: evgolsh
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_zeus: ">=0.22.0"
 docs_url: https://github.com/evgolsh/threadpacket/blob/59f1767bbf7a0a0b72173acf0ee26ff1249ed5a0/plugin/README.md
 version: "0.4.3"
 platforms: []
 known_issues:
-  - "Sign in once after installing: add mcp_servers.threadpacket (url: https://threadpacket.com/mcp, auth: oauth, trust: untrusted) to config.yaml and run `hermes mcp login threadpacket` (keep trust: untrusted because config.yaml replaces the package entry)"
+  - "Sign in once after installing: add mcp_servers.threadpacket (url: https://threadpacket.com/mcp, auth: oauth, trust: untrusted) to config.yaml and run `zeus mcp login threadpacket` (keep trust: untrusted because config.yaml replaces the package entry)"
 capabilities:
   provides_tools: []
   provides_hooks: []

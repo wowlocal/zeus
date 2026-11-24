@@ -7,7 +7,7 @@ description: "Code-as-Orchestration: the model writes one JavaScript snippet tha
 maintainer: junbo-hh
 tier: community
 category: tools
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 docs_url: https://github.com/junbo-hh/hermes-codemode#readme
 platforms: [linux, macos]
 capabilities:

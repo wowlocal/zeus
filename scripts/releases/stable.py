@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Iterable
 from urllib.parse import unquote, urlsplit
 
-from hermes_cli.update_channel import STABLE_TAG_RE
+from zeus_cli.update_channel import STABLE_TAG_RE
 from scripts.releases import lanes as lane_set
 from scripts.releases.desktop_targets import MANIFEST_TARGETS
 from scripts.releases.draft_warning import strip_draft_warning
@@ -82,14 +82,14 @@ def require_stable_identity(tag: str, commit: str) -> None:
 
 def is_canary_claim(tag: object) -> bool:
     """A canary runs the stable pipeline on its own annotated ``canary.<stamp>-vX.Y.Z`` tag."""
-    from hermes_cli.update_channel import is_canary_tag
+    from zeus_cli.update_channel import is_canary_tag
 
     return is_canary_tag(tag)
 
 
 def is_commit_claim(tag: object) -> bool:
     """A commit build runs the stable pipeline on its own annotated ``commit.<stamp>-vX.Y.Z`` tag."""
-    from hermes_cli.update_channel import is_commit_tag
+    from zeus_cli.update_channel import is_commit_tag
 
     return is_commit_tag(tag)
 
@@ -108,7 +108,7 @@ def _deb_version(tag: str) -> str:
 
 def payload_version(tag: str) -> str:
     """The version a stable or canary tag publishes (update_channel.release_version)."""
-    from hermes_cli.update_channel import release_version
+    from zeus_cli.update_channel import release_version
 
     version = release_version(tag)
     if version is None:
@@ -134,7 +134,7 @@ def canary_epoch(tag: str) -> int:
 
 def stamped_epoch(tag: str) -> int:
     """A canary's or commit build's immutable build time: the UTC stamp its tag name carries."""
-    from hermes_cli.update_channel import canary_timestamp, commit_timestamp
+    from zeus_cli.update_channel import canary_timestamp, commit_timestamp
 
     stamp = canary_timestamp(tag) or commit_timestamp(tag)
     if stamp is None:
@@ -291,7 +291,7 @@ def _validate_package_platform_row(item: dict, tag: str, expected_windows_versio
         raise ValueError("Legacy commit build metadata is only allowed for commit claims")
     core = None
     if legacy:
-        from hermes_cli.update_channel import tag_core
+        from zeus_cli.update_channel import tag_core
 
         core = tag_core(tag)
     if item["platform"] == "windows":
@@ -571,7 +571,7 @@ def stamped_claim(raw: str, *, tag: str, commit: str) -> dict:
     lanes are read exactly as a stable claim's (lanes.claim_lanes), then held to what that kind can
     run (lanes.POLICY_REFUSED).
     """
-    from hermes_cli.update_channel import tag_core, tag_kind
+    from zeus_cli.update_channel import tag_core, tag_kind
 
     kind = tag_kind(tag)
     if kind not in ("canary", "commit"):
@@ -942,7 +942,7 @@ def commit_supports_claim_tag(commit: str, run=output) -> bool:
 
 def verify(env: dict, run=output) -> None:
     """Revalidate claim custody in a reusable privileged workflow."""
-    from hermes_cli.update_channel import tag_core
+    from zeus_cli.update_channel import tag_core
 
     tag, commit, claim = stable_context(env)
     # Bundle defaults reach the builds only from the claim: a commit build's bundleEnv, nothing for
@@ -1147,7 +1147,7 @@ def ensure_final_tag(tag: str, commit: str, claim: dict, *, candidate_manifest_s
         except subprocess.CalledProcessError:
             message = json.dumps(expected, sort_keys=True, separators=(",", ":"))
             run([
-                "git", "-c", "user.name=Hermes Release Automation",
+                "git", "-c", "user.name=Zeus Release Automation",
                 "-c", "user.email=release-bot@users.noreply.github.com",
                 "tag", "-a", tag, commit, "-m", message,
             ])

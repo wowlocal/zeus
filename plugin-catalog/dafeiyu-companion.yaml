@@ -9,7 +9,7 @@ description: >-
   Disclosure — on every reply on an enabled platform (Discord by default) the user message (up to
   500 characters) and the reply (up to 2,000) are sent to api.deepseek.com; an optional,
   user-configured embedding endpoint receives sticker captions and reaction text. Reads and writes
-  <HERMES_HOME>/companion-data/ and <HERMES_HOME>/config/companion.json, outside the plugin
+  <ZEUS_HOME>/companion-data/ and <ZEUS_HOME>/config/companion.json, outside the plugin
   directory. A setup script (fetch_sources.sh, run by the user, never by the plugin) downloads about
   320 MB of sticker images and a meme database from GitHub at pinned versions; every downloaded
   file is checked against a pinned SHA-256 before it is unpacked, run or moved into place, and
@@ -20,7 +20,7 @@ description: >-
 maintainer: rayyichen310
 tier: community
 category: general
-requires_hermes: ">=0.22.5"
+requires_zeus: ">=0.22.5"
 version: "1.0.0"
 docs_url: https://github.com/rayyichen310/dafeiyu-companion/blob/d0e44679cdcce41d3b3406fc035adad69508588b/README.md
 readme: true

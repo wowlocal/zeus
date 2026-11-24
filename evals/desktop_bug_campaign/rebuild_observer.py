@@ -13,7 +13,7 @@ from persistence_assembly import live_stores, store_location
 
 
 original_target = server._config_model_target
-marker = Path(os.environ["HERMES_HOME"]) / "fail-rebuild"
+marker = Path(os.environ["ZEUS_HOME"]) / "fail-rebuild"
 
 
 def config_target():
@@ -40,5 +40,5 @@ def ownership(rid, params):
 server._methods["probe.ownership"] = ownership
 
 if __name__ == "__main__":
-    from hermes_cli.main import main
+    from zeus_cli.main import main
     main()

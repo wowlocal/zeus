@@ -1,4 +1,4 @@
-import type { GatewayEvent } from '@hermes/shared'
+import type { GatewayEvent } from '@zeus/shared'
 // A stopped mark says the reply ended there. A host plugin can pause a running
 // turn (session.interrupt) to apply a grant and then continue the same reply
 // with a hidden prompt: the stored read after the interrupted completion lends
@@ -11,7 +11,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { finalizeStoppedMessages } from '@/app/session/hooks/use-prompt-actions/rewind'
 import { type ChatMessage, toChatMessages } from '@/lib/chat-messages'
 import { coalesceToolOnlyAssistants, createToolMergeCache, toRuntimeMessage } from '@/lib/chat-runtime'
-import type { SessionMessage } from '@/types/hermes'
+import type { SessionMessage } from '@/types/zeus'
 
 import { type MessageStreamHarness, renderMessageStream } from './test-harness'
 import { STREAM_DELTA_FLUSH_MS } from './utils'

@@ -33,16 +33,16 @@ def _startup(monkeypatch, tmp_path):
     from gateway import lifecycle_ledger as ledger
     from gateway import run_api, run_runtime
 
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     events, release, scan_entered = [], threading.Event(), threading.Event()
     state = {"evidence": None}
 
     class _LiveRunner:
         def __init__(self, config):
             from gateway.session import SessionStore
-            from hermes_constants import get_hermes_home
+            from zeus_constants import get_zeus_home
             from persistence_assembly import open_persistence, profile_scope
-            self.session_store = SessionStore(get_hermes_home() / "sessions", config)
+            self.session_store = SessionStore(get_zeus_home() / "sessions", config)
             self._session_db = self.persistence = open_persistence(profile_scope())
             self._draining = False
             self._running = False
@@ -86,8 +86,8 @@ def _startup(monkeypatch, tmp_path):
     monkeypatch.setattr("gateway.run._host_attach_or_none", AsyncMock(return_value=None))
     monkeypatch.setattr("gateway.status.get_running_pid", lambda: None)
     monkeypatch.setattr("tools.skills_sync.sync_skills", lambda quiet=True: None)
-    monkeypatch.setattr("hermes_logging.setup_logging", lambda hermes_home, mode: tmp_path)
-    monkeypatch.setattr("hermes_logging._add_rotating_handler", lambda *args, **kwargs: None)
+    monkeypatch.setattr("zeus_logging.setup_logging", lambda zeus_home, mode: tmp_path)
+    monkeypatch.setattr("zeus_logging._add_rotating_handler", lambda *args, **kwargs: None)
     monkeypatch.setattr("gateway.run.GatewayRunner", _LiveRunner)
     monkeypatch.setattr(ledger, "record_startup", lambda: state["evidence"])
     monkeypatch.setattr(ledger, "run_deferred_integrity_check", scan)

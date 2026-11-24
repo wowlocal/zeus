@@ -2,15 +2,15 @@ import type {
   DesktopCloudAgentSignInResult,
   DesktopCloudDiscoverResult,
   DesktopCloudStatus,
-  HermesApiRequest
+  ZeusApiRequest
 } from '@/global'
 import { signInSavedConnection } from '@/lib/browser-saved-connection-oauth'
 import type { BrowserSavedConnections } from '@/lib/browser-saved-connections'
 
-type Api = <T>(request: HermesApiRequest) => Promise<T>
+type Api = <T>(request: ZeusApiRequest) => Promise<T>
 
 /**
- * Hermes Cloud for the Webapp. Native Desktop lists cloud agents through its own portal browser
+ * Zeus Cloud for the Webapp. Native Desktop lists cloud agents through its own portal browser
  * session; a browser tab has none, so the gateway serving it asks Nous Portal with its own sign-in
  * (`GET /api/cloud/agents`). Signing in to one agent is the serving gateway's saved-connection
  * OAuth, the flow Settings ▸ Gateway already runs here.
@@ -21,7 +21,7 @@ export function createBrowserCloudBridge({
 }: {
   api: Api
   relays: BrowserSavedConnections | null
-}): Window['hermesDesktop']['cloud'] {
+}): Window['zeusDesktop']['cloud'] {
   const status = async (): Promise<DesktopCloudStatus> => {
     const portal = await api<{ logged_in?: boolean; portal_url?: string }>({ path: '/api/portal' })
 
@@ -43,7 +43,7 @@ export function createBrowserCloudBridge({
         return { baseUrl: dashboardUrl, connected: false }
       }
 
-      const label = new URL(dashboardUrl).hostname.split('.')[0] || 'Hermes Cloud'
+      const label = new URL(dashboardUrl).hostname.split('.')[0] || 'Zeus Cloud'
       const result = await signInSavedConnection(api, relays, dashboardUrl, { kind: 'cloud', label })
 
       return { baseUrl: dashboardUrl, connected: result.connected, connectionId: result.connectionId }

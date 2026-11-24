@@ -6,7 +6,7 @@ description: "Recreate NES games as editable browser games. Train an AI player, 
 maintainer: kdcyberdude
 tier: community
 category: tools
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 docs_url: https://github.com/kdcyberdude/ghostrun#readme
 version: "0.3.1"
 platforms: [linux]

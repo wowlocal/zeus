@@ -26,7 +26,7 @@ from agent.trace_upload import (
 
 def _sample_messages():
     return [
-        {"role": "system", "content": "you are hermes"},
+        {"role": "system", "content": "you are zeus"},
         {"role": "user", "content": "list files"},
         {"role": "assistant", "content": "Listing.", "tool_calls": [
             {"id": "call_1", "function": {"name": "terminal", "arguments": '{"command": "ls"}'}},
@@ -194,7 +194,7 @@ def test_upload_happy_path_mocked(monkeypatch):
     # Created private dataset repo
     fake_api.create_repo.assert_called_once()
     _, kwargs = fake_api.create_repo.call_args
-    assert kwargs["repo_id"] == "alice/hermes-traces"
+    assert kwargs["repo_id"] == "alice/zeus-traces"
     assert kwargs["repo_type"] == "dataset"
     assert kwargs["private"] is True
 
@@ -202,7 +202,7 @@ def test_upload_happy_path_mocked(monkeypatch):
     fake_api.upload_file.assert_called_once()
     _, ukwargs = fake_api.upload_file.call_args
     assert ukwargs["path_in_repo"] == "sessions/20260531_abc.jsonl"
-    assert ukwargs["repo_id"] == "alice/hermes-traces"
+    assert ukwargs["repo_id"] == "alice/zeus-traces"
     body = ukwargs["path_or_fileobj"]
     if isinstance(body, bytes):
         body = body.decode("utf-8")

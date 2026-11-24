@@ -6,7 +6,7 @@ description: "Embargoed news stays embargoed. When your agent reads 'EMBARGOED U
 maintainer: inkandwire
 tier: community
 category: tools
-requires_hermes: ">=0.22.5"
+requires_zeus: ">=0.22.5"
 docs_url: https://github.com/inkandwire/hermes-embargo#readme
 screenshots:
   - https://raw.githubusercontent.com/inkandwire/hermes-embargo/2691bde130f2a9ddbe2594040b537f773a633fe0/docs/screenshots/embargo-card-states.png

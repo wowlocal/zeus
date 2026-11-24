@@ -11,7 +11,7 @@ from agent.secret_sources import registry
 from agent.secret_sources.base import SECRET_SOURCE_API_VERSION, FetchResult, SecretSource
 from gateway.status_report.reporter import StatusReporter, status_reporter_from_launch_env
 from gateway.status_report.target import STATUS_REPORT_URL_ENV
-from hermes_cli.env_loader import load_hermes_dotenv
+from zeus_cli.env_loader import load_zeus_dotenv
 from tests.gateway.status_report.support import new_credential, stamped_url
 
 
@@ -20,11 +20,11 @@ def test_a_profile_env_file_cannot_switch_reports_on(tmp_path, monkeypatch):
     home.mkdir()
     (home / ".env").write_text(
         f"{STATUS_REPORT_URL_ENV}={stamped_url(new_credential())}\nSTATUS_REPORT_CONTROL=loaded\n", encoding="utf-8")
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
     monkeypatch.delenv(STATUS_REPORT_URL_ENV, raising=False)
     monkeypatch.delenv("STATUS_REPORT_CONTROL", raising=False)
 
-    load_hermes_dotenv(hermes_home=home)
+    load_zeus_dotenv(zeus_home=home)
 
     assert os.environ["STATUS_REPORT_CONTROL"] == "loaded"  # control: the file was read
     assert STATUS_REPORT_URL_ENV not in os.environ
@@ -62,11 +62,11 @@ def test_a_secret_source_cannot_switch_reports_on(tmp_path, monkeypatch):
 
 
 def test_the_env_writers_refuse_the_key(tmp_path, monkeypatch):
-    from hermes_cli.config import save_env_value
+    from zeus_cli.config import save_env_value
 
     home = tmp_path / "home"
     home.mkdir()
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
 
     with pytest.raises(ValueError, match="writer denylist"):
         save_env_value(STATUS_REPORT_URL_ENV, stamped_url(new_credential()))

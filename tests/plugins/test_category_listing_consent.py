@@ -70,7 +70,7 @@ _SOURCES = {
     ''',
 }
 _SELECTION_KEY = {"context": ("context", "engine"), "cron": ("cron", "provider"), "memory": ("memory", "provider")}
-_USER_NAMESPACES = ("_hermes_user_context_engine.", "_hermes_user_cron.", "_hermes_user_memory.")
+_USER_NAMESPACES = ("_zeus_user_context_engine.", "_zeus_user_cron.", "_zeus_user_memory.")
 
 
 class _Home:
@@ -105,7 +105,7 @@ class _Home:
 
 @pytest.fixture
 def home(tmp_path, monkeypatch):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     yield _Home(tmp_path)
     for module in [m for m in sys.modules if m.startswith(_USER_NAMESPACES)]:
         sys.modules.pop(module, None)
@@ -168,8 +168,8 @@ def test_a_disabled_plugin_stays_inert_in_listings_even_when_selected(home, kind
 
 
 def test_the_plugins_picker_lists_an_engine_that_is_not_turned_on_without_running_it(home):
-    """``hermes plugins`` → Context Engine (and the dashboard's context options) list through here."""
-    from hermes_cli.plugins_cmd import _discover_context_engines
+    """``zeus plugins`` → Context Engine (and the dashboard's context options) list through here."""
+    from zeus_cli.plugins_cmd import _discover_context_engines
 
     name = home.plugin("context")
     home.config()
@@ -269,7 +269,7 @@ def test_the_selected_plugin_runs_for_listing_and_reports_real_availability(home
 @pytest.mark.parametrize("kind", ["context", "cron", "memory"])
 def test_an_enabled_plugin_runs_for_listing(home, kind):
     name = home.plugin(kind, manifest_name="Enabled-Name")
-    home.config(enabled=["Enabled-Name"])  # manifest spelling, as `hermes plugins enable` may write it
+    home.config(enabled=["Enabled-Name"])  # manifest spelling, as `zeus plugins enable` may write it
 
     assert _row(kind, name) == (name, f"demo {kind} plugin", True)
     assert home.ran() != []
@@ -329,7 +329,7 @@ def test_a_disabled_memory_provider_stays_inert_in_listings_even_when_selected(h
 
 
 def test_the_dashboard_plugins_page_lists_a_disabled_memory_provider_without_running_it(home):
-    from hermes_cli.web_server_dashboard import _merged_plugins_hub
+    from zeus_cli.web_server_dashboard import _merged_plugins_hub
 
     name = home.plugin("memory")
     home.config(disabled=[name])
@@ -343,7 +343,7 @@ def test_the_dashboard_plugins_page_lists_a_disabled_memory_provider_without_run
 def test_memory_status_reports_a_disabled_provider_without_running_it(home, capsys):
     from types import SimpleNamespace
 
-    from hermes_cli.memory_setup import cmd_status
+    from zeus_cli.memory_setup import cmd_status
 
     name = home.plugin("memory")
     home.config(kind="memory", selected=name, disabled=[name])

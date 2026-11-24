@@ -27,7 +27,7 @@ export function usePluginProbe(unavailableMessage: string, gatewayProbe?: Gatewa
   const start = useCallback(
     (repo: string, ref?: string) => {
       const mine = ++token.current
-      const probeFn = window.hermesDesktop?.probePluginRepo
+      const probeFn = window.zeusDesktop?.probePluginRepo
       const viaGateway = gateway.current
 
       const run: Promise<ProbeResult> = probeFn

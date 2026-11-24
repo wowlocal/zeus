@@ -6,7 +6,7 @@ description: "Your homelab, your agents and your agent's bill in one Desktop sta
 maintainer: lpsmurf
 tier: community
 category: tools
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 version: "0.3.0"
 docs_url: https://github.com/lpsmurf/hermes-homelab-watch#readme
 image: https://raw.githubusercontent.com/lpsmurf/hermes-homelab-watch/e2436035f6742e76a4aa32abaf98f68b97d37a88/docs/cover.png

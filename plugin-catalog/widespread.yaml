@@ -6,7 +6,7 @@ description: "Earn verified-work bounties on the widespread protocol — discove
 maintainer: TerexitariusStomp
 tier: community
 category: platform
-requires_hermes: ">=0.20.0"
+requires_zeus: ">=0.20.0"
 version: "0.1.0"
 docs_url: https://github.com/TerexitariusStomp/hermes-browser#readme
 platforms: [linux, macos, windows]

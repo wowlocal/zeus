@@ -1,0 +1,267 @@
+{
+  "_comment": [
+    "The modules and names a plugin may import from Zeus core. `zeus plugins validate` warns on any other",
+    "Zeus import (zeus_cli/plugin_validate_private_imports.py), and scripts/gen_plugin_api_docs.py renders",
+    "website/docs/developer-guide/plugins/public-api.md from this file.",
+    "A `module` entry allows the module and its non-underscore names; `module:Name` allows that one name.",
+    "Harvested from the Zeus-module imports in the developer-guide and plugin docs, what PluginContext hands",
+    "out, and the names those pages tell authors to call, raise, return or subclass. Re-harvest when they change."
+  ],
+  "groups": [
+    {
+      "source": "developer-guide / plugins docs",
+      "entries": [
+        "agent.account_usage",
+        "agent.acp_client",
+        "agent.browser_page_backend:BrowserPageBackend",
+        "agent.browser_provider",
+        "agent.context_engine",
+        "agent.credential_pool",
+        "agent.delegation_backends",
+        "agent.delegation_provider",
+        "zeus_cli.auth_model_picker:prompt_model_selection",
+        "zeus_cli.auth:resolve_external_process_provider_credentials",
+        "zeus_cli.model_setup",
+        "agent.image_gen_provider",
+        "agent.memory_manager",
+        "agent.memory_provider",
+        "agent.secret_scope",
+        "agent.secret_sources.base",
+        "agent.subagent_lifecycle",
+        "agent.terminal_env_provider",
+        "agent.transports",
+        "agent.transports.chat_completions",
+        "agent.vault_backends.base:LoginBackend",
+        "agent.vault_store:VaultItemMeta",
+        "agent.video_gen_provider",
+        "agent.web_search_provider",
+        "cli",
+        "gateway.config",
+        "gateway.platform_registry",
+        "gateway.platforms._shared",
+        "gateway.platforms.base",
+        "gateway.platforms.event",
+        "gateway.platforms.helpers",
+        "gateway.status",
+        "zeus_cli.auth_oauth_pkce_plugin",
+        "zeus_cli.config",
+        "zeus_cli.plugin_events",
+        "zeus_cli.plugin_provider_requests",
+        "zeus_constants",
+        "zeus_platform",
+        "zeus_state:AsyncSessionDB",
+        "zeus_state:DEFAULT_DB_PATH",
+        "zeus_state:DeletedWalGenerationError",
+        "zeus_state:SessionCompressionInProgressError",
+        "zeus_state:SessionDB",
+        "zeus_state:SessionExportTooLargeError",
+        "zeus_state:SessionResumeTooLargeError",
+        "zeus_state:StateDbCorruptError",
+        "zeus_state:StateDbReplacedError",
+        "zeus_state:WriterMutexTimeout",
+        "zeus_state:apply_database_pragmas",
+        "zeus_state:apply_wal_with_fallback",
+        "zeus_state:classify_persistence_error",
+        "zeus_state:divert_session_transcript_jsonl",
+        "zeus_state:format_session_db_unavailable",
+        "zeus_state:get_zeus_home",
+        "zeus_state:get_last_init_error",
+        "zeus_state:holder_pid_checkable",
+        "zeus_state:is_malformed_db_error",
+        "zeus_state:is_sqlite_lock_error",
+        "zeus_state:maintain_after_commit",
+        "zeus_state:make_user_dir",
+        "zeus_state:mkdir_under_zeus_home",
+        "zeus_state:note_read_pool_exhausted",
+        "zeus_state:preflight_db_writability",
+        "zeus_state:read_only_db_uri",
+        "zeus_state:resolved_max_export_messages",
+        "zeus_state:resolved_max_resume_messages",
+        "zeus_state:storage_corrupt_reason",
+        "zeus_state:storage_state",
+        "zeus_state:write_site",
+        "zeus_state:writer_mutex_until",
+        "zeus_state_registry:acquire",
+        "zeus_state_registry:release",
+        "zeus_state_registry:release_or_close",
+        "plugins.plugin_storage",
+        "plugins.plugin_utils",
+        "pm",
+        "providers",
+        "providers.base",
+        "tools.browser_supervisor",
+        "tools.browser_supervisor_capture",
+        "tools.computer_use.backend",
+        "tools.registry"
+      ]
+    },
+    {
+      "source": "developer-guide/plugins/index.md § `zeus_state` deprecated: the storage interface replacements",
+      "entries": [
+        "persistence",
+        "persistence.conversation.messages",
+        "persistence.conversation.search",
+        "persistence.conversation.sessions",
+        "persistence.housekeeping.maintenance",
+        "persistence.housekeeping.state_meta",
+        "persistence_assembly",
+        "sqlite_support:apply_wal_with_fallback",
+        "sqlite_support:apply_database_pragmas",
+        "sqlite_support:preflight_db_writability",
+        "sqlite_support:read_only_db_uri",
+        "storage_errors:classify_persistence_error",
+        "storage_errors:is_sqlite_lock_error",
+        "storage_errors:is_malformed_db_error",
+        "session_rescue:divert_session_transcript_jsonl",
+        "storage_user_copy:format_session_db_unavailable",
+        "storage_user_copy:get_last_init_error",
+        "storage_limits:resolved_max_export_messages",
+        "storage_limits:resolved_max_resume_messages",
+        "process_identity:holder_pid_checkable",
+        "zeus_dir_acl:make_user_dir"
+      ]
+    },
+    {
+      "source": "PluginContext (zeus_cli/plugins_context.py)",
+      "entries": [
+        "agent.context_references",
+        "agent.plugin_llm",
+        "agent.transcription_provider",
+        "agent.tts_provider",
+        "cron.execution_identity",
+        "zeus_cli.dashboard_auth",
+        "zeus_cli.platform_actions",
+        "zeus_cli.plugins:PluginContext",
+        "zeus_cli.plugins_ledger:PluginRegistration",
+        "zeus_cli.plugins_state:PluginState"
+      ]
+    },
+    {
+      "source": "prose in memory-provider / model-provider / terminal-environment plugin pages (tools.environments:BaseEnvironment is the package's `__all__` re-export)",
+      "entries": [
+        "agent.runtime_cwd:resolve_agent_cwd",
+        "agent.usage_pricing:CostResult",
+        "zeus_cli.auth_constants:AuthError",
+        "tools.environments.base:BaseEnvironment",
+        "tools.environments:BaseEnvironment",
+        "utils:atomic_json_write",
+        "utils:read_json_or_empty"
+      ]
+    },
+    {
+      "source": "adding-platform-adapters.md § Public helpers for platform plugins",
+      "entries": [
+        "gateway.platforms.access_policy_mixin:OwnAccessPolicyMixin",
+        "tools.approval:resolve_gateway_approval",
+        "tools.approval:resolve_gateway_approval_card",
+        "gateway.approval_actor:approval_refusal",
+        "gateway.approval_actor:refusal_text",
+        "gateway.approval_actor:slash_confirm_refusal",
+        "gateway.approval_actor:clarify_refusal",
+        "gateway.approval_actor:picker_refusal",
+        "gateway.approval_actor:update_prompt_refusal",
+        "tools.clarify_gateway:get_pending",
+        "tools.clarify_gateway:resolve_gateway_clarify",
+        "tools.clarify_gateway:mark_awaiting_text",
+        "tools.clarify_gateway:SKIPPED",
+        "tools.url_safety:is_safe_url",
+        "tools.url_safety:create_ssrf_safe_async_client",
+        "tools.url_safety:create_ssrf_safe_client",
+        "gateway.platforms._http_client_limits:platform_httpx_limits",
+        "zeus_cli.gateway_setup_wizard:print_setup_header",
+        "zeus_cli.gateway_setup_wizard:confirm_reconfigure",
+        "zeus_cli.gateway_setup_wizard:offer_home_channel",
+        "zeus_cli.gateway_setup_wizard:save_env_values",
+        "zeus_cli.gateway_setup_wizard:prompt_csv",
+        "zeus_cli.setup:prompt",
+        "zeus_cli.setup:prompt_choice",
+        "zeus_cli.setup:prompt_yes_no",
+        "zeus_cli.cli_output"
+      ]
+    },
+    {
+      "source": "adding-platform-adapters.md § Conversation model settings and picker providers (BasePlatformAdapter)",
+      "entries": [
+        "gateway.platforms.session_model:SessionModelPickerProvider",
+        "gateway.platforms.session_model:SessionModelSettings"
+      ]
+    },
+    {
+      "source": "plugins/index.md § Read the skill catalog",
+      "entries": [
+        "tools.skills_tool:find_all_skills",
+        "tools.skills_tool:sort_skills",
+        "tools.skills_tool:skill_search_dirs",
+        "tools.skills_tool:locate_skill",
+        "tools.skills_tool:skill_lookup_path_error",
+        "tools.skills_sync:dir_hash",
+        "tools.skill_usage:read_skill_name"
+      ]
+    },
+    {
+      "source": "plugins/index.md § platform plugins: read session identity through the task-local context",
+      "entries": [
+        "gateway.session_context:get_session_env"
+      ]
+    },
+    {
+      "source": "plugin-llm-access.md § From the plugin's frontend: a plugin RPC method (`force=True` where secrets must never leave)",
+      "entries": [
+        "agent.redact:redact_sensitive_text"
+      ]
+    },
+    {
+      "source": "user-guide/features/plugins.md § Plugin code inside the gateway: which client created the session",
+      "entries": [
+        "zeus_cli.plugin_session:session_client"
+      ]
+    },
+    {
+      "source": "user-guide/features/plugins.md § Plugin code inside the gateway: which client sent the turn and who is attached",
+      "entries": [
+        "zeus_cli.plugin_session:turn_client",
+        "zeus_cli.plugin_session:session_viewers"
+      ]
+    },
+    {
+      "source": "plugins/index.md § Check file paths and read YAML with Zeus's own helpers",
+      "entries": [
+        "agent.file_safety:get_read_block_error",
+        "agent.file_safety:raise_if_read_blocked",
+        "agent.file_safety:is_write_denied",
+        "agent.file_safety:get_write_denied_error",
+        "zeus_yaml:safe_load",
+        "zeus_yaml:safe_dump"
+      ]
+    },
+    {
+      "source": "plugins/index.md § Send a credentialed HTTP request without leaking it on redirect",
+      "entries": [
+        "zeus_cli.urllib_security:open_credentialed_url"
+      ]
+    },
+    {
+      "source": "plugins/index.md § Read a Retry-After header the way Zeus does",
+      "entries": [
+        "agent.retry_utils:parse_retry_after_seconds"
+      ]
+    },
+    {
+      "source": "plugins/index.md § Send the Zeus User-Agent header",
+      "entries": [
+        "zeus_cli.version_info:zeus_user_agent"
+      ]
+    },
+    {
+      "source": "user-guide/features/plugins.md § A plugin with its own chat client",
+      "entries": [
+        "zeus_cli.chat_launch:zeus_command",
+        "zeus_cli.chat_launch:print_exit_summary",
+        "zeus_cli.gateway_chat:shell_client_env",
+        "zeus_cli.session_worktree:create",
+        "zeus_cli.session_worktree:restore",
+        "zeus_cli.session_worktree:finish"
+      ]
+    }
+  ]
+}

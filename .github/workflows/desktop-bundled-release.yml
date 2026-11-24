@@ -47,7 +47,7 @@ name: Desktop Bundled Release
 # dependency caches. Their receipts use releases/channel-builds/<id>/; only the
 # trusted publish-channel controller may CAS the channel after all smoke passes.
 #
-# Payload staging is `hermes pm bundle` on the native runner. There is
+# Payload staging is `zeus pm bundle` on the native runner. There is
 # no cross-target staging. The darwin legs sign (CSC_LINK) and notarize
 # (afterSign notarize.mjs) when the release-signing environment carries the
 # Apple credentials. Downloadable commit artifacts require the same signing
@@ -161,7 +161,7 @@ on:
         type: string
         default: ''
       branding:
-        description: 'Channel app name, icon and package ID: preview (own app) or stable (the regular Hermes app). Fixed when the channel is first created.'
+        description: 'Channel app name, icon and package ID: preview (own app) or stable (the regular Zeus app). Fixed when the channel is first created.'
         required: false
         type: choice
         options: [preview, stable]
@@ -435,17 +435,17 @@ jobs:
             runner: blacksmith-32vcpu-windows-2025
     env: &win32-env
       CHANNEL_BUILD: ${{ needs.validate.outputs.channel-build }}
-      HERMES_DESKTOP_VARIANT: bundled
-      HERMES_PAYLOAD_TAG: ${{ inputs.tag }}
+      ZEUS_DESKTOP_VARIANT: bundled
+      ZEUS_PAYLOAD_TAG: ${{ inputs.tag }}
       RELEASE_CLAIM_TAG: ${{ inputs.claim-tag }}
       # Archive ref for handoff stage/fetch: attempt ref for stable phases.
-      HERMES_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
+      ZEUS_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
       # The commit identity: a tagless commit build's, or a commit claim's in the candidate phase
       # (commit.<stamp>-vX.Y.Z keeps the Commit<sha7> identity; its tag still versions the packages).
-      HERMES_BUILD_COMMIT: ${{ (inputs.build_commit != '' && needs.validate.outputs.channel-build == '' && needs.validate.outputs.sha) || (inputs.release-phase == 'candidate' && startsWith(inputs.tag, 'commit.') && needs.validate.outputs.sha) || '' }}
-      HERMES_RELEASE_COMMIT: ${{ inputs.release-phase != '' && needs.validate.outputs.sha || '' }}
-      HERMES_PAYLOAD_VERSION: ${{ needs.validate.outputs.payload-version }}
-      HERMES_CORE_VERSION: ${{ needs.validate.outputs.core-version }}
+      ZEUS_BUILD_COMMIT: ${{ (inputs.build_commit != '' && needs.validate.outputs.channel-build == '' && needs.validate.outputs.sha) || (inputs.release-phase == 'candidate' && startsWith(inputs.tag, 'commit.') && needs.validate.outputs.sha) || '' }}
+      ZEUS_RELEASE_COMMIT: ${{ inputs.release-phase != '' && needs.validate.outputs.sha || '' }}
+      ZEUS_PAYLOAD_VERSION: ${{ needs.validate.outputs.payload-version }}
+      ZEUS_CORE_VERSION: ${{ needs.validate.outputs.core-version }}
       LEGACY_COMMIT_BUILD: ${{ needs.validate.outputs.legacy-commit-build }}
       # Signature outputs are separate from the prepared dependency snapshot.
       ELECTRON_BUILDER_CACHE: ${{ github.workspace }}/.cache/electron-builder
@@ -515,15 +515,15 @@ jobs:
         id: prepare
         shell: bash
         env:
-          HERMES_BUNDLE_ENV_JSON: ${{ inputs.bundle_env }}
+          ZEUS_BUNDLE_ENV_JSON: ${{ inputs.bundle_env }}
         run: |
-          args=(--tag "$HERMES_PAYLOAD_TAG")
-          if [ -n "$HERMES_BUILD_COMMIT" ] && [ -z "$HERMES_PAYLOAD_TAG" ]; then args=(--commit "$HERMES_BUILD_COMMIT"); fi
-          if [ -n "$HERMES_RELEASE_COMMIT" ]; then args+=(--release-commit "$HERMES_RELEASE_COMMIT"); fi
+          args=(--tag "$ZEUS_PAYLOAD_TAG")
+          if [ -n "$ZEUS_BUILD_COMMIT" ] && [ -z "$ZEUS_PAYLOAD_TAG" ]; then args=(--commit "$ZEUS_BUILD_COMMIT"); fi
+          if [ -n "$ZEUS_RELEASE_COMMIT" ]; then args+=(--release-commit "$ZEUS_RELEASE_COMMIT"); fi
           if [ "${LEGACY_COMMIT_BUILD:-false}" = true ]; then
-            unset HERMES_PAYLOAD_TAG
-            export HERMES_PAYLOAD_VERSION="$HERMES_CORE_VERSION"
-            args=(--commit "$HERMES_BUILD_COMMIT")
+            unset ZEUS_PAYLOAD_TAG
+            export ZEUS_PAYLOAD_VERSION="$ZEUS_CORE_VERSION"
+            args=(--commit "$ZEUS_BUILD_COMMIT")
           fi
           if [ -n "${CHANNEL_BUILD:-}" ]; then args=(--channel-request "$RUNNER_TEMP/channel-request.json"); fi
           python scripts/bundles/desktop.py "${args[@]}" --variant bundled --prepare-only \
@@ -618,7 +618,7 @@ jobs:
         # A Store-only build gets no signing vars: after-pack and electron-builder sign payload binaries
         # whenever they are set, and this job skips the Azure login that would let them.
         env:
-          HERMES_BUNDLE_ENV_JSON: ${{ inputs.bundle_env }}
+          ZEUS_BUNDLE_ENV_JSON: ${{ inputs.bundle_env }}
           PYTHONUTF8: '1'
           AZURE_SIGN_ENDPOINT: ${{ inputs.skip-signed != true && vars.AZURE_SIGN_ENDPOINT || '' }}
           AZURE_SIGN_ACCOUNT: ${{ inputs.skip-signed != true && vars.AZURE_SIGN_ACCOUNT || '' }}
@@ -632,8 +632,8 @@ jobs:
           RELEASE_PHASE: ${{ inputs.release-phase }}
         run: |
           if ($env:LEGACY_COMMIT_BUILD -eq 'true') {
-              Remove-Item Env:HERMES_PAYLOAD_TAG -ErrorAction SilentlyContinue
-              $env:HERMES_PAYLOAD_VERSION = $env:HERMES_CORE_VERSION
+              Remove-Item Env:ZEUS_PAYLOAD_TAG -ErrorAction SilentlyContinue
+              $env:ZEUS_PAYLOAD_VERSION = $env:ZEUS_CORE_VERSION
           }
           if ($env:SKIP_SIGNED -ne 'true') {
               python scripts/bundles/desktop.py --prepared "$env:RUNNER_TEMP/desktop-job/prepared.json" --variant bundled
@@ -641,7 +641,7 @@ jobs:
           }
           # A canary candidate (the Stable Release pipeline in canary mode) builds the Store package
           # like any candidate; only the legacy direct canary dispatch leaves it out.
-          if ($env:SKIP_STORE -ne 'true' -and -not $env:CHANNEL_BUILD -and -not $env:HERMES_BUILD_COMMIT -and ($env:RELEASE_PHASE -eq 'candidate' -or $env:HERMES_PAYLOAD_TAG -notlike "canary.*")) {
+          if ($env:SKIP_STORE -ne 'true' -and -not $env:CHANNEL_BUILD -and -not $env:ZEUS_BUILD_COMMIT -and ($env:RELEASE_PHASE -eq 'candidate' -or $env:ZEUS_PAYLOAD_TAG -notlike "canary.*")) {
               python scripts/bundles/desktop.py --prepared "$env:RUNNER_TEMP/desktop-job/prepared.json" --variant store
               if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
           }
@@ -688,7 +688,7 @@ jobs:
       - name: Stage Windows packages to R2
         # A channel dispatch carries build_commit as provenance, not as the
         # receipt mode: its packages are staged by the pinned channel request
-        # step above, and HERMES_PAYLOAD_TAG/HERMES_BUILD_COMMIT are both
+        # step above, and ZEUS_PAYLOAD_TAG/ZEUS_BUILD_COMMIT are both
         # empty here. Commit claims stage on a fresh controller-only runner.
         if: needs.validate.outputs.channel-build == '' && !(inputs.release-phase == 'candidate' && startsWith(inputs.tag, 'commit.')) && (inputs.upload_release == true || inputs.release-phase == 'candidate' || inputs.build_commit != '')
         shell: bash
@@ -706,19 +706,19 @@ jobs:
         run: |
           root="$GITHUB_WORKSPACE/apps/desktop/release"
           args=(--include '*.msix')
-          if [ "$SKIP_SIGNED" != true ] && { [ "$RELEASE_PHASE" = candidate ] || { [ "$HERMES_DESKTOP_VARIANT" = bundled ] && [[ "$HERMES_PAYLOAD_TAG" == canary.* ]]; }; }; then
+          if [ "$SKIP_SIGNED" != true ] && { [ "$RELEASE_PHASE" = candidate ] || { [ "$ZEUS_DESKTOP_VARIANT" = bundled ] && [[ "$ZEUS_PAYLOAD_TAG" == canary.* ]]; }; }; then
             python -m scripts.bundles.release_artifacts record --platform windows --arch "${TARGET##*-}" \
-              --root "$root" --tag "$HERMES_PAYLOAD_TAG" --commit "$RELEASE_COMMIT" \
+              --root "$root" --tag "$ZEUS_PAYLOAD_TAG" --commit "$RELEASE_COMMIT" \
               --out "$root/metadata-windows-${TARGET##*-}.json"
             args+=(--include 'metadata-*.json')
           fi
-          if [ -n "$HERMES_BUILD_COMMIT" ] && [ -z "$HERMES_PAYLOAD_TAG" ]; then
+          if [ -n "$ZEUS_BUILD_COMMIT" ] && [ -z "$ZEUS_PAYLOAD_TAG" ]; then
             # Commit-only mode: schema-2 receipts under releases/commit/<sha>/.
-            python -m scripts.releases.handoff stage --commit-build "$HERMES_BUILD_COMMIT" \
+            python -m scripts.releases.handoff stage --commit-build "$ZEUS_BUILD_COMMIT" \
               --commit "$RELEASE_COMMIT" \
               --name "$TARGET" --root "$root" "${args[@]}"
           else
-            python -m scripts.releases.handoff stage --tag "${HERMES_ARCHIVE_TAG:-$HERMES_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
+            python -m scripts.releases.handoff stage --tag "${ZEUS_ARCHIVE_TAG:-$ZEUS_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
               --name "$TARGET" --root "$root" "${args[@]}"
           fi
 
@@ -816,8 +816,8 @@ jobs:
     env:
       TARGET: win32-x64
       COMMIT_ARTIFACT_ID: ${{ needs.build-win32-x64-commit.outputs.commit-artifact-id }}
-      HERMES_PAYLOAD_TAG: ${{ inputs.tag }}
-      HERMES_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
+      ZEUS_PAYLOAD_TAG: ${{ inputs.tag }}
+      ZEUS_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
       RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
       LEGACY_COMMIT_BUILD: ${{ needs.validate.outputs.legacy-commit-build }}
       CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
@@ -860,7 +860,7 @@ jobs:
           record_args=()
           if [ "${LEGACY_COMMIT_BUILD:-false}" = true ]; then record_args+=(--legacy-commit-build); fi
           python -m scripts.bundles.release_artifacts record --platform windows --arch "${TARGET##*-}" \
-            --root "$root" --tag "$HERMES_PAYLOAD_TAG" --commit "$RELEASE_COMMIT" \
+            --root "$root" --tag "$ZEUS_PAYLOAD_TAG" --commit "$RELEASE_COMMIT" \
             "${record_args[@]}" \
             --out "$root/metadata-windows-${TARGET##*-}.json"
       - name: Stage commit claim Windows packages to R2
@@ -871,7 +871,7 @@ jobs:
           CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
         run: |
           root="$GITHUB_WORKSPACE/staged-artifacts"
-          python -m scripts.releases.handoff stage --tag "${HERMES_ARCHIVE_TAG:-$HERMES_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
+          python -m scripts.releases.handoff stage --tag "${ZEUS_ARCHIVE_TAG:-$ZEUS_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
             --name "$TARGET" --root "$root" --include '*.msix' --include "metadata-windows-${TARGET##*-}.json"
 
   stage-commit-win32-arm64:
@@ -891,8 +891,8 @@ jobs:
     env:
       TARGET: win32-arm64
       COMMIT_ARTIFACT_ID: ${{ needs.build-win32-arm64-commit.outputs.commit-artifact-id }}
-      HERMES_PAYLOAD_TAG: ${{ inputs.tag }}
-      HERMES_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
+      ZEUS_PAYLOAD_TAG: ${{ inputs.tag }}
+      ZEUS_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
       RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
       LEGACY_COMMIT_BUILD: ${{ needs.validate.outputs.legacy-commit-build }}
       CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
@@ -977,17 +977,17 @@ jobs:
             runner: macos-15
     env: &darwin-env
       CHANNEL_BUILD: ${{ needs.validate.outputs.channel-build }}
-      HERMES_DESKTOP_VARIANT: bundled
-      HERMES_PAYLOAD_TAG: ${{ inputs.tag }}
+      ZEUS_DESKTOP_VARIANT: bundled
+      ZEUS_PAYLOAD_TAG: ${{ inputs.tag }}
       RELEASE_CLAIM_TAG: ${{ inputs.claim-tag }}
       # Archive ref for handoff stage/fetch: attempt ref for stable phases.
-      HERMES_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
+      ZEUS_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
       # The commit identity: a tagless commit build's, or a commit claim's in the candidate phase
       # (commit.<stamp>-vX.Y.Z keeps the Commit<sha7> identity; its tag still versions the packages).
-      HERMES_BUILD_COMMIT: ${{ (inputs.build_commit != '' && needs.validate.outputs.channel-build == '' && needs.validate.outputs.sha) || (inputs.release-phase == 'candidate' && startsWith(inputs.tag, 'commit.') && needs.validate.outputs.sha) || '' }}
-      HERMES_RELEASE_COMMIT: ${{ inputs.release-phase != '' && needs.validate.outputs.sha || '' }}
-      HERMES_PAYLOAD_VERSION: ${{ needs.validate.outputs.payload-version }}
-      HERMES_CORE_VERSION: ${{ needs.validate.outputs.core-version }}
+      ZEUS_BUILD_COMMIT: ${{ (inputs.build_commit != '' && needs.validate.outputs.channel-build == '' && needs.validate.outputs.sha) || (inputs.release-phase == 'candidate' && startsWith(inputs.tag, 'commit.') && needs.validate.outputs.sha) || '' }}
+      ZEUS_RELEASE_COMMIT: ${{ inputs.release-phase != '' && needs.validate.outputs.sha || '' }}
+      ZEUS_PAYLOAD_VERSION: ${{ needs.validate.outputs.payload-version }}
+      ZEUS_CORE_VERSION: ${{ needs.validate.outputs.core-version }}
       LEGACY_COMMIT_BUILD: ${{ needs.validate.outputs.legacy-commit-build }}
       CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
       CLOUDFLARE_R2_PUBLIC_URL: ${{ needs.validate.outputs.public-root }}
@@ -1047,15 +1047,15 @@ jobs:
         id: prepare
         shell: bash
         env:
-          HERMES_BUNDLE_ENV_JSON: ${{ inputs.bundle_env }}
+          ZEUS_BUNDLE_ENV_JSON: ${{ inputs.bundle_env }}
         run: |
-          args=(--tag "$HERMES_PAYLOAD_TAG")
-          if [ -n "$HERMES_BUILD_COMMIT" ] && [ -z "$HERMES_PAYLOAD_TAG" ]; then args=(--commit "$HERMES_BUILD_COMMIT"); fi
-          if [ -n "$HERMES_RELEASE_COMMIT" ]; then args+=(--release-commit "$HERMES_RELEASE_COMMIT"); fi
+          args=(--tag "$ZEUS_PAYLOAD_TAG")
+          if [ -n "$ZEUS_BUILD_COMMIT" ] && [ -z "$ZEUS_PAYLOAD_TAG" ]; then args=(--commit "$ZEUS_BUILD_COMMIT"); fi
+          if [ -n "$ZEUS_RELEASE_COMMIT" ]; then args+=(--release-commit "$ZEUS_RELEASE_COMMIT"); fi
           if [ "${LEGACY_COMMIT_BUILD:-false}" = true ]; then
-            unset HERMES_PAYLOAD_TAG
-            export HERMES_PAYLOAD_VERSION="$HERMES_CORE_VERSION"
-            args=(--commit "$HERMES_BUILD_COMMIT")
+            unset ZEUS_PAYLOAD_TAG
+            export ZEUS_PAYLOAD_VERSION="$ZEUS_CORE_VERSION"
+            args=(--commit "$ZEUS_BUILD_COMMIT")
           fi
           if [ -n "${CHANNEL_BUILD:-}" ]; then args=(--channel-request "$RUNNER_TEMP/channel-request.json"); fi
           python3 scripts/bundles/desktop.py "${args[@]}" --variant bundled --prepare-only \
@@ -1126,8 +1126,8 @@ jobs:
             python .build/channel-controller/scripts/ci/check_macos_notary_auth.py
           elif [ -f scripts/ci/check_macos_notary_auth.py ]; then
             python -m scripts.ci.check_macos_notary_auth
-          elif [ -n "$HERMES_BUILD_COMMIT" ]; then
-            echo "::warning::scripts/ci/check_macos_notary_auth.py not present in commit $HERMES_BUILD_COMMIT; skipping notarization credential preflight"
+          elif [ -n "$ZEUS_BUILD_COMMIT" ]; then
+            echo "::warning::scripts/ci/check_macos_notary_auth.py not present in commit $ZEUS_BUILD_COMMIT; skipping notarization credential preflight"
           else
             echo "::error::scripts/ci/check_macos_notary_auth.py is missing from the release checkout"
             exit 1
@@ -1179,16 +1179,16 @@ jobs:
         # every leg needs it.
         shell: bash
         run: |
-          echo 'block return out quick proto udp to any port 443' | sudo pfctl -a com.apple/hermes-no-quic -f -
+          echo 'block return out quick proto udp to any port 443' | sudo pfctl -a com.apple/zeus-no-quic -f -
           sudo pfctl -E
-          sudo pfctl -a com.apple/hermes-no-quic -sr
+          sudo pfctl -a com.apple/zeus-no-quic -sr
 
       - name: Build and package
         shell: bash
         timeout-minutes: 330
         env:
-          HERMES_BUNDLE_ENV_JSON: ${{ inputs.bundle_env }}
-          HERMES_MAC_SIGNATURE_CACHE: ${{ github.workspace }}/.cache/mac-payload-signatures
+          ZEUS_BUNDLE_ENV_JSON: ${{ inputs.bundle_env }}
+          ZEUS_MAC_SIGNATURE_CACHE: ${{ github.workspace }}/.cache/mac-payload-signatures
           PYTHONUTF8: '1'
           # electron-osx-sign*/electron-notarize* keep the sign+notarize
           # phase visible: without them NOTHING logs between "signing
@@ -1205,8 +1205,8 @@ jobs:
           ulimit -n 16384 2>/dev/null || true
           echo "file descriptor limit: soft=$(ulimit -Sn) hard=$(ulimit -Hn)"
           if [ "${LEGACY_COMMIT_BUILD:-false}" = true ]; then
-            unset HERMES_PAYLOAD_TAG
-            export HERMES_PAYLOAD_VERSION="$HERMES_CORE_VERSION"
+            unset ZEUS_PAYLOAD_TAG
+            export ZEUS_PAYLOAD_VERSION="$ZEUS_CORE_VERSION"
           fi
           python scripts/bundles/desktop.py --prepared "$RUNNER_TEMP/desktop-job/prepared.json" --variant bundled
 
@@ -1298,20 +1298,20 @@ jobs:
         run: |
           root="$GITHUB_WORKSPACE/apps/desktop/release"
           args=(--include '*.dmg' --include '*.zip' --include '*.blockmap' --include '*-mac.yml')
-          if [ "$RELEASE_PHASE" = candidate ] || { [ "$HERMES_DESKTOP_VARIANT" = bundled ] && [[ "$HERMES_PAYLOAD_TAG" == canary.* ]]; }; then
+          if [ "$RELEASE_PHASE" = candidate ] || { [ "$ZEUS_DESKTOP_VARIANT" = bundled ] && [[ "$ZEUS_PAYLOAD_TAG" == canary.* ]]; }; then
             python -m scripts.bundles.release_artifacts record --platform macos --arch "${TARGET##*-}" \
-              --root "$root" --tag "$HERMES_PAYLOAD_TAG" --commit "$RELEASE_COMMIT" \
+              --root "$root" --tag "$ZEUS_PAYLOAD_TAG" --commit "$RELEASE_COMMIT" \
               --out "$root/metadata-macos-${TARGET##*-}.json"
             args+=(--include 'metadata-*.json')
           fi
-          if [ -n "$HERMES_BUILD_COMMIT" ] && [ -z "$HERMES_PAYLOAD_TAG" ]; then
+          if [ -n "$ZEUS_BUILD_COMMIT" ] && [ -z "$ZEUS_PAYLOAD_TAG" ]; then
             # Commit-only mode: binaries only — no feed yml exists without a tag.
-            python -m scripts.releases.handoff stage --commit-build "$HERMES_BUILD_COMMIT" \
+            python -m scripts.releases.handoff stage --commit-build "$ZEUS_BUILD_COMMIT" \
               --commit "$RELEASE_COMMIT" \
               --name "$TARGET" --root "$root" \
               --include '*.dmg' --include '*.zip' --include '*.blockmap'
           else
-            python -m scripts.releases.handoff stage --tag "${HERMES_ARCHIVE_TAG:-$HERMES_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
+            python -m scripts.releases.handoff stage --tag "${ZEUS_ARCHIVE_TAG:-$ZEUS_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
               --name "$TARGET" --root "$root" "${args[@]}"
           fi
 
@@ -1365,8 +1365,8 @@ jobs:
     env:
       TARGET: darwin-arm64
       COMMIT_ARTIFACT_ID: ${{ needs.build-darwin-arm64-commit.outputs.commit-artifact-id }}
-      HERMES_PAYLOAD_TAG: ${{ inputs.tag }}
-      HERMES_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
+      ZEUS_PAYLOAD_TAG: ${{ inputs.tag }}
+      ZEUS_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
       RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
       LEGACY_COMMIT_BUILD: ${{ needs.validate.outputs.legacy-commit-build }}
       CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
@@ -1419,7 +1419,7 @@ jobs:
           record_args=()
           if [ "${LEGACY_COMMIT_BUILD:-false}" = true ]; then record_args+=(--legacy-commit-build); fi
           python -m scripts.bundles.release_artifacts record --platform macos --arch "${TARGET##*-}" \
-            --root "$root" --tag "$HERMES_PAYLOAD_TAG" --commit "$RELEASE_COMMIT" \
+            --root "$root" --tag "$ZEUS_PAYLOAD_TAG" --commit "$RELEASE_COMMIT" \
             "${record_args[@]}" \
             --out "$root/metadata-macos-${TARGET##*-}.json"
       - name: Stage commit claim macOS packages to R2
@@ -1430,7 +1430,7 @@ jobs:
           CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
         run: |
           root="$GITHUB_WORKSPACE/staged-artifacts"
-          python -m scripts.releases.handoff stage --tag "${HERMES_ARCHIVE_TAG:-$HERMES_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
+          python -m scripts.releases.handoff stage --tag "${ZEUS_ARCHIVE_TAG:-$ZEUS_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
             --name "$TARGET" --root "$root" --include '*.dmg' --include '*.zip' --include '*.blockmap' --include "metadata-macos-${TARGET##*-}.json"
 
   build-darwin-arm64:
@@ -1493,12 +1493,12 @@ jobs:
     env: &linux-env
       LINUX_BUNDLE_TARGET: ${{ matrix.target.label }}
       DEBIAN_FRONTEND: noninteractive
-      HERMES_DESKTOP_VARIANT: bundled
-      HERMES_PAYLOAD_TAG: ${{ inputs.tag }}
+      ZEUS_DESKTOP_VARIANT: bundled
+      ZEUS_PAYLOAD_TAG: ${{ inputs.tag }}
       RELEASE_CLAIM_TAG: ${{ inputs.claim-tag }}
-      HERMES_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
-      HERMES_RELEASE_COMMIT: ${{ inputs.release-phase != '' && needs.validate.outputs.sha || '' }}
-      HERMES_PAYLOAD_VERSION: ${{ needs.validate.outputs.payload-version }}
+      ZEUS_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
+      ZEUS_RELEASE_COMMIT: ${{ inputs.release-phase != '' && needs.validate.outputs.sha || '' }}
+      ZEUS_PAYLOAD_VERSION: ${{ needs.validate.outputs.payload-version }}
       CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
       CLOUDFLARE_R2_PUBLIC_URL: ${{ needs.validate.outputs.public-root }}
     steps: &linux-steps
@@ -1558,8 +1558,8 @@ jobs:
         id: prepare
         shell: bash scripts/ci/linux_bundle_shell.sh build {0}
         run: |
-          args=(--tag "$HERMES_PAYLOAD_TAG")
-          if [ -n "$HERMES_RELEASE_COMMIT" ]; then args+=(--release-commit "$HERMES_RELEASE_COMMIT"); fi
+          args=(--tag "$ZEUS_PAYLOAD_TAG")
+          if [ -n "$ZEUS_RELEASE_COMMIT" ]; then args+=(--release-commit "$ZEUS_RELEASE_COMMIT"); fi
           python3 scripts/bundles/desktop.py "${args[@]}" --variant bundled --prepare-only \
             --work "$GITHUB_WORKSPACE/.build/desktop-job" --cache "$GITHUB_WORKSPACE/.cache/desktop-inputs"
           python3 -m scripts.ci.desktop_commands "$GITHUB_WORKSPACE/.build/desktop-job/prepared.json"
@@ -1630,7 +1630,7 @@ jobs:
           args=(--include '*.AppImage')
           feeds=(apps/desktop/release/*-linux*.yml)
           if [ ${#feeds[@]} -gt 0 ]; then args+=(--include '*-linux*.yml'); fi
-          python -m scripts.releases.handoff stage --tag "${HERMES_ARCHIVE_TAG:-$HERMES_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
+          python -m scripts.releases.handoff stage --tag "${ZEUS_ARCHIVE_TAG:-$ZEUS_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
             --name "$TARGET" --root apps/desktop/release "${args[@]}"
 
   build-linux-arm64:
@@ -1831,14 +1831,14 @@ jobs:
     env:
       CHANNEL_BUILD: ${{ needs.validate.outputs.channel-build }}
       CHANNEL_REQUEST_SHA256: ${{ needs.validate.outputs.channel-request-sha256 }}
-      HERMES_PAYLOAD_TAG: ${{ inputs.tag }}
+      ZEUS_PAYLOAD_TAG: ${{ inputs.tag }}
       # Archive ref for the universal-bundle handoff: attempt ref for stable.
-      HERMES_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
+      ZEUS_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
       # The commit identity: a tagless commit build's, or a commit claim's in the candidate phase
       # (commit.<stamp>-vX.Y.Z keeps the Commit<sha7> identity; its tag still versions the packages).
-      HERMES_BUILD_COMMIT: ${{ (inputs.build_commit != '' && needs.validate.outputs.channel-build == '' && needs.validate.outputs.sha) || (inputs.release-phase == 'candidate' && startsWith(inputs.tag, 'commit.') && needs.validate.outputs.sha) || '' }}
-      HERMES_PAYLOAD_VERSION: ${{ needs.validate.outputs.payload-version }}
-      HERMES_CORE_VERSION: ${{ needs.validate.outputs.core-version }}
+      ZEUS_BUILD_COMMIT: ${{ (inputs.build_commit != '' && needs.validate.outputs.channel-build == '' && needs.validate.outputs.sha) || (inputs.release-phase == 'candidate' && startsWith(inputs.tag, 'commit.') && needs.validate.outputs.sha) || '' }}
+      ZEUS_PAYLOAD_VERSION: ${{ needs.validate.outputs.payload-version }}
+      ZEUS_CORE_VERSION: ${{ needs.validate.outputs.core-version }}
       LEGACY_COMMIT_BUILD: ${{ needs.validate.outputs.legacy-commit-build }}
       # The paths build-win32-x64 saves its bundle-assembly caches from.
       ELECTRON_BUILDER_CACHE: ${{ github.workspace }}/.cache/desktop-inputs/packager/builder
@@ -1914,12 +1914,12 @@ jobs:
           if [ -n "${CHANNEL_BUILD:-}" ]; then
             python -m scripts.releases.handoff fetch --channel-request "$RUNNER_TEMP/channel-request.json" \
               --name win32-x64 --name win32-arm64 --root apps/desktop/release --include '*.msix'
-          elif [ -n "$HERMES_BUILD_COMMIT" ] && [ -z "$HERMES_PAYLOAD_TAG" ]; then
-            python -m scripts.releases.handoff fetch --commit-build "$HERMES_BUILD_COMMIT" \
+          elif [ -n "$ZEUS_BUILD_COMMIT" ] && [ -z "$ZEUS_PAYLOAD_TAG" ]; then
+            python -m scripts.releases.handoff fetch --commit-build "$ZEUS_BUILD_COMMIT" \
               --commit "$RELEASE_COMMIT" \
               --name win32-x64 --name win32-arm64 --root apps/desktop/release --include '*.msix'
           else
-            python -m scripts.releases.handoff fetch --tag "${HERMES_ARCHIVE_TAG:-$HERMES_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
+            python -m scripts.releases.handoff fetch --tag "${ZEUS_ARCHIVE_TAG:-$ZEUS_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
               --name win32-x64 --name win32-arm64 --root apps/desktop/release --include '*.msix'
           fi
 
@@ -1961,22 +1961,22 @@ jobs:
             node scripts/stage-msixbundle.mjs --channel-request "$RUNNER_TEMP/channel-request.json" --variant bundled
             exit 0
           fi
-          if [ -n "$HERMES_BUILD_COMMIT" ] && [ -z "$HERMES_PAYLOAD_TAG" ]; then
-            node scripts/stage-msixbundle.mjs --commit "$HERMES_BUILD_COMMIT" --version "$HERMES_PAYLOAD_VERSION" --variant bundled --no-upload
+          if [ -n "$ZEUS_BUILD_COMMIT" ] && [ -z "$ZEUS_PAYLOAD_TAG" ]; then
+            node scripts/stage-msixbundle.mjs --commit "$ZEUS_BUILD_COMMIT" --version "$ZEUS_PAYLOAD_VERSION" --variant bundled --no-upload
             exit 0
           fi
           if [ "${LEGACY_COMMIT_BUILD:-false}" = true ]; then
-            unset HERMES_PAYLOAD_TAG
-            node scripts/stage-msixbundle.mjs --commit "$HERMES_BUILD_COMMIT" --version "$HERMES_CORE_VERSION" --variant bundled --no-upload
+            unset ZEUS_PAYLOAD_TAG
+            node scripts/stage-msixbundle.mjs --commit "$ZEUS_BUILD_COMMIT" --version "$ZEUS_CORE_VERSION" --variant bundled --no-upload
             exit 0
           fi
           args=()
           if [ "$RELEASE_PHASE" = candidate ]; then args+=(--candidate); fi
           if [ "$SKIP_SIGNED" != true ]; then
-            node scripts/stage-msixbundle.mjs --tag "$HERMES_PAYLOAD_TAG" --variant bundled "${args[@]}"
+            node scripts/stage-msixbundle.mjs --tag "$ZEUS_PAYLOAD_TAG" --variant bundled "${args[@]}"
           fi
-          if [ "$RELEASE_PHASE" = candidate ] && [ "$SKIP_STORE" != true ] && [[ "$HERMES_PAYLOAD_TAG" != commit.* ]]; then
-            node scripts/bundle-store-msixbundle.mjs --tag "$HERMES_PAYLOAD_TAG"
+          if [ "$RELEASE_PHASE" = candidate ] && [ "$SKIP_STORE" != true ] && [[ "$ZEUS_PAYLOAD_TAG" != commit.* ]]; then
+            node scripts/bundle-store-msixbundle.mjs --tag "$ZEUS_PAYLOAD_TAG"
           fi
 
       - name: Stage universal bundles to R2
@@ -1987,12 +1987,12 @@ jobs:
           if [ -n "${CHANNEL_BUILD:-}" ]; then
             python -m scripts.releases.handoff stage --channel-request "$RUNNER_TEMP/channel-request.json" \
               --name windows-universal --root apps/desktop/release --include '*.msixbundle'
-          elif [ -n "$HERMES_BUILD_COMMIT" ] && [ -z "$HERMES_PAYLOAD_TAG" ]; then
-            python -m scripts.releases.handoff stage --commit-build "$HERMES_BUILD_COMMIT" \
+          elif [ -n "$ZEUS_BUILD_COMMIT" ] && [ -z "$ZEUS_PAYLOAD_TAG" ]; then
+            python -m scripts.releases.handoff stage --commit-build "$ZEUS_BUILD_COMMIT" \
               --commit "$RELEASE_COMMIT" \
               --name windows-universal --root apps/desktop/release --include '*.msixbundle'
           else
-            python -m scripts.releases.handoff stage --tag "${HERMES_ARCHIVE_TAG:-$HERMES_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
+            python -m scripts.releases.handoff stage --tag "${ZEUS_ARCHIVE_TAG:-$ZEUS_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
               --name windows-universal --root apps/desktop/release --include '*.msixbundle'
           fi
 
@@ -2088,12 +2088,12 @@ jobs:
     cache-mode: write
     timeout-minutes: 90
     env:
-      HERMES_PAYLOAD_TAG: ${{ inputs.tag }}
+      ZEUS_PAYLOAD_TAG: ${{ inputs.tag }}
       # Archive ref for the termux handoff: attempt ref for stable phases.
-      HERMES_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
+      ZEUS_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
       # The commit identity: a tagless commit build's, or a commit claim's in the candidate phase.
-      HERMES_BUILD_COMMIT: ${{ (inputs.build_commit != '' && needs.validate.outputs.channel-build == '' && needs.validate.outputs.sha) || (inputs.release-phase == 'candidate' && startsWith(inputs.tag, 'commit.') && needs.validate.outputs.sha) || '' }}
-      HERMES_RELEASE_COMMIT: ${{ inputs.release-phase != '' && needs.validate.outputs.sha || '' }}
+      ZEUS_BUILD_COMMIT: ${{ (inputs.build_commit != '' && needs.validate.outputs.channel-build == '' && needs.validate.outputs.sha) || (inputs.release-phase == 'candidate' && startsWith(inputs.tag, 'commit.') && needs.validate.outputs.sha) || '' }}
+      ZEUS_RELEASE_COMMIT: ${{ inputs.release-phase != '' && needs.validate.outputs.sha || '' }}
       LEGACY_COMMIT_BUILD: ${{ needs.validate.outputs.legacy-commit-build }}
       # termux_build.sh gates on `gh release view <tag>` (refuse to build
       # before the release exists); gh needs GH_TOKEN or it errors out and
@@ -2145,7 +2145,7 @@ jobs:
 
       - name: Preserve and retrieve pinned inputs
         shell: bash
-        run: python -m scripts.ci.archive_inputs --target linux-arm64-bionic --payload termux-build/payload --store "$HERMES_RUNTIME_DIR"
+        run: python -m scripts.ci.archive_inputs --target linux-arm64-bionic --payload termux-build/payload --store "$ZEUS_RUNTIME_DIR"
 
       - name: Build the Termux payload, wheelhouse, and .deb
         uses: ./.build/termux-action/.github/actions/build-termux-deb
@@ -2211,7 +2211,7 @@ jobs:
           # the same version must never reuse a pool key.
           python3 scripts/termux/stage_apt_repo.py \
             --pool termux-build/deb --out termux-build/apt \
-            --suite "hermes-$CHANNEL" --pool-subdir "$RELEASE_CLAIM_TAG" \
+            --suite "zeus-$CHANNEL" --pool-subdir "$RELEASE_CLAIM_TAG" \
             --gpg-key-file "$RUNNER_TEMP/termux-apt-gpg.asc"
 
           debs=(termux-build/deb/*.deb)
@@ -2222,7 +2222,7 @@ jobs:
             -v "$PWD/termux-build/apt:/apt:ro" \
             -v "$PWD/scripts/termux/check_apt.sh:/tmp/check-apt.sh:ro" \
             -v "$PWD/scripts/termux/validate_installed.py:/tmp/validate_installed.py:ro" \
-            "termux/termux-docker@$digest" bash /tmp/check-apt.sh "hermes-$CHANNEL" "$version"
+            "termux/termux-docker@$digest" bash /tmp/check-apt.sh "zeus-$CHANNEL" "$version"
           if [ -n "$PREVIOUS_TAG" ]; then
             previous=(termux-build/previous/deb/*.deb)
             test "${#previous[@]}" -eq 1
@@ -2231,13 +2231,13 @@ jobs:
               -v "$PWD/${previous[0]}:/previous.deb:ro" \
               -v "$PWD/scripts/termux/check_apt.sh:/tmp/check-apt.sh:ro" \
               -v "$PWD/scripts/termux/validate_installed.py:/tmp/validate_installed.py:ro" \
-              "termux/termux-docker@$digest" bash /tmp/check-apt.sh "hermes-$CHANNEL" "$version"
+              "termux/termux-docker@$digest" bash /tmp/check-apt.sh "zeus-$CHANNEL" "$version"
           fi
 
           python -m scripts.bundles.release_artifacts record --platform termux --arch aarch64 \
-            --root termux-build --tag "$HERMES_PAYLOAD_TAG" --commit "$RELEASE_COMMIT" \
+            --root termux-build --tag "$ZEUS_PAYLOAD_TAG" --commit "$RELEASE_COMMIT" \
             --out termux-build/metadata-termux-aarch64.json
-          python -m scripts.releases.handoff stage --tag "${HERMES_ARCHIVE_TAG:-$HERMES_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
+          python -m scripts.releases.handoff stage --tag "${ZEUS_ARCHIVE_TAG:-$ZEUS_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
             --name termux --root termux-build --include 'deb/*.deb' --include 'apt/**/*' --include 'metadata-*.json'
 
   termux-deb-commit:
@@ -2262,10 +2262,10 @@ jobs:
     outputs:
       commit-artifact-id: ${{ steps.commit_artifact.outputs.artifact-id }}
     env:
-      HERMES_PAYLOAD_TAG: ${{ inputs.tag }}
-      HERMES_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
-      HERMES_BUILD_COMMIT: ${{ (inputs.build_commit != '' && needs.validate.outputs.channel-build == '' && needs.validate.outputs.sha) || (inputs.release-phase == 'candidate' && startsWith(inputs.tag, 'commit.') && needs.validate.outputs.sha) || '' }}
-      HERMES_RELEASE_COMMIT: ${{ inputs.release-phase != '' && needs.validate.outputs.sha || '' }}
+      ZEUS_PAYLOAD_TAG: ${{ inputs.tag }}
+      ZEUS_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
+      ZEUS_BUILD_COMMIT: ${{ (inputs.build_commit != '' && needs.validate.outputs.channel-build == '' && needs.validate.outputs.sha) || (inputs.release-phase == 'candidate' && startsWith(inputs.tag, 'commit.') && needs.validate.outputs.sha) || '' }}
+      ZEUS_RELEASE_COMMIT: ${{ inputs.release-phase != '' && needs.validate.outputs.sha || '' }}
       LEGACY_COMMIT_BUILD: ${{ needs.validate.outputs.legacy-commit-build }}
       CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
       CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
@@ -2315,7 +2315,7 @@ jobs:
           CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
         run: |
           root="$GITHUB_WORKSPACE/termux-build"
-          python -m scripts.releases.handoff stage --commit-build "$HERMES_BUILD_COMMIT" \
+          python -m scripts.releases.handoff stage --commit-build "$ZEUS_BUILD_COMMIT" \
             --name termux --root "$root" --include 'deb/*.deb'
 
       - name: Upload commit claim artifacts for staging
@@ -2345,8 +2345,8 @@ jobs:
     timeout-minutes: 15
     env:
       COMMIT_ARTIFACT_ID: ${{ needs.termux-deb-commit.outputs.commit-artifact-id }}
-      HERMES_PAYLOAD_TAG: ${{ inputs.tag }}
-      HERMES_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
+      ZEUS_PAYLOAD_TAG: ${{ inputs.tag }}
+      ZEUS_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
       RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
       LEGACY_COMMIT_BUILD: ${{ needs.validate.outputs.legacy-commit-build }}
       CLOUDFLARE_R2_BUCKET: ${{ vars.CLOUDFLARE_R2_BUCKET }}
@@ -2389,7 +2389,7 @@ jobs:
           record_args=()
           if [ "${LEGACY_COMMIT_BUILD:-false}" = true ]; then record_args+=(--legacy-commit-build); fi
           python -m scripts.bundles.release_artifacts record --platform termux --arch aarch64 \
-            --root "$root" --tag "$HERMES_PAYLOAD_TAG" --commit "$RELEASE_COMMIT" \
+            --root "$root" --tag "$ZEUS_PAYLOAD_TAG" --commit "$RELEASE_COMMIT" \
             "${record_args[@]}" \
             --out "$root/metadata-termux-aarch64.json"
       - name: Stage commit claim Termux package to R2
@@ -2400,7 +2400,7 @@ jobs:
           CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
         run: |
           root="$GITHUB_WORKSPACE/staged-artifacts"
-          python -m scripts.releases.handoff stage --tag "${HERMES_ARCHIVE_TAG:-$HERMES_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
+          python -m scripts.releases.handoff stage --tag "${ZEUS_ARCHIVE_TAG:-$ZEUS_PAYLOAD_TAG}" --commit "$RELEASE_COMMIT" \
             --name termux --root "$root" --include 'deb/*.deb' --include 'metadata-termux-aarch64.json'
 
   termux-deb:
@@ -2455,7 +2455,7 @@ jobs:
           filter: blob:none
       - name: Render the full expected-binary matrix
         env:
-          HERMES_BUNDLE_ENV_JSON: ${{ inputs.bundle_env }}
+          ZEUS_BUNDLE_ENV_JSON: ${{ inputs.bundle_env }}
           CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
           CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
           CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
@@ -2494,7 +2494,7 @@ jobs:
     env:
       RELEASE_TAG: ${{ inputs.tag }}
       RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
-      HERMES_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
+      ZEUS_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
       CANDIDATE_MANIFEST_SHA256: ${{ inputs.manifest-sha256 }}
       CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
       CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
@@ -2529,7 +2529,7 @@ jobs:
     env:
       RELEASE_TAG: ${{ inputs.tag }}
       RELEASE_COMMIT: ${{ needs.validate.outputs.sha }}
-      HERMES_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
+      ZEUS_ARCHIVE_TAG: ${{ needs.validate.outputs.archive-tag }}
       CANDIDATE_MANIFEST_SHA256: ${{ inputs.manifest-sha256 }}
       CLOUDFLARE_R2_PUBLIC_URL: ${{ vars.CLOUDFLARE_R2_PUBLIC_URL }}
       MS_STORE_TENANT_ID: ${{ secrets.MS_STORE_TENANT_ID }}
@@ -2564,7 +2564,7 @@ jobs:
         shell: bash
         run: |
           name=$(cd verified 2>/dev/null && ls Store-*.msixbundle 2>/dev/null | head -1)
-          base="${CLOUDFLARE_R2_PUBLIC_URL%/}/releases/tag/$HERMES_ARCHIVE_TAG"
+          base="${CLOUDFLARE_R2_PUBLIC_URL%/}/releases/tag/$ZEUS_ARCHIVE_TAG"
           url="$base/${name:-handoff-windows-universal.json}"
           msg="Store submission failed; the release is still publishable. Upload this package in Partner Center: $url"
           echo "::warning title=Microsoft Store::$msg"

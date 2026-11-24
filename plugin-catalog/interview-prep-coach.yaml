@@ -7,7 +7,7 @@ description: "Prepares the user for their own interview: researches only the peo
 maintainer: KellerAI
 tier: community
 category: general
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 docs_url: https://github.com/KellerAI/hermes-plugins/tree/main/interview-prep-coach#readme
 version: "1.0.0"
 readme: true

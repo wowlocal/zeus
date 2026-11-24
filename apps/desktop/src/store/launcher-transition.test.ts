@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-const api = vi.hoisted(() => ({ hermesApi: vi.fn() }))
+const api = vi.hoisted(() => ({ zeusApi: vi.fn() }))
 
-vi.mock('@/api/client', () => ({ hermesApi: api.hermesApi }))
+vi.mock('@/api/client', () => ({ zeusApi: api.zeusApi }))
 
 import { backendTransitionFor, beginBackendTransition, resetBackendTransitionsForTests } from './backend-transition'
 import {
@@ -20,7 +20,7 @@ const launched = { host: '127.0.0.1:47972', launcher: { plugin: 'openshell' }, u
 beforeEach(() => {
   vi.useFakeTimers()
   $profileRemoteOverrides.set({ work: launched })
-  api.hermesApi.mockReset()
+  api.zeusApi.mockReset()
 })
 
 afterEach(() => {
@@ -43,21 +43,21 @@ describe("the launcher's status decides whether a drop is planned", () => {
   })
 
   it('a restarting launcher publishes the transition, and its return ends it and reconnects', async () => {
-    api.hermesApi.mockResolvedValueOnce({ state: 'restarting' })
+    api.zeusApi.mockResolvedValueOnce({ state: 'restarting' })
     const onReady = vi.fn()
 
     await expect(probeLauncherTransition('work', onReady)).resolves.toBe(true)
-    expect(api.hermesApi).toHaveBeenCalledWith(
+    expect(api.zeusApi).toHaveBeenCalledWith(
       expect.objectContaining({ path: '/api/plugins/openshell/status', profile: 'work' })
     )
     expect(backendTransitionFor('work')).toMatchObject({ kind: 'restarting', source: 'launcher' })
 
-    api.hermesApi.mockResolvedValueOnce({ state: 'restarting' })
+    api.zeusApi.mockResolvedValueOnce({ state: 'restarting' })
     await vi.advanceTimersByTimeAsync(LAUNCHER_POLL_MS)
     expect(backendTransitionFor('work')?.kind).toBe('restarting')
     expect(onReady).not.toHaveBeenCalled()
 
-    api.hermesApi.mockResolvedValueOnce({ state: 'running' })
+    api.zeusApi.mockResolvedValueOnce({ state: 'running' })
     await vi.advanceTimersByTimeAsync(LAUNCHER_POLL_MS)
     // Back: reconnect now, and the planned state holds until the socket opens
     // (no offline/connecting flash between "running" and the open socket).
@@ -66,16 +66,16 @@ describe("the launcher's status decides whether a drop is planned", () => {
     // A drop seen meanwhile starts no second poll.
     await expect(probeLauncherTransition('work', onReady)).resolves.toBe(true)
     await vi.advanceTimersByTimeAsync(LAUNCHER_POLL_MS * 2)
-    expect(api.hermesApi).toHaveBeenCalledTimes(3)
+    expect(api.zeusApi).toHaveBeenCalledTimes(3)
 
     endLauncherTransitionOnOpen('work')
     expect(backendTransitionFor('work')).toBeNull()
   })
 
   it('a socket that never re-opens after the backend is back ends the planned state after a grace', async () => {
-    api.hermesApi.mockResolvedValueOnce({ state: 'restarting' })
+    api.zeusApi.mockResolvedValueOnce({ state: 'restarting' })
     await probeLauncherTransition('work')
-    api.hermesApi.mockResolvedValueOnce({ state: 'running' })
+    api.zeusApi.mockResolvedValueOnce({ state: 'running' })
     await vi.advanceTimersByTimeAsync(LAUNCHER_POLL_MS)
     expect(backendTransitionFor('work')).not.toBeNull()
 
@@ -84,15 +84,15 @@ describe("the launcher's status decides whether a drop is planned", () => {
   })
 
   it('a launcher that reports a failure, or stops answering, ends the transition so the error shows', async () => {
-    api.hermesApi.mockResolvedValueOnce({ state: 'restarting' })
+    api.zeusApi.mockResolvedValueOnce({ state: 'restarting' })
     await probeLauncherTransition('work')
-    api.hermesApi.mockResolvedValueOnce({ state: 'stopped' })
+    api.zeusApi.mockResolvedValueOnce({ state: 'stopped' })
     await vi.advanceTimersByTimeAsync(LAUNCHER_POLL_MS)
     expect(backendTransitionFor('work')).toBeNull()
 
-    api.hermesApi.mockResolvedValueOnce({ state: 'restarting' })
+    api.zeusApi.mockResolvedValueOnce({ state: 'restarting' })
     await probeLauncherTransition('work')
-    api.hermesApi.mockRejectedValue(new Error('ECONNREFUSED'))
+    api.zeusApi.mockRejectedValue(new Error('ECONNREFUSED'))
     await vi.advanceTimersByTimeAsync(LAUNCHER_POLL_MS * 4)
     expect(backendTransitionFor('work')).not.toBeNull()
     await vi.advanceTimersByTimeAsync(LAUNCHER_POLL_MS)
@@ -101,9 +101,9 @@ describe("the launcher's status decides whether a drop is planned", () => {
 
   it('never asks for a profile no plugin runs, and an unplanned answer starts nothing', async () => {
     await expect(probeLauncherTransition('default')).resolves.toBe(false)
-    expect(api.hermesApi).not.toHaveBeenCalled()
+    expect(api.zeusApi).not.toHaveBeenCalled()
 
-    api.hermesApi.mockResolvedValueOnce({ state: 'running' })
+    api.zeusApi.mockResolvedValueOnce({ state: 'running' })
     await expect(probeLauncherTransition('work')).resolves.toBe(false)
     expect(backendTransitionFor('work')).toBeNull()
   })
@@ -113,7 +113,7 @@ describe("the launcher's status decides whether a drop is planned", () => {
 
     await expect(probeLauncherTransition('work')).resolves.toBe(true)
     await vi.advanceTimersByTimeAsync(LAUNCHER_POLL_MS * 3)
-    expect(api.hermesApi).not.toHaveBeenCalled()
+    expect(api.zeusApi).not.toHaveBeenCalled()
     expect(backendTransitionFor('work')).toMatchObject({ kind: 'stopping', source: 'switch' })
   })
 })
@@ -125,7 +125,7 @@ describe("a launcher answer that arrives late never replaces the profile's newer
   function pendingStatus() {
     let answer: (status: { state: string }) => void = () => undefined
 
-    api.hermesApi.mockReturnValueOnce(new Promise<{ state: string }>(resolve => (answer = resolve)))
+    api.zeusApi.mockReturnValueOnce(new Promise<{ state: string }>(resolve => (answer = resolve)))
 
     return (state: string) => answer({ state })
   }
@@ -140,7 +140,7 @@ describe("a launcher answer that arrives late never replaces the profile's newer
     await expect(probe).resolves.toBe(true)
     expect(backendTransitionFor('work')).toMatchObject({ kind: 'stopping', source: 'switch' })
     await vi.advanceTimersByTimeAsync(LAUNCHER_POLL_MS * 3)
-    expect(api.hermesApi).toHaveBeenCalledTimes(1)
+    expect(api.zeusApi).toHaveBeenCalledTimes(1)
   })
 
   it('the first probe: a profile that left the launcher while it was out starts no transition', async () => {
@@ -156,7 +156,7 @@ describe("a launcher answer that arrives late never replaces the profile's newer
 
   it('the watched poll: a switch that began while it was out keeps its state, and is not reconnected', async () => {
     for (const late of ['restarting', 'running']) {
-      api.hermesApi.mockResolvedValueOnce({ state: 'restarting' })
+      api.zeusApi.mockResolvedValueOnce({ state: 'restarting' })
       const onReady = vi.fn()
       await probeLauncherTransition('work', onReady)
 
@@ -173,7 +173,7 @@ describe("a launcher answer that arrives late never replaces the profile's newer
   })
 
   it('the watched poll: a state the open socket ended while it was out does not come back', async () => {
-    api.hermesApi.mockResolvedValueOnce({ state: 'restarting' })
+    api.zeusApi.mockResolvedValueOnce({ state: 'restarting' })
     await probeLauncherTransition('work')
 
     const answer = pendingStatus()
@@ -183,6 +183,6 @@ describe("a launcher answer that arrives late never replaces the profile's newer
     await vi.advanceTimersByTimeAsync(LAUNCHER_POLL_MS * 3)
 
     expect(backendTransitionFor('work')).toBeNull()
-    expect(api.hermesApi).toHaveBeenCalledTimes(2)
+    expect(api.zeusApi).toHaveBeenCalledTimes(2)
   })
 })

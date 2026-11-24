@@ -1,8 +1,8 @@
-import { isGatewayReauthRequired } from '@hermes/shared'
+import { isGatewayReauthRequired } from '@zeus/shared'
 import { useStore } from '@nanostores/react'
 import { useCallback, useEffect, useRef } from 'react'
 
-import type { HermesGateway } from '@/hermes'
+import type { ZeusGateway } from '@/zeus'
 import { resolveDesktopGatewayWsUrl } from '@/lib/gateway-ws-url'
 import { RECONNECT_ATTEMPT_TIMEOUT_MS, withTimeout } from '@/lib/with-timeout'
 import {
@@ -31,15 +31,15 @@ export function useGatewayRequest() {
   // null on mount, and if the connection state doesn't happen to flip
   // afterwards it never re-renders to pick the instance up. Anything that needs
   // the gateway as a render-time VALUE (props, memo deps) must use this.
-  const gateway = useStore($gateway) as HermesGateway | null
-  const gatewayRef = useRef<HermesGateway | null>(null)
+  const gateway = useStore($gateway) as ZeusGateway | null
+  const gatewayRef = useRef<ZeusGateway | null>(null)
 
-  const connectionRef = useRef<Awaited<ReturnType<NonNullable<typeof window.hermesDesktop>['getConnection']>> | null>(
+  const connectionRef = useRef<Awaited<ReturnType<NonNullable<typeof window.zeusDesktop>['getConnection']>> | null>(
     null
   )
 
   const gatewayStateRef = useRef(gatewayState)
-  const reconnectingRef = useRef<Promise<HermesGateway | null> | null>(null)
+  const reconnectingRef = useRef<Promise<ZeusGateway | null> | null>(null)
   // Holds the reauth error from the most recent failed reconnect so
   // requestGateway can surface the gateway's "session expired, sign in again"
   // message instead of the opaque "connection closed" that triggered the retry.
@@ -55,7 +55,7 @@ export function useGatewayRequest() {
   useEffect(
     () =>
       $gateway.subscribe(gateway => {
-        gatewayRef.current = gateway as HermesGateway | null
+        gatewayRef.current = gateway as ZeusGateway | null
       }),
     []
   )
@@ -72,7 +72,7 @@ export function useGatewayRequest() {
     // gatewayStateRef mirrors $gatewayState through a render + effect, so it
     // still reads 'open' for a beat after a socket drop rejected the caller's
     // in-flight request. Trusting it alone skipped the reconnect and re-sent
-    // on the dead socket ("Hermes gateway is not connected", #121680). Ask the
+    // on the dead socket ("Zeus gateway is not connected", #121680). Ask the
     // socket itself.
     if (gatewayStateRef.current === 'open' && existing.connectionState === 'open') {
       return existing
@@ -83,7 +83,7 @@ export function useGatewayRequest() {
     }
 
     reconnectingRef.current = (async () => {
-      const desktop = window.hermesDesktop
+      const desktop = window.zeusDesktop
 
       if (!desktop) {
         return null
@@ -114,7 +114,7 @@ export function useGatewayRequest() {
         const conn = await withTimeout(
           desktop.getConnection(),
           RECONNECT_ATTEMPT_TIMEOUT_MS,
-          'Timed out reconnecting to Hermes backend'
+          'Timed out reconnecting to Zeus backend'
         )
 
         if (!ownsForeground()) {
@@ -167,7 +167,7 @@ export function useGatewayRequest() {
       const gateway = gatewayRef.current ?? activeGateway()
 
       if (!gateway) {
-        throw new Error('Hermes gateway unavailable')
+        throw new Error('Zeus gateway unavailable')
       }
 
       // Bind retries to the dispatch owner, not whichever source is focused

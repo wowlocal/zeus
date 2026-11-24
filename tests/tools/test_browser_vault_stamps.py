@@ -1,6 +1,6 @@
 """Every vault operation that inspected the page removes its own inspection stamps on every exit.
 
-Each operation stamps under its own ``data-hermes-vault-slot-<nonce>`` attribute, so nothing else
+Each operation stamps under its own ``data-zeus-vault-slot-<nonce>`` attribute, so nothing else
 ever removes them; a stamp left behind lets a later read address the control the vault targeted.
 """
 
@@ -52,14 +52,14 @@ def test_every_exit_after_the_inspection_removes_its_stamps(store, path, control
     page = {"stamped": False, "nonce": None}
 
     def run(expression):
-        if 'setAttribute("data-hermes-vault-slot-"' in expression:
+        if 'setAttribute("data-zeus-vault-slot-"' in expression:
             page["stamped"] = True
             page["nonce"] = re.search(r'const nonce = "(\w+)"', expression).group(1)
             return {"success": True, "result": json.dumps(controls)}
         if "removeAttribute(slot)" in expression and "unstamped" in expression:
             if expected == "unstamp_failed":
                 return {"success": False, "error": "the page went away"}
-            if f'"data-hermes-vault-slot-{page["nonce"]}"' in expression:  # this inspection's own stamps
+            if f'"data-zeus-vault-slot-{page["nonce"]}"' in expression:  # this inspection's own stamps
                 page["stamped"] = False
             return {"success": True, "result": {"unstamped": True}}
         if "location.href" in expression:
@@ -106,11 +106,11 @@ def test_an_operation_that_raises_after_the_inspection_removes_its_stamps(store)
     page = {"stamped": False, "nonce": None}
 
     def run(expression):
-        if 'setAttribute("data-hermes-vault-slot-"' in expression:
+        if 'setAttribute("data-zeus-vault-slot-"' in expression:
             page["stamped"] = True
             page["nonce"] = re.search(r'const nonce = "(\w+)"', expression).group(1)
             return {"success": True, "result": json.dumps([_USER_BOX, _PW_BOX])}
-        if "removeAttribute(slot)" in expression and f'"data-hermes-vault-slot-{page["nonce"]}"' in expression:
+        if "removeAttribute(slot)" in expression and f'"data-zeus-vault-slot-{page["nonce"]}"' in expression:
             page["stamped"] = False
             return {"success": True, "result": {"unstamped": True}}
         if "location.href" in expression:

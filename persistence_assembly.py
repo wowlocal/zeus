@@ -47,7 +47,7 @@ _KNOWN_PROVIDERS = ("sqlite",)
 _FORWARDED = frozenset(inspect.get_annotations(PersistenceStore)) | {"ready"}
 
 _cache_lock = threading.Lock()
-# hermes_home_key -> [shared backend (None until a handle's first use), open handles]
+# zeus_home_key -> [shared backend (None until a handle's first use), open handles]
 _shared: dict[str, list[Any]] = {}
 
 
@@ -103,16 +103,16 @@ def profile_scope(profile: Optional[str] = None, *, home: Optional[Path] = None)
     """The scope a target names: an explicit ``home`` first, then a named profile under the default root, then the
     current home. Only a named profile's own home carries its name; any other target is its own root, labelled
     ``default``."""
-    from hermes_constants import get_default_hermes_root, get_hermes_home, named_profile_home, profile_name_for_home
+    from zeus_constants import get_default_zeus_root, get_zeus_home, named_profile_home, profile_name_for_home
 
     if home is not None:
         target = Path(home)
     elif profile is not None and profile != "default":
-        target = get_default_hermes_root() / "profiles" / profile
+        target = get_default_zeus_root() / "profiles" / profile
     elif profile == "default":
-        target = get_default_hermes_root()
+        target = get_default_zeus_root()
     else:
-        target = get_hermes_home()
+        target = get_zeus_home()
     canonical = target.expanduser().resolve(strict=False)
     name = profile_name_for_home(canonical)
     if name is not None and name != "default" and (named_profile_home(canonical) or canonical) == canonical:
@@ -125,26 +125,26 @@ def store_owner_name(profile_dir: Path) -> Optional[str]:
     folder directly under ``<root>/profiles`` with a valid profile name, else None. Never raises: a failure logs at
     debug and answers None."""
     try:
-        from hermes_constants import get_default_hermes_root
-        root = get_default_hermes_root().resolve()
+        from zeus_constants import get_default_zeus_root
+        root = get_default_zeus_root().resolve()
         folder = Path(profile_dir).resolve()
         if folder == root:
             return "default"
         if folder.parent == root / "profiles" and re.fullmatch(r"[a-z0-9][a-z0-9_-]{0,63}", folder.name):
             return folder.name
     except Exception:  # health: allow BLE001 -- an underivable owner is None, never a fabricated one
-        logging.getLogger("hermes_state").debug("own-profile derivation failed", exc_info=True)
+        logging.getLogger("zeus_state").debug("own-profile derivation failed", exc_info=True)
     return None
 
 
 def _provider_for_home(home: Path) -> str:
     """The configured ``persistence.provider`` for ``home``: the process config for the current home, the target's own
     ``config.yaml`` for another one. An absent section or file means ``sqlite``."""
-    from hermes_constants import get_hermes_home, hermes_home_key
+    from zeus_constants import get_zeus_home, zeus_home_key
 
     section: Any = None
-    if hermes_home_key(home) == hermes_home_key(get_hermes_home()):
-        from hermes_cli.config import load_config_readonly
+    if zeus_home_key(home) == zeus_home_key(get_zeus_home()):
+        from zeus_cli.config import load_config_readonly
 
         section = load_config_readonly().get("persistence")
     else:
@@ -180,13 +180,13 @@ def _assemble(provider: str, stores: Mapping[str, Path], *, read_only: bool = Fa
 
 
 def _state_db(scope: ProfileScope) -> Path:
-    return Path(scope.hermes_home_key) / "state.db"
+    return Path(scope.zeus_home_key) / "state.db"
 
 
 def _bind_shared(scope: ProfileScope, entry: list[Any]) -> Any:
     with _cache_lock:
         if entry[0] is None:
-            entry[0] = _assemble(_provider_for_home(scope.profile_dir), {scope.hermes_home_key: _state_db(scope)})
+            entry[0] = _assemble(_provider_for_home(scope.profile_dir), {scope.zeus_home_key: _state_db(scope)})
         backend = entry[0]
     return backend.open(scope)
 
@@ -208,7 +208,7 @@ def open_persistence(scope: ProfileScope, *, eager: bool = False) -> Persistence
     first use of a handle reads the configured provider and assembles the profile's backend when no handle did yet,
     raising ``ValueError`` for an unknown provider. With ``eager`` that use and the store's open happen here, so an
     unopenable store raises its typed error at acquisition."""
-    key = scope.hermes_home_key
+    key = scope.zeus_home_key
     with _cache_lock:
         entry = _shared.setdefault(key, [None, 0])
         entry[1] += 1
@@ -228,7 +228,7 @@ def open_persistence_reader(target: str | Path, *, patience_s: Optional[float] =
                             check_drift: bool = False) -> Iterator[Persistence]:
     """An owned, read-only handle over one target, closed on exit or by its ``close``.
 
-    ``target`` is a profile name, a Hermes home directory, or a database file (a ``state.db`` path or any existing
+    ``target`` is a profile name, a Zeus home directory, or a database file (a ``state.db`` path or any existing
     file). The store must exist: a reader never creates, migrates or repairs it. The handle's first use reads the
     configured provider and assembles its backend; closing the handle closes that backend. ``patience_s`` is how
     long the handle's open and its reads wait for a store another connection holds before raising
@@ -246,7 +246,7 @@ def open_persistence_reader(target: str | Path, *, patience_s: Optional[float] =
     backends: list[Any] = []
 
     def bind() -> Any:
-        backend = _assemble(_provider_for_home(scope.profile_dir), {scope.hermes_home_key: store}, read_only=True,
+        backend = _assemble(_provider_for_home(scope.profile_dir), {scope.zeus_home_key: store}, read_only=True,
                             read_patience_s=patience_s, check_drift=check_drift)
         backends.append(backend)
         return backend.open(scope)
@@ -278,20 +278,20 @@ def open_store_admin(target: ProfileScope | Path, *, read_only: bool = True,
         scope, path = target, _state_db(target)
         provider = _provider_for_home(scope.profile_dir)
     else:
-        from hermes_constants import get_hermes_home
+        from zeus_constants import get_zeus_home
 
         path = Path(target).expanduser().resolve(strict=False)
         scope = profile_scope(home=path.parent)
         if provider is None:
-            provider = _provider_for_home(get_hermes_home())
-    return _admin_door(provider, {scope.hermes_home_key: path}, read_only,
+            provider = _provider_for_home(get_zeus_home())
+    return _admin_door(provider, {scope.zeus_home_key: path}, read_only,
                        lambda backend: backend.open_store_admin(target, read_only=read_only))
 
 
 def open_profile_repair(scope: ProfileScope, *, read_only: bool) -> ProfileRepairAdmin | AdminUnsupported:
     """The crossed-profile repair handle bound to ``scope``'s store; ``AdminUnsupported`` when the configured backend
     has no physical admin capability."""
-    return _admin_door(_provider_for_home(scope.profile_dir), {scope.hermes_home_key: _state_db(scope)}, read_only,
+    return _admin_door(_provider_for_home(scope.profile_dir), {scope.zeus_home_key: _state_db(scope)}, read_only,
                        lambda backend: backend.open_profile_repair(scope, read_only=read_only))
 
 
@@ -323,7 +323,7 @@ def live_stores() -> Iterator[list[Persistence]]:
         handles = []
         for holder in holders:
             scope = profile_scope(home=Path(holder.db_path).parent)
-            backend = SQLiteBackend.lending(scope.hermes_home_key, holder)
+            backend = SQLiteBackend.lending(scope.zeus_home_key, holder)
             handles.append(Persistence(scope, read_only=False, bind=lambda backend=backend, scope=scope: backend.open(scope),
                                        release=backend.close))
         try:

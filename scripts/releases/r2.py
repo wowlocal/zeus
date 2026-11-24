@@ -452,7 +452,7 @@ def channel_for_tag(tag: str) -> str:
     """Return the release channel encoded by a canonical tag.
 
     A commit build publishes to no channel; asking for its channel is a bug, never ``stable``."""
-    from hermes_cli.update_channel import is_canary_tag, is_commit_tag
+    from zeus_cli.update_channel import is_canary_tag, is_commit_tag
 
     if is_commit_tag(tag):
         raise ValueError(f"Commit builds publish to no release channel: {tag!r}")
@@ -1076,7 +1076,7 @@ def prune(
     # The live canary's own objects (its archive, which its upgrade baseline points into, and its
     # Termux pool) stay while it is live however old it is: releases/canary/release-candidates.json
     # names its archive ref, which is in every one of those keys.
-    from hermes_cli.update_channel import is_canary_tag
+    from zeus_cli.update_channel import is_canary_tag
 
     pointer_key = "releases/canary/release-candidates.json"
 
@@ -1182,7 +1182,7 @@ def main(argv: list[str] | None = None) -> None:
         i += 1
 
     if cmd == "put":
-        tag = args.get("tag") or os.environ.get("HERMES_PAYLOAD_TAG")
+        tag = args.get("tag") or os.environ.get("ZEUS_PAYLOAD_TAG")
         key, file = args.get("key"), args.get("file")
         if not tag or not key or not file:
             print(USAGE, file=sys.stderr)

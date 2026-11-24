@@ -5,7 +5,7 @@ pause over five minutes; a machine-paced one (cron, subagent, the API server, th
 
 from pathlib import Path
 
-import hermes_yaml as yaml
+import zeus_yaml as yaml
 import pytest
 
 from agent.prompt_caching import AUTO_CACHE_TTL, auto_cache_ttl_for_source
@@ -14,7 +14,7 @@ _TEMPLATE = Path(__file__).resolve().parents[2] / "cli-config.yaml.example"
 
 
 def test_shipped_default_and_seeded_template_are_auto():
-    from hermes_cli.config_defaults import DEFAULT_CONFIG
+    from zeus_cli.config_defaults import DEFAULT_CONFIG
 
     assert DEFAULT_CONFIG["prompt_caching"]["cache_ttl"] == AUTO_CACHE_TTL
     template = yaml.safe_load(_TEMPLATE.read_text(encoding="utf-8"))
@@ -38,8 +38,8 @@ def test_background_platform_labels_are_machine_paced():
 def test_unconfigured_agent_resolves_tier_from_its_platform(tmp_path, monkeypatch, platform, side_agent, expected):
     """A real AIAgent on a config.yaml with no ``prompt_caching`` section at all. A side agent
     (CLI/TUI ``/background``, ``/btw``) runs one finite task under its parent's transport label."""
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
-    for var in ("HERMES_SESSION_SOURCE", "HERMES_SESSION_SOURCE_EXPLICIT", "HERMES_SINGLE_QUERY_SESSION"):
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
+    for var in ("ZEUS_SESSION_SOURCE", "ZEUS_SESSION_SOURCE_EXPLICIT", "ZEUS_SINGLE_QUERY_SESSION"):
         monkeypatch.delenv(var, raising=False)
     (tmp_path / "config.yaml").write_text("model:\n  default: anthropic/claude-sonnet-4.6\n", encoding="utf-8")
     from run_agent import AIAgent

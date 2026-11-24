@@ -100,21 +100,21 @@ def object_server():
 def publisher(url, **kwargs):
     from scripts.releases.channels import ChannelPublisher, R2ChannelStore
     store = R2ChannelStore({"access_key_id": "fixture", "secret_key": "fixture"}, url, "bucket")
-    return ChannelPublisher(store, "example/hermes-agent", url + "/bucket",
+    return ChannelPublisher(store, "example/zeus-agent", url + "/bucket",
                             authorize=kwargs.pop("authorize", lambda action, record: None), **kwargs)
 
 
 def test_unknown_channel_created_over_http_retains_identity_and_immutable_requests():
-    from hermes_cli.release_channels import ChannelReader, ChannelNotFound
+    from zeus_cli.release_channels import ChannelReader, ChannelNotFound
     with object_server() as (url, _objects, headers, _requests, _faults):
         pub = publisher(url)
-        reader = ChannelReader(url + "/bucket", repository="example/hermes-agent")
+        reader = ChannelReader(url + "/bucket", repository="example/zeus-agent")
         with pytest.raises(ChannelNotFound):
             reader.resolve("not-registered-in-code")
         record = pub.create("not-registered-in-code")
         assert reader.resolve(record["name"]).manifest is None
-        one = pub.allocate(record["name"], "a" * 40, "1.2.3", {"HERMES_DATA_DIR_SUFFIX": "-a"})
-        two = pub.allocate(record["name"], "a" * 40, "1.2.3", {"HERMES_DATA_DIR_SUFFIX": "-b"})
+        one = pub.allocate(record["name"], "a" * 40, "1.2.3", {"ZEUS_DATA_DIR_SUFFIX": "-a"})
+        two = pub.allocate(record["name"], "a" * 40, "1.2.3", {"ZEUS_DATA_DIR_SUFFIX": "-b"})
         assert one["identity"] == two["identity"] == record["identity"]
         assert one["buildId"] != two["buildId"]
         assert one["sequence"] < two["sequence"]
@@ -128,12 +128,12 @@ def test_stable_branded_channel_reuses_the_published_stable_identity(monkeypatch
     """--branding stable is fixed at creation; it copies a published stable record, and
     before stable has any channel record it uses the identity the first stable release
     is held to."""
-    from hermes_cli.release_channels import ChannelError, canonical_json
+    from zeus_cli.release_channels import ChannelError, canonical_json
     from scripts.releases import channel_releases
-    product = {"token": "f204dc6857361e33", "displayName": "Hermes Agent",
-               "appId": "com.nousresearch.hermes-bundled", "appNamePascal": "HermesBundled",
-               "artifactNamePascal": "HermesBundled", "cliName": "hermes",
-               "windowsExecutableName": "Hermes Agent", "msixAppIdWithOrg": "NousResearch.HermesBundled"}
+    product = {"token": "f204dc6857361e33", "displayName": "ZeusAgent",
+               "appId": "com.nousresearch.zeus-bundled", "appNamePascal": "ZeusBundled",
+               "artifactNamePascal": "ZeusBundled", "cliName": "zeus",
+               "windowsExecutableName": "ZeusAgent", "msixAppIdWithOrg": "NousResearch.ZeusBundled"}
     monkeypatch.setattr(channel_releases, "product_identity", lambda tag: dict(product))
     with object_server() as (url, objects, _headers, _requests, _faults):
         pub = publisher(url)
@@ -160,7 +160,7 @@ def test_stable_branded_channel_reuses_the_published_stable_identity(monkeypatch
 
 
 def put_build(objects, request):
-    from hermes_cli.release_channels import build_prefix, canonical_json
+    from zeus_cli.release_channels import build_prefix, canonical_json
     prefix = build_prefix(request["buildId"])
     data = b"fixture native artifact"
     objects[prefix + "darwin/package.zip"] = data
@@ -174,7 +174,7 @@ def put_build(objects, request):
 
 def test_concurrent_allocations_reverse_completion_retirement_and_readback():
     from concurrent.futures import ThreadPoolExecutor
-    from hermes_cli.release_channels import ChannelError, canonical_json
+    from zeus_cli.release_channels import ChannelError, canonical_json
     from scripts.releases.channels import PublicVisibilityError
     with object_server() as (url, objects, _headers, _requests, faults):
         with ThreadPoolExecutor(max_workers=2) as pool:
@@ -228,10 +228,10 @@ def test_concurrent_allocations_reverse_completion_retirement_and_readback():
 
 
 def test_list_bootstrap_protected_roles_and_qualification_gate():
-    from hermes_cli.release_channels import ChannelError
+    from zeus_cli.release_channels import ChannelError
     with object_server() as (url, objects, _headers, requests, faults):
         pub = publisher(url)
-        main = {"schema": 1, "name": "main", "repository": "example/hermes-agent", "policy": "source-branch", "state": "active", "revision": 1, "nextSequence": 1, "identity": None, "head": None, "delivery": {"kind": "source-branch", "branch": "main"}}
+        main = {"schema": 1, "name": "main", "repository": "example/zeus-agent", "policy": "source-branch", "state": "active", "revision": 1, "nextSequence": 1, "identity": None, "head": None, "delivery": {"kind": "source-branch", "branch": "main"}}
         assert pub.bootstrap(main) == main and not objects
         pub.bootstrap(main, publish=True)
         for name in ("first", "second", "third"):
@@ -253,7 +253,7 @@ def test_list_bootstrap_protected_roles_and_qualification_gate():
 
 
 def test_retirement_race_requires_a_new_explicit_attempt():
-    from hermes_cli.release_channels import ChannelError, canonical_json
+    from zeus_cli.release_channels import ChannelError, canonical_json
     from scripts.releases.channels import ChannelConflict
     with object_server() as (url, objects, _headers, _requests, faults):
         pub = publisher(url, verify_build=lambda request, manifest: True)
@@ -287,7 +287,7 @@ def test_retirement_race_requires_a_new_explicit_attempt():
 
 def test_retire_derives_receiver_kind_from_channel_identity_match():
     """The pinned kind is derived from identity comparison, never caller-asserted."""
-    from hermes_cli.release_channels import canonical_json
+    from zeus_cli.release_channels import canonical_json
     with object_server() as (url, objects, _headers, _requests, _faults):
         pub = publisher(url, verify_build=lambda request, manifest: True)
         for name in ("mainline-preview", "suffixed-preview", "stable"):
@@ -318,7 +318,7 @@ def test_retire_derives_receiver_kind_from_channel_identity_match():
 
 def test_retire_refuses_a_stable_head_without_the_previews_targets():
     """A preview cannot be pinned to a stable head that lacks a target the preview ships."""
-    from hermes_cli.release_channels import ChannelError, canonical_json
+    from zeus_cli.release_channels import ChannelError, canonical_json
 
     def with_arches(manifest, arches):
         row = manifest["packages"][0]
@@ -357,7 +357,7 @@ def test_retire_refuses_a_stable_head_without_the_previews_targets():
 
 def test_mutable_read_loss_recovery_never_clones_another_allocation():
     from scripts.releases.channels import ChannelConflict
-    from hermes_cli.release_channels import canonical_json
+    from zeus_cli.release_channels import canonical_json
     with object_server() as (url, _objects, _headers, _requests, faults):
         pub = publisher(url)
         pub.create("nonce-check")
@@ -376,7 +376,7 @@ def test_mutable_read_loss_recovery_never_clones_another_allocation():
 
 
 def test_protected_releases_bootstrap_retry_and_refuse_late_or_ungated_promotion():
-    from hermes_cli.release_channels import ChannelError, canonical_json
+    from zeus_cli.release_channels import ChannelError, canonical_json
     from scripts.releases.channels import preview_identity
     with object_server() as (url, objects, _headers, _requests, faults):
         pub = publisher(url, verify_build=lambda request, manifest: True)
@@ -440,7 +440,7 @@ def test_protected_releases_bootstrap_retry_and_refuse_late_or_ungated_promotion
 
 def test_accepted_release_receipts_feed_the_protected_head_without_rebuilding(tmp_path, monkeypatch):
     from scripts.releases import channel_releases
-    from hermes_cli.release_channels import ChannelError, canonical_json
+    from zeus_cli.release_channels import ChannelError, canonical_json
     from scripts.releases.channels import preview_identity
     from scripts.releases.handoff import receipt_name
     from copy import deepcopy
@@ -562,7 +562,7 @@ def _stage_accepted_native(tmp_path, objects, identity, tag, commit, version, wi
     candidate jobs do, and return the accepted packages (the candidate manifest's rows)."""
     from scripts.releases import desktop_targets
     from scripts.releases.handoff import receipt_name
-    from hermes_cli.release_channels import canonical_json
+    from zeus_cli.release_channels import canonical_json
     import zipfile
 
     prefix = f"releases/tag/{tag}/"
@@ -634,7 +634,7 @@ def test_a_canary_advances_its_own_head_from_its_accepted_candidate_only(tmp_pat
     to the canary head and pointer only, with its claim's lanes and its tag stamp as the epoch."""
     from scripts.releases import channel_releases, r2, stable
     from scripts.releases.channels import preview_identity
-    from hermes_cli.release_channels import ChannelError, canonical_json
+    from zeus_cli.release_channels import ChannelError, canonical_json
 
     identity = preview_identity("canary", "3" * 16)
     commit = "d" * 40
@@ -747,7 +747,7 @@ def test_failed_head_promotion_leaves_canary_retention_pointer_on_live_head(tmp_
     protecting the still-live canary; retrying after a post-promotion pointer write fault converges."""
     from scripts.releases import channel_releases, r2, stable
     from scripts.releases.channels import ChannelPublisher, preview_identity
-    from hermes_cli.release_channels import ChannelError, canonical_json
+    from zeus_cli.release_channels import ChannelError, canonical_json
 
     identity = preview_identity("canary", "4" * 16)
     commit = "e" * 40
@@ -851,7 +851,7 @@ def test_first_new_shape_canary_promotes_over_live_legacy_canary_head(tmp_path, 
     v<stable>+canary.<stamp> protected head, while an older new-shape claim is refused."""
     from scripts.releases import channel_releases, r2, stable
     from scripts.releases.channels import preview_identity
-    from hermes_cli.release_channels import ChannelError, canonical_json
+    from zeus_cli.release_channels import ChannelError, canonical_json
 
     identity = preview_identity("canary", "5" * 16)
     commit = "f" * 40
@@ -937,13 +937,13 @@ def test_first_new_shape_canary_promotes_over_live_legacy_canary_head(tmp_path, 
 
 def test_protected_transaction_refuses_custom_workflow_and_unpublished_release(monkeypatch):
     from scripts.releases import channel_releases
-    from hermes_cli.release_channels import ChannelError
+    from zeus_cli.release_channels import ChannelError
     attempt, tag, commit = "rc.1-v2.0.0", "v2.0.0", "a" * 40
     env = {"GITHUB_ACTIONS": "true", "GITHUB_EVENT_NAME": "workflow_dispatch",
-           "GITHUB_REPOSITORY": "example/hermes-agent", "RELEASE_TAG": attempt,
+           "GITHUB_REPOSITORY": "example/zeus-agent", "RELEASE_TAG": attempt,
            "RELEASE_COMMIT": commit, "RELEASE_CLAIM_TAG": attempt,
            "RELEASE_CLAIM_OBJECT": "b" * 40,
-           "GITHUB_WORKFLOW_REF": "example/hermes-agent/.github/workflows/stable-release.yml@refs/heads/main"}
+           "GITHUB_WORKFLOW_REF": "example/zeus-agent/.github/workflows/stable-release.yml@refs/heads/main"}
     published = [True]
 
     def final_context(_env, run):
@@ -972,13 +972,13 @@ def test_protected_transaction_refuses_custom_workflow_and_unpublished_release(m
 
 def test_stable_admission_requires_an_attempt_ref_release_tag(monkeypatch):
     from scripts.releases import channel_releases
-    from hermes_cli.release_channels import ChannelError
+    from zeus_cli.release_channels import ChannelError
     attempt, commit = "rc.2-v1.2.3", "c" * 40
     env = {"GITHUB_ACTIONS": "true", "GITHUB_EVENT_NAME": "workflow_dispatch",
-           "GITHUB_REPOSITORY": "example/hermes-agent", "RELEASE_TAG": attempt,
+           "GITHUB_REPOSITORY": "example/zeus-agent", "RELEASE_TAG": attempt,
            "RELEASE_COMMIT": commit, "RELEASE_CLAIM_TAG": attempt,
            "RELEASE_CLAIM_OBJECT": "b" * 40,
-           "GITHUB_WORKFLOW_REF": "example/hermes-agent/.github/workflows/stable-release.yml@refs/heads/main"}
+           "GITHUB_WORKFLOW_REF": "example/zeus-agent/.github/workflows/stable-release.yml@refs/heads/main"}
     monkeypatch.setattr(channel_releases.stable, "final_context",
                         lambda _env, run: ("v1.2.3", commit, {}))
 
@@ -1003,7 +1003,7 @@ def test_stable_admission_requires_an_attempt_ref_release_tag(monkeypatch):
 
 def test_accepted_stable_reads_the_release_archive_by_tag(monkeypatch):
     from scripts.releases import channel_releases
-    from hermes_cli.release_channels import ChannelError, canonical_json
+    from zeus_cli.release_channels import ChannelError, canonical_json
     tag, commit = "v2.0.0", "c" * 40
     attempt = "rc.1-v2.0.0"
     with object_server() as (url, objects, _headers, _requests, faults):
@@ -1038,7 +1038,7 @@ def test_accepted_stable_reads_the_release_archive_by_tag(monkeypatch):
 
 
 def test_request_inputs_are_rejected_before_allocating():
-    from hermes_cli.release_channels import ChannelError
+    from zeus_cli.release_channels import ChannelError
     with object_server() as (url, objects, _headers, _requests, _faults):
         pub = publisher(url)
         pub.create("validation")
@@ -1058,7 +1058,7 @@ def test_canary_native_version_is_derived_from_the_current_tag():
 
 
 def test_stable_requests_name_the_attempt_archive_only_when_given():
-    from hermes_cli.release_channels import ChannelError
+    from zeus_cli.release_channels import ChannelError
     from scripts.releases.channels import preview_identity
     with object_server() as (url, _objects, _headers, _requests, _faults):
         pub = publisher(url)
@@ -1085,7 +1085,7 @@ def test_stable_receipts_bind_the_attempt_ref_while_metadata_binds_the_payload_t
     """Stable stages handoffs under rc.N-vX.Y.Z but record() stamps vX.Y.Z."""
     from scripts.releases import channel_releases
     from scripts.releases.handoff import receipt_name
-    from hermes_cli.release_channels import ChannelError, canonical_json
+    from zeus_cli.release_channels import ChannelError, canonical_json
     attempt, payload, commit = "rc.15-v2.0.0", "v2.0.0", "e" * 40
 
     def stage(metadata_tag):

@@ -13,8 +13,8 @@ from contextlib import contextmanager
 
 import pytest
 
-from hermes_constants import (
-    get_hermes_home, hermes_home_key, reset_hermes_home_override, set_hermes_home_override)
+from zeus_constants import (
+    get_zeus_home, zeus_home_key, reset_zeus_home_override, set_zeus_home_override)
 from tools import tts_command_provider, tts_tool, tts_tool_lifecycle
 
 
@@ -52,7 +52,7 @@ def hooks(monkeypatch):
     seen: list = []
 
     def run(command, timeout, env_passthrough=None):
-        seen.append((command, get_hermes_home().name, get_secret("SRV_TOKEN")))
+        seen.append((command, get_zeus_home().name, get_secret("SRV_TOKEN")))
     monkeypatch.setattr(tts_command_provider, "run_command_provider", run)
     return seen
 
@@ -60,16 +60,16 @@ def hooks(monkeypatch):
 def test_voice_toggle_release_by_another_profile_follows_the_acquirer(
         tmp_path, monkeypatch, timers, hooks):
     """Real ``voice.toggle``: ``tts`` on from a profile-B session, off from the launch profile A."""
-    from hermes_cli.config import atomic_config_write
+    from zeus_cli.config import atomic_config_write
     from tui_gateway import server
-    launch, home_b = get_hermes_home(), tmp_path / "profiles" / "b"
+    launch, home_b = get_zeus_home(), tmp_path / "profiles" / "b"
     home_b.mkdir(parents=True)
     atomic_config_write(launch / "config.yaml", {"tts": _srv_config("A", 0)})
     atomic_config_write(home_b / "config.yaml", {"tts": _srv_config("B", 30)})
     (home_b / ".env").write_text("SRV_TOKEN=b-token\n")
     monkeypatch.setenv("SRV_TOKEN", "launch-token")
-    monkeypatch.setenv("HERMES_VOICE", "1")
-    monkeypatch.setenv("HERMES_VOICE_TTS", "0")
+    monkeypatch.setenv("ZEUS_VOICE", "1")
+    monkeypatch.setenv("ZEUS_VOICE_TTS", "0")
     monkeypatch.setattr(server, "_profile_home", lambda name: home_b if name == "b" else None)
 
     def toggle(params):
@@ -89,13 +89,13 @@ def test_voice_toggle_release_by_another_profile_follows_the_acquirer(
 
 @contextmanager
 def _as_home(home):
-    """Bind ``home`` by HERMES_HOME override only: no secret scope is hydrated (unlike
+    """Bind ``home`` by ZEUS_HOME override only: no secret scope is hydrated (unlike
     ``bind_profile_scope``), so every profile reads the one process-env SRV_TOKEN."""
-    token = set_hermes_home_override(str(home))
+    token = set_zeus_home_override(str(home))
     try:
         yield
     finally:
-        reset_hermes_home_override(token)
+        reset_zeus_home_override(token)
 
 
 @pytest.fixture
@@ -113,7 +113,7 @@ def profiles(homes, monkeypatch):
     """Homes a/b with their own command-provider config (a: 0s window, b: 30s); returns ``as_profile``."""
     _dirs, as_profile = homes
     configs = {name: _srv_config(name.upper(), keep_warm) for name, keep_warm in (("a", 0), ("b", 30))}
-    monkeypatch.setattr(tts_tool, "_load_tts_config", lambda: configs[get_hermes_home().name])
+    monkeypatch.setattr(tts_tool, "_load_tts_config", lambda: configs[get_zeus_home().name])
     return as_profile
 
 
@@ -264,7 +264,7 @@ def test_unload_never_enters_an_owner_context_another_thread_is_in(monkeypatch, 
                         lambda name, cfg, hook: seen.append((hook, name)))
     monkeypatch.setattr(tts_tool, "_load_tts_config", lambda: {"provider": "srv", "keep_warm_seconds": 0})
     tts_tool_lifecycle.acquire_tts_lease("tui:voice-tts")
-    owner = tts_tool_lifecycle._tts_owners[hermes_home_key()]
+    owner = tts_tool_lifecycle._tts_owners[zeus_home_key()]
     inside, leave = threading.Event(), threading.Event()
     holder = threading.Thread(target=owner.run, args=(lambda: (inside.set(), leave.wait(5)),))
     holder.start()
@@ -283,7 +283,7 @@ def real_profiles(homes):
     """Homes a/b whose ``config.yaml`` the real loader reads, both healthy command providers.
     Returns ``(as_profile, write)``; ``write(name, text)`` replaces a profile's config file (an edit
     made while the lease is held: a broken file already fails that profile's own warm-up)."""
-    from hermes_cli.config import atomic_config_write
+    from zeus_cli.config import atomic_config_write
     dirs, as_profile = homes
     for name, home in dirs.items():
         atomic_config_write(home / "config.yaml", {"tts": _srv_config(name.upper(), 0)})
@@ -358,13 +358,13 @@ def test_an_owner_config_backend_outage_does_not_stop_the_healthy_owner(
         real_profiles, timers, hooks, monkeypatch, order):
     """A config-backend outage is a ``SystemExit`` subclass that skips ``except Exception``; it must
     stay inside the failing owner too, for both its window read and its release."""
-    from hermes_cli.config_backend import ConfigBackendUnavailable
+    from zeus_cli.config_backend import ConfigBackendUnavailable
     as_profile, _write = real_profiles
     _acquire_in(as_profile, order)
     real_load = tts_tool._load_tts_config
 
     def load():
-        if get_hermes_home().name == "a":
+        if get_zeus_home().name == "a":
             raise ConfigBackendUnavailable("backend down")
         return real_load()
     monkeypatch.setattr(tts_tool, "_load_tts_config", load)
@@ -382,7 +382,7 @@ def signals(monkeypatch):
     """Record each user-provider lease signal as ``(hook, provider, home name)``; config is ``srv``."""
     seen: list = []
     monkeypatch.setattr(tts_tool_lifecycle, "_signal_user_tts_provider",
-                        lambda name, cfg, hook: seen.append((hook, name, get_hermes_home().name)))
+                        lambda name, cfg, hook: seen.append((hook, name, get_zeus_home().name)))
     monkeypatch.setattr(tts_tool, "_load_tts_config", lambda: {"provider": "srv", "keep_warm_seconds": 0})
     return seen
 
@@ -529,7 +529,7 @@ def test_reentrant_reacquire_skips_only_superseded_owner(
     monkeypatch.setattr(tts_tool_lifecycle, "_lookup_plugin_provider", lambda name: plugins[name])
     monkeypatch.setattr(
         tts_tool, "_load_tts_config",
-        lambda: {"provider": "pa" if get_hermes_home().name == "a" else "pb", "keep_warm_seconds": 0},
+        lambda: {"provider": "pa" if get_zeus_home().name == "a" else "pb", "keep_warm_seconds": 0},
     )
     with as_profile("a"):
         tts_tool_lifecycle.acquire_tts_lease("lease-a")
@@ -539,7 +539,7 @@ def test_reentrant_reacquire_skips_only_superseded_owner(
         tts_tool_lifecycle.release_tts_lease("lease-a")
         tts_tool_lifecycle.release_tts_lease("lease-b")
     assert events == expected_events
-    assert sorted(k for k in tts_tool_lifecycle._tts_owners) == [hermes_home_key(dirs[n]) for n in expected_owners]
+    assert sorted(k for k in tts_tool_lifecycle._tts_owners) == [zeus_home_key(dirs[n]) for n in expected_owners]
 
 
 def test_reentrant_reacquire_and_zero_window_release_does_not_resignal_stale_owner(homes, monkeypatch, timers):
@@ -580,7 +580,7 @@ def test_reentrant_reacquire_and_zero_window_release_does_not_resignal_stale_own
     monkeypatch.setattr(tts_tool_lifecycle, "_lookup_plugin_provider", lambda name: plugins[name])
     monkeypatch.setattr(
         tts_tool, "_load_tts_config",
-        lambda: {"provider": "pa" if get_hermes_home().name == "a" else "pb", "keep_warm_seconds": 0},
+        lambda: {"provider": "pa" if get_zeus_home().name == "a" else "pb", "keep_warm_seconds": 0},
     )
     with as_profile("a"):
         tts_tool_lifecycle.acquire_tts_lease("lease-a")

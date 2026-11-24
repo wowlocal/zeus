@@ -155,7 +155,7 @@ def check_api_response(
     from agent.turn_usage import note_response_reasoning_tokens
     note_response_reasoning_tokens(agent, response)
     finish_reason = _derive_finish_reason(agent, response, messages)
-    from hermes_cli.observability.shared_metrics_harness import record_reply_finish
+    from zeus_cli.observability.shared_metrics_harness import record_reply_finish
     record_reply_finish(agent, response, finish_reason)
 
     # HTTP-200 refusals are deterministic: one fallback try, else return the refusal.
@@ -216,7 +216,7 @@ def check_api_response(
     if agent.provider == "nous":
         try:
             from agent.nous_rate_guard import clear_nous_rate_limit
-            from hermes_cli.anon_auth import is_anonymous_agent
+            from zeus_cli.anon_auth import is_anonymous_agent
             clear_nous_rate_limit(anonymous=is_anonymous_agent(agent))
         except Exception:
             pass

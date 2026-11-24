@@ -3,7 +3,7 @@ name: Sandbox desktop image
 # nousresearch/hermes-sandbox:desktop is the terminal-backend sandbox base
 # (nikolaik/python-nodejs) plus a display stack; Bot Screen, computer_use and
 # the bot's browser run inside it when terminal.backend is docker/ssh/etc.
-# It contains NO Hermes code, so it does not need to track main.
+# It contains NO Zeus code, so it does not need to track main.
 #
 # Triggers: a PR that edits the Dockerfile/smoke (build + smoke, no push),
 # a successful Stable Release (publish :<tag>-desktop and roll :desktop), a
@@ -75,7 +75,7 @@ jobs:
         uses: useblacksmith/setup-docker-builder@19215110ab936351210feebdfa5b440b4493e184  # v2
         with:
           # PR builds only; trusted builds keep the local fallback builder (see docker.yml build).
-          cache-key: ${{ github.event_name == 'pull_request' && format('hermes-sandbox/pr-desktop-{0}', matrix.arch) || '' }}
+          cache-key: ${{ github.event_name == 'pull_request' && format('zeus-sandbox/pr-desktop-{0}', matrix.arch) || '' }}
 
       - name: Build (${{ matrix.arch }})
         uses: useblacksmith/build-push-action@9b0579bbec7a6cad2f171596c57e7ac1e7658850  # v2
@@ -187,7 +187,7 @@ jobs:
         env:
           # Stable Release's run-name is "Stable release rc.<N>-v<version>" (claim_run_title in
           # scripts/releases/stable.py; the tag grammar is _ATTEMPT_REF_RE in
-          # scripts/releases/versioning.py + STABLE_TAG_RE in hermes_cli/update_channel.py);
+          # scripts/releases/versioning.py + STABLE_TAG_RE in zeus_cli/update_channel.py);
           # the release is v<version>.
           RUN_TITLE: ${{ github.event.workflow_run.display_title }}
         run: |

@@ -2,7 +2,7 @@ import { cleanup } from '@testing-library/react'
 import { afterEach, expect, it, vi } from 'vitest'
 
 import { prepareDefaultNewSession } from '@/app/session/new-session-route'
-import { getProfiles } from '@/hermes'
+import { getProfiles } from '@/zeus'
 import { $defaultProfileRoute } from '@/store/default-profile'
 import {
   $newChatProfile,
@@ -16,11 +16,11 @@ import { dropSessionState } from '@/store/session-states'
 import { actRender, Harness, type HarnessHandle, RUNTIME_SESSION_ID } from './index-test-utils'
 
 const fixture = vi.hoisted(() => ({ activate: vi.fn<() => Promise<void>>() }))
-vi.mock('@/hermes', () => ({
+vi.mock('@/zeus', () => ({
   getLatestSessionMessages: vi.fn(async () => ({ messages: [], session_id: 'session' })),
   getProfiles: vi.fn(async () => ({ profiles: [{ name: 'alpha' }, { name: 'beta' }] })),
-  getHermesConfig: vi.fn(async () => ({ display: { timestamps: false } })),
-  getHermesConfigDefaults: vi.fn(async () => ({})),
+  getZeusConfig: vi.fn(async () => ({ display: { timestamps: false } })),
+  getZeusConfigDefaults: vi.fn(async () => ({})),
   getSession: vi.fn(),
   PROMPT_SUBMIT_REQUEST_TIMEOUT_MS: 1_800_000,
   setApiRequestProfile: vi.fn(),

@@ -5,7 +5,7 @@ description: "Adversarial research and code audits. Proposer agents commit quote
 maintainer: samshapley
 tier: community
 category: tools
-requires_hermes: ">=0.22.7"
+requires_zeus: ">=0.22.7"
 version: "0.1.0"
 title: "Crucible"
 readme: true

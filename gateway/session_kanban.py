@@ -12,8 +12,8 @@ from persistence.core.errors import AuthorityRefusal
 
 
 def build_kanban_policy(connection, params, config):
-    from hermes_cli import kanban_db as kb
-    from hermes_cli.profiles import resolve_profile_env
+    from zeus_cli import kanban_db as kb
+    from zeus_cli.profiles import resolve_profile_env
     authority, actor = connection.authority, connection.actor
     if not connection.native_owner or 'session:create' not in actor.capabilities:
         raise AuthorityRefusal('permission_denied')
@@ -67,7 +67,7 @@ def kanban_launch_policy(task, cwd, config, private=None):
     dispatcher's pre-spawn refusal). Refuses ``invalid_params`` (field ``model``) only when nothing
     can name one, before a receipt or a worker exists."""
     from gateway.session_policy import build_policy
-    from hermes_cli.kanban_worker_preflight import missing_model_detail, task_model
+    from zeus_cli.kanban_worker_preflight import missing_model_detail, task_model
     params = {'source': 'cli', 'cwd': cwd}
     for name, value in (('model', task.model_override), ('provider', task.provider_override), ('reasoning', task.reasoning_effort)):
         if value:
@@ -76,8 +76,8 @@ def kanban_launch_policy(task, cwd, config, private=None):
     if policy.model is None:
         model, unresolved = task_model(task, config)
         if unresolved:
-            from hermes_constants import get_hermes_home
-            raise AuthorityRefusal('invalid_params', field='model', detail=missing_model_detail(task.assignee, get_hermes_home()))
+            from zeus_constants import get_zeus_home
+            raise AuthorityRefusal('invalid_params', field='model', detail=missing_model_detail(task.assignee, get_zeus_home()))
         policy = replace(policy, model=model)
     return policy
 
@@ -115,11 +115,11 @@ async def run_task(connection, params):
         policy, private = build_kanban_policy(connection, params, _load_gateway_config())
         ref = create_local_session(authority, connection.actor, {'request_id': request_id},
                                    trusted_policy=policy, trusted_secrets=private)
-    from hermes_cli.kanban_db_connect import connect_closing
-    from hermes_cli import kanban_db as kb
+    from zeus_cli.kanban_db_connect import connect_closing
+    from zeus_cli import kanban_db as kb
     import os
     import psutil
-    from hermes_cli.process_identity import worker_birth
+    from zeus_cli.process_identity import worker_birth
     context = json.loads(policy.kanban_json)
 
     def admit_claim():
@@ -173,23 +173,23 @@ def bind_worker_context(frame):
         return
     if frame['policy']['source'] != 'kanban':
         raise ValueError('invalid_kanban_policy')
-    env = {'HERMES_KANBAN_TASK': context['task_id'], 'HERMES_KANBAN_BOARD': context['board'],
-        'HERMES_KANBAN_DB': context['db'], 'HERMES_KANBAN_RUN_ID': str(context['run_id']),
-        'HERMES_KANBAN_CLAIM_LOCK': context['claim_lock'], 'HERMES_KANBAN_WORKSPACE': context['workspace'],
-        'HERMES_KANBAN_WORKSPACES_ROOT': context['workspaces_root'], 'HERMES_PROFILE': context['profile'],
-        'HERMES_SESSION_SOURCE': 'kanban'}
-    for key, value in (('HERMES_KANBAN_BRANCH', context['branch']), ('HERMES_TENANT', context['tenant'])):
+    env = {'ZEUS_KANBAN_TASK': context['task_id'], 'ZEUS_KANBAN_BOARD': context['board'],
+        'ZEUS_KANBAN_DB': context['db'], 'ZEUS_KANBAN_RUN_ID': str(context['run_id']),
+        'ZEUS_KANBAN_CLAIM_LOCK': context['claim_lock'], 'ZEUS_KANBAN_WORKSPACE': context['workspace'],
+        'ZEUS_KANBAN_WORKSPACES_ROOT': context['workspaces_root'], 'ZEUS_PROFILE': context['profile'],
+        'ZEUS_SESSION_SOURCE': 'kanban'}
+    for key, value in (('ZEUS_KANBAN_BRANCH', context['branch']), ('ZEUS_TENANT', context['tenant'])):
         if value:
             env[key] = value
     if context['goal_mode']:
-        env['HERMES_KANBAN_GOAL_MODE'] = '1'
-    from hermes_cli.kanban_db_dispatch import _worker_terminal_timeout_env
+        env['ZEUS_KANBAN_GOAL_MODE'] = '1'
+    from zeus_cli.kanban_db_dispatch import _worker_terminal_timeout_env
     for key in ('TERMINAL_TIMEOUT', 'TERMINAL_MAX_FOREGROUND_TIMEOUT'):
         value = _worker_terminal_timeout_env(context['max_runtime_seconds'], os.environ.get(key))
         if value:
             env[key] = value
-    from hermes_cli.kanban_db_connect import connect_closing
-    from hermes_cli import kanban_db as kb
+    from zeus_cli.kanban_db_connect import connect_closing
+    from zeus_cli import kanban_db as kb
     with connect_closing(Path(context['db'])) as conn:
         with kb.write_txn(conn):
             task = kb.get_task(conn, context['task_id'])
@@ -199,7 +199,7 @@ def bind_worker_context(frame):
             # The dispatcher's spawned worker stays the run's pid (reclaim, timeout and operator
             # kills target it; ``_watch_submitter`` ties this interpreter's life to it). The bound
             # interpreter is recorded beside it so a sweep can tell when the attempt is truly gone.
-            from hermes_cli.kanban_db_dispatch import UNVERIFIED_WORKER_FINGERPRINT, _process_fingerprint
+            from zeus_cli.kanban_db_dispatch import UNVERIFIED_WORKER_FINGERPRINT, _process_fingerprint
             fingerprint = _process_fingerprint(os.getpid()) or UNVERIFIED_WORKER_FINGERPRINT
             kb._append_event(conn, task.id, 'worker_bound', {'pid': os.getpid(), 'claim_lock': context['claim_lock'],
                              'started_at': fingerprint}, run_id=context['run_id'])
@@ -209,7 +209,7 @@ def bind_worker_context(frame):
     # inherited it from the dispatcher's environment); this daemon's own default is not that.
     expires = json.loads(claimed[0]).get('expires') if claimed else None
     if isinstance(expires, int) and claimed[1]:
-        env['HERMES_KANBAN_CLAIM_TTL_SECONDS'] = str(max(1, expires - int(claimed[1])))
+        env['ZEUS_KANBAN_CLAIM_TTL_SECONDS'] = str(max(1, expires - int(claimed[1])))
     _watch_submitter(Path(context['db']), context['run_id'])
     os.environ.update(env)
     os.chdir(context['workspace'])
@@ -224,7 +224,7 @@ def _watch_submitter(db, run_id):
     Exiting hard leaves no ``worker_result``, so the dead-worker sweep books this run's crash.
     The run row is re-read each tick: the dispatcher records the pid only after its spawn returns."""
     import os
-    from hermes_cli.kanban_db_dispatch import _worker_alive
+    from zeus_cli.kanban_db_dispatch import _worker_alive
 
     def watch():
         with closing(sqlite3.connect(db.resolve().as_uri() + '?mode=ro', uri=True)) as conn:
@@ -266,7 +266,7 @@ def _worker_workspace(frame):
     route = frame.get('route') or session_id
     # The profile its in-process turns bind, so persistent Docker keys the container they and the
     # session's side agents use (#140665): a served secondary's name, which its routes carry
-    # (``agent:<name>:``); none for the launch home, whatever its name (``hermes -p beta gateway``
+    # (``agent:<name>:``); none for the launch home, whatever its name (``zeus -p beta gateway``
     # keys ``agent:main:``, and only the default profile runs the multiplexer).
     profile = served_profile_name(frame.get('home'))
     tokens = set_session_vars(session_key=route, session_id=session_id,
@@ -287,7 +287,7 @@ def _run_worker_turns(agent, frame, history):
             return agent.run_conversation(frame['text'], conversation_history=history, **worker_display_kwargs(),
                                           **({'task_id': task_id} if task_id else {}),
                                           **({'turn_author': author} if author is not None else {}))
-    from hermes_cli.turn_exit import credential_failure_flags, turn_exit_code
+    from zeus_cli.turn_exit import credential_failure_flags, turn_exit_code
     code, last_output = 1, ''
     try:
         result = _run_task_turns(agent, frame, history, context)
@@ -295,7 +295,7 @@ def _run_worker_turns(agent, frame, history):
         if isinstance(result, dict):
             # Redact before the tail cut: a cut through a PEM header or a token prefix
             # leaves a body the redactor no longer recognises.
-            from hermes_cli import kanban_db as kb
+            from zeus_cli import kanban_db as kb
             last_output = kb.redact_review_value(str(result.get('final_response') or ''))[-500:]
         return result
     except Exception as exc:
@@ -311,15 +311,15 @@ def record_start_failure(frame, exc):
     context = json.loads(frame['policy'].get('kanban_json') or 'null')
     if context is None:
         return
-    from hermes_cli.turn_exit import credential_failure_flags, turn_exit_code
+    from zeus_cli.turn_exit import credential_failure_flags, turn_exit_code
     _record_worker_result(context, turn_exit_code(None, kanban_worker=True, **credential_failure_flags(exc)), '')
 
 
 def _record_worker_result(context, code, last_output):
     _TURNS_DONE.set()
     import os
-    from hermes_cli.kanban_db_connect import connect_closing
-    from hermes_cli import kanban_db as kb
+    from zeus_cli.kanban_db_connect import connect_closing
+    from zeus_cli import kanban_db as kb
     with connect_closing(Path(context['db'])) as conn, kb.write_txn(conn):
         if _bound_worker_matches(conn, context):
             # Closing a run clears its claim/PID and replaces metadata; keep the
@@ -339,8 +339,8 @@ def record_worker_loss(policy, reason, *, pid=None, bound=False):
         context = json.loads(policy.kanban_json or 'null')
         if not context:
             return
-        from hermes_cli.kanban_db_connect import connect_closing
-        from hermes_cli import kanban_db as kb
+        from zeus_cli.kanban_db_connect import connect_closing
+        from zeus_cli import kanban_db as kb
         run_id = int(context['run_id'])
         with connect_closing(Path(context['db'])) as conn, kb.write_txn(conn):
             row = conn.execute('SELECT status, current_run_id FROM tasks WHERE id=?',
@@ -426,14 +426,14 @@ def _run_task_turns(agent, frame, history, context):
     from agent.kanban_turn_recovery import recover_failed_kanban_turns
     recover_failed_kanban_turns(recover, lambda: result, task_id=context['task_id'],
                                 claim_check=lambda: _bound_claim_is_live(context))
-    from hermes_cli.turn_exit import turn_exit_code
+    from zeus_cli.turn_exit import turn_exit_code
     # Only a settled turn may continue the goal loop: an exhausted or denied recovery reaches
     # the honest exit path without re-entering the model under an unprovable claim.
     if not context['goal_mode'] or turn_exit_code(result, kanban_worker=True) != 0:
         return result
-    from hermes_cli.goals import run_kanban_goal_loop, DEFAULT_MAX_TURNS
-    from hermes_cli import kanban_db as kb
-    from hermes_cli.kanban_db_connect import connect_closing
+    from zeus_cli.goals import run_kanban_goal_loop, DEFAULT_MAX_TURNS
+    from zeus_cli import kanban_db as kb
+    from zeus_cli.kanban_db_connect import connect_closing
     def status():
         with connect_closing() as conn:
             return kb.goal_run_status(conn, context['task_id'], context['run_id'])

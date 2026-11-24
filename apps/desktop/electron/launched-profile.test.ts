@@ -184,7 +184,7 @@ describe('registry', () => {
 
 describe('desktop plugin root', () => {
   it('never copies a desktop half or a scoped plugin out of a launched home', async () => {
-    const home = tempDir('hermes-launched-root-')
+    const home = tempDir('zeus-launched-root-')
     const appRoot = path.join(home, 'desktop-plugins')
 
     write(path.join(home, 'plugins', 'safe', 'desktop', 'plugin.js'), 'export default {}')
@@ -208,7 +208,7 @@ describe('desktop plugin root', () => {
   })
 
   it('stops refreshing a copy whose source home became launched', async () => {
-    const home = tempDir('hermes-launched-refresh-')
+    const home = tempDir('zeus-launched-refresh-')
     const appRoot = path.join(home, 'desktop-plugins')
     const source = path.join(home, 'profiles', 'work', 'plugins', 'tool', 'desktop', 'plugin.js')
 
@@ -225,7 +225,7 @@ describe('desktop plugin root', () => {
 
 describe('profiles_run_elsewhere marker', () => {
   it('marks nothing without the folder and reads the plugin from a marker', () => {
-    const root = tempDir('hermes-run-elsewhere-')
+    const root = tempDir('zeus-run-elsewhere-')
 
     expect(readRunElsewhereMarker(root, 'work')).toBeNull()
 
@@ -241,7 +241,7 @@ describe('profiles_run_elsewhere marker', () => {
   })
 
   it('reads an unreadable marker as marked, as core does', () => {
-    const root = tempDir('hermes-run-elsewhere-bad-')
+    const root = tempDir('zeus-run-elsewhere-bad-')
 
     write(path.join(root, PROFILES_RUN_ELSEWHERE_DIR, 'default.json'), 'not json')
     expect(readRunElsewhereMarker(root, 'default')).toEqual({ plugin: null })
@@ -249,7 +249,7 @@ describe('profiles_run_elsewhere marker', () => {
   })
 
   it('marks every profile when a file sits where the marker folder belongs, as core does', () => {
-    const root = tempDir('hermes-run-elsewhere-file-')
+    const root = tempDir('zeus-run-elsewhere-file-')
 
     // A missing folder marks nothing. A file in its place cannot be listed, so the app cannot tell
     // which profiles it may start (core: NotADirectoryError refuses every profile).
@@ -261,7 +261,7 @@ describe('profiles_run_elsewhere marker', () => {
   })
 
   it('refuses a local start of a marked profile, naming the profile and the plugin', () => {
-    const root = tempDir('hermes-run-elsewhere-refuse-')
+    const root = tempDir('zeus-run-elsewhere-refuse-')
 
     expect(() => assertProfileMayRunLocally(root, 'work')).not.toThrow()
 
@@ -269,7 +269,7 @@ describe('profiles_run_elsewhere marker', () => {
     write(path.join(root, PROFILES_RUN_ELSEWHERE_DIR, 'notes.json'), '')
 
     expect(() => assertProfileMayRunLocally(root, 'work')).toThrow(
-      'Profile "work" runs through the openshell plugin, but this app has no connection to it. Hermes won\'t start it on this computer.'
+      'Profile "work" runs through the openshell plugin, but this app has no connection to it. Zeus won\'t start it on this computer.'
     )
     expect(() => assertProfileMayRunLocally(root, 'notes')).toThrow(/"notes" runs through a plugin,/)
   })
@@ -277,7 +277,7 @@ describe('profiles_run_elsewhere marker', () => {
 
 describe('the host for a launched profile', () => {
   const hostFor = (config: Record<string, any>, primary: string) => {
-    const home = tempDir('hermes-launched-host-')
+    const home = tempDir('zeus-launched-host-')
     const startPrimary = vi.fn(async () => 'primary-backend')
     const ensureProfileBackend = vi.fn(async (profile: string) => `${profile}-backend`)
     const fetchJson = vi.fn(async (backend: string, requestPath: string) => ({ backend, requestPath }))
@@ -288,7 +288,7 @@ describe('the host for a launched profile', () => {
     const host = createLaunchedProfileHost({
       ensureProfileBackend,
       fetchJson,
-      hermesHome: home,
+      zeusHome: home,
       isProfileName: name => /^[a-z0-9][a-z0-9_-]{0,63}$/.test(name),
       primaryProfile: () => primary,
       readConfig: () => config,

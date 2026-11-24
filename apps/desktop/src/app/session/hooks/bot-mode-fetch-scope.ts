@@ -6,7 +6,7 @@ import {
   type WorkspaceMode,
   type WorkspaceNewSessionTarget
 } from '@/components/pane-shell/workspace-scope'
-import type { HermesConnection } from '@/global'
+import type { ZeusConnection } from '@/global'
 import { ALL_PROFILES, sidebarProfileForScope } from '@/store/profile'
 import { $connection } from '@/store/session'
 
@@ -18,7 +18,7 @@ export interface BotModeFetchScope {
 /** The registry source the window's gateway (and so its ambient list and
  *  search reads) is on: the same identity the plugin SDK publishes as
  *  `host.state.connectionId`, so a bot route resolved from either compares. */
-function windowConnectionId(connection: HermesConnection | null): string {
+function windowConnectionId(connection: ZeusConnection | null): string {
   return connection?.connectionId || (connection?.mode === 'local' ? 'local' : '')
 }
 
@@ -43,7 +43,7 @@ function scopeFor(
   profileScope: string,
   mode: WorkspaceMode,
   target: WorkspaceNewSessionTarget | null,
-  connection: HermesConnection | null
+  connection: ZeusConnection | null
 ): BotModeFetchScope | null {
   if (profileScope === ALL_PROFILES || mode !== 'bots') {
     return null

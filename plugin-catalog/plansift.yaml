@@ -18,11 +18,11 @@ description: >-
   Standard library only: no network, no credentials, no subprocess (never runs
   tofu or terraform), no third-party dependencies, no self-update.
   Disclosure: reads the local plan file you pass it (read-only), only regular
-  files, and honours Hermes' core read denylist.
+  files, and honours Zeus' core read denylist.
 maintainer: rodricksz4h5
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_zeus: ">=0.22.0"
 docs_url: https://github.com/rodricksz4h5/plansift/tree/efb88654ea4e00236102e2083621f8c739a351c6
 capabilities:
   provides_tools:

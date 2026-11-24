@@ -6,7 +6,7 @@ WinError 64 (``ERROR_NETNAME_DELETED``), and ``getpeername()`` in ``finish_accep
 WinError 10014. Either one closes the gateway API port while the process keeps running and
 ``gateway ensure`` keeps reporting it ready, so Desktop's dials are refused until a restart.
 
-``hermes serve`` runs on a selector loop (#120164); the gateway needs the proactor for
+``zeus serve`` runs on a selector loop (#120164); the gateway needs the proactor for
 subprocesses. The guard wraps the proactor's ``accept`` rather than ``_start_serving``, so a
 CPython that already handles the reset (gh-93821) keeps its own serving loop.
 """

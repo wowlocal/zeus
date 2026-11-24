@@ -58,7 +58,7 @@ def test_needs_are_read_from_every_library_in_either_elf_class_and_byte_order(tm
 
 def test_each_arch_fails_on_a_need_above_its_own_floor(tmp_path):
     app = tmp_path / "linux-unpacked"
-    write_elf(app / "hermes", {"libc.so.6": ["GLIBC_2.25"], "libstdc++.so.6": ["GLIBCXX_3.4.9"]})
+    write_elf(app / "zeus", {"libc.so.6": ["GLIBC_2.25"], "libstdc++.so.6": ["GLIBCXX_3.4.9"]})
     payload = app / "resources/agent-payload/venv/lib/python3.11/site-packages"
     write_elf(payload / "olm.abi3.so", {"libc.so.6": ["GLIBC_2.38"], "libstdc++.so.6": ["GLIBCXX_3.4.32"]})
 
@@ -90,13 +90,13 @@ def test_x64_gpu_engines_have_their_own_ceiling_and_nothing_else_does(tmp_path):
 
     write_elf(tools / "llamacpp-cpu-12144-linux-x64/libllama.so", upstream)
     write_elf(tools / "llamacpp-cuda-12144-linux-x64/llama-server", {"libc.so.6": ["GLIBC_2.39"]})
-    write_elf(app / "resources/agent-payload/hermes-agent/llamacpp-cuda-1-linux-x64/x.so", upstream)
+    write_elf(app / "resources/agent-payload/zeus-agent/llamacpp-cuda-1-linux-x64/x.so", upstream)
     assert violations(app, "x64") == {
         ("resources/agent-payload/tools/llamacpp-cpu-12144-linux-x64/libllama.so", "GLIBC_2.38"),
         ("resources/agent-payload/tools/llamacpp-cpu-12144-linux-x64/libllama.so", "GLIBCXX_3.4.32"),
         ("resources/agent-payload/tools/llamacpp-cuda-12144-linux-x64/llama-server", "GLIBC_2.39"),
-        ("resources/agent-payload/hermes-agent/llamacpp-cuda-1-linux-x64/x.so", "GLIBC_2.38"),
-        ("resources/agent-payload/hermes-agent/llamacpp-cuda-1-linux-x64/x.so", "GLIBCXX_3.4.32"),
+        ("resources/agent-payload/zeus-agent/llamacpp-cuda-1-linux-x64/x.so", "GLIBC_2.38"),
+        ("resources/agent-payload/zeus-agent/llamacpp-cuda-1-linux-x64/x.so", "GLIBCXX_3.4.32"),
     }
 
 

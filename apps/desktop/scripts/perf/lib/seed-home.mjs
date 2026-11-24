@@ -1,4 +1,4 @@
-// Seed an isolated HERMES_HOME with just enough config (NOT sessions) so the
+// Seed an isolated ZEUS_HOME with just enough config (NOT sessions) so the
 // spawned instance reaches an empty chat view instead of the onboarding wizard.
 //
 // The isolated home gets its own gateway, and a gateway starts every messaging

@@ -8,13 +8,13 @@ description: >-
   lists what to order now (quantity and order-by date, with lead time, MOQ and pack size).
   Works from the bundled sample, a local CSV (reads SAP, NetSuite, Zoho, Odoo, Sage,
   QuickBooks and Dynamics export column names as is), or an optional read-only Odoo connection
-  configured through Hermes secrets. Adds a /stock command, a stock_runway tool and a
+  configured through Zeus secrets. Adds a /stock command, a stock_runway tool and a
   Desktop page. Disclosure — with the Odoo source it makes read-only XML-RPC calls to the
   Odoo server you configure; the sample and CSV sources make no network calls.
 maintainer: usegreymatter
 tier: community
 category: tools
-requires_hermes: ">=0.22.2"
+requires_zeus: ">=0.22.2"
 docs_url: https://github.com/usegreymatter/hermes-stock-runway#readme
 version: "0.1.0"
 screenshots:

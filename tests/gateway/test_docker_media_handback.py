@@ -68,10 +68,10 @@ def _fake_docker(monkeypatch, sandbox, *, user: str = "", ps_timeout: bool = Fal
 
 
 def _sandbox_file(monkeypatch, tmp_path):
-    sandbox = tmp_path / ".hermes" / "sandboxes" / "docker" / "default"
+    sandbox = tmp_path / ".zeus" / "sandboxes" / "docker" / "default"
     (sandbox / "workspace").mkdir(parents=True)
     (sandbox / "home").mkdir()
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path / ".hermes"))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path / ".zeus"))
     target = sandbox / "workspace" / "test.txt"
     target.write_text("top-secret")
     target.chmod(0)  # what root's 0600 file is to the gateway user: unreadable

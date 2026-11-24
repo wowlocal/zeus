@@ -1,6 +1,6 @@
 import type { IpcMain } from 'electron'
 
-/** What main knows about the user being at this computer, pushed on `hermes:presence`. */
+/** What main knows about the user being at this computer, pushed on `zeus:presence`. */
 export interface PresenceSnapshot {
   /** The OS idle clock answered for this sample; without it the renderer falls back to its own page input. */
   system: boolean
@@ -27,7 +27,7 @@ const LOCK_STATE_PLATFORMS = new Set<NodeJS.Platform>(['darwin', 'win32'])
 
 /**
  * Whether the OS idle clock counts only the user's input in every app. True on macOS and Windows.
- * Not on Linux: Wayland hides it, and under X11 Hermes itself resets it after every reply (releasing
+ * Not on Linux: Wayland hides it, and under X11 Zeus itself resets it after every reply (releasing
  * its keep-awake blocker, and when the completion sound ends), which would read as the user coming back.
  */
 export function presenceIdleClockSupported(platform: NodeJS.Platform = process.platform): boolean {
@@ -100,7 +100,7 @@ function readLocked(monitor: PresencePowerMonitor, platform: NodeJS.Platform): b
 }
 
 /**
- * The main-process half of presence: answers `hermes:presence:get` and pushes `hermes:presence` on
+ * The main-process half of presence: answers `zeus:presence:get` and pushes `zeus:presence` on
  * lock/unlock/suspend/resume (and on a poll that sees the lock or suspend state change) whatever the
  * idle state, and whether or not an idle clock exists; where the OS idle clock is trustworthy, also
  * when the user comes back (idle drops under a minute) and every 45 seconds while they stay. The
@@ -153,7 +153,7 @@ export function attachPresenceSource({
   const push = (state = sample()) => {
     wasActive = isActive(state)
     lastPushAt = now()
-    sendToEveryWindow(windows, 'hermes:presence', state)
+    sendToEveryWindow(windows, 'zeus:presence', state)
   }
 
   const poll = () => {
@@ -212,5 +212,5 @@ export function attachPresenceSource({
     })
   )
   monitor.on('resume', flag(() => (suspended = false)))
-  ipc.handle('hermes:presence:get', sample)
+  ipc.handle('zeus:presence:get', sample)
 }

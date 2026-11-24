@@ -97,12 +97,12 @@ def profiles(tmp_path, monkeypatch):
     routed profile B; multiplexing on."""
     from agent import secret_scope
 
-    root = tmp_path / ".hermes"
+    root = tmp_path / ".zeus"
     homes = {"A": root, "B": root / "profiles" / "b"}
     for label, home in homes.items():
         home.mkdir(parents=True, exist_ok=True)
         (home / "config.yaml").write_text("{}\n")
-    monkeypatch.setenv("HERMES_HOME", str(root))
+    monkeypatch.setenv("ZEUS_HOME", str(root))
     monkeypatch.setenv("MODAL_TOKEN_ID", "ak-A")
     monkeypatch.setenv("MODAL_TOKEN_SECRET", "as-A")
     was_active = secret_scope.is_multiplex_active()
@@ -139,7 +139,7 @@ def test_routed_sandboxes_run_on_their_own_profiles_account(modal_sdk, profiles)
     homes = []
     for label in ("B", "A"):
         with bind_profile_scope(profiles(label), hydrate_secrets=False):
-            homes.append(modal_env.hermes_home_key())
+            homes.append(modal_env.zeus_home_key())
     assert sorted(modal_env._profile_clients) == sorted(homes)  # keyed by the serving profile's home
 
 
@@ -162,8 +162,8 @@ def test_routed_profile_without_its_own_pair_never_borrows_the_launch_account(
 def test_single_profile_keeps_the_sdks_own_credentials(modal_sdk, tmp_path, monkeypatch):
     """Outside multiplexing the SDK keeps resolving the process env or the ``modal`` CLI login."""
     modal_env, calls = modal_sdk
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path / ".hermes"))
-    (tmp_path / ".hermes").mkdir()
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path / ".zeus"))
+    (tmp_path / ".zeus").mkdir()
     monkeypatch.setenv("MODAL_TOKEN_ID", "ak-shell")
     monkeypatch.setenv("MODAL_TOKEN_SECRET", "as-shell")
 
@@ -214,7 +214,7 @@ def test_routed_direct_mode_refusal_names_the_profile_tokens(profiles, tmp_path,
 def test_single_profile_direct_mode_refusal_is_unchanged(tmp_path, monkeypatch):
     from tools.terminal_tool_backends import _get_modal_backend_state, _modal_unavailable_reason
 
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path / ".hermes"))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path / ".zeus"))
     monkeypatch.delenv("MODAL_TOKEN_ID", raising=False)
     monkeypatch.delenv("MODAL_TOKEN_SECRET", raising=False)
     monkeypatch.setenv("HOME", str(tmp_path))
@@ -226,7 +226,7 @@ def test_single_profile_direct_mode_refusal_is_unchanged(tmp_path, monkeypatch):
 def test_single_profile_host_login_still_selects_direct(tmp_path, monkeypatch):
     from tools.tool_backend_helpers import has_direct_modal_credentials
 
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path / ".hermes"))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path / ".zeus"))
     monkeypatch.delenv("MODAL_TOKEN_ID", raising=False)
     monkeypatch.delenv("MODAL_TOKEN_SECRET", raising=False)
     monkeypatch.setenv("HOME", str(tmp_path))
@@ -423,7 +423,7 @@ def test_cancelled_waiter_leaves_the_shared_build_running(modal_sdk, profiles, m
     creator, creator_errors = _start(_routed_sandbox, modal_env, home)
     wait_until(lambda: calls["clients"] == ["ak-B"], timeout=15, what="the first sandbox started its build")
     with bind_profile_scope(home, hydrate_secrets=False):
-        home_key = modal_env.hermes_home_key()
+        home_key = modal_env.zeus_home_key()
 
     async def cancelled_waiter():
         waiter = asyncio.ensure_future(

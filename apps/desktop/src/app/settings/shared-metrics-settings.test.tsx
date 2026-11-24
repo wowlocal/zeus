@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { $apiRequestScope } from '@/api/client'
 import { useDesktopMetrics } from '@/app/contrib/hooks/use-desktop-metrics'
-import type { HermesConnection } from '@/global'
+import type { ZeusConnection } from '@/global'
 import {
   $desktopMetricsGate,
   bindDesktopMetrics,
@@ -61,7 +61,7 @@ const initialOwner = {
   requestScope: $apiRequestScope.get()
 }
 
-const sourceConnection: HermesConnection = {
+const sourceConnection: ZeusConnection = {
   baseUrl: 'http://profile.invalid',
   connectionId: 'source-server',
   isFullscreen: false,

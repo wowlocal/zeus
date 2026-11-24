@@ -1,4 +1,4 @@
-import { skillCatalogInstallIdentifier } from '@hermes/shared'
+import { skillCatalogInstallIdentifier } from '@zeus/shared'
 import { queryOptions, useQuery } from '@tanstack/react-query'
 
 import { CATALOG_ORIGIN } from '@/lib/plugin-catalog'
@@ -23,7 +23,7 @@ export interface CatalogEntry {
   sha: string
   subdir: string
   version: string
-  requiresHermes: string
+  requiresZeus: string
   tags: string[]
   platforms: string[]
   requirements: string[]
@@ -157,7 +157,7 @@ function catalogEntry(kind: CatalogKind, row: any): CatalogEntry {
     sha: text(row.sha),
     subdir: text(row.subdir),
     version: text(row.version),
-    requiresHermes: text(row.requiresHermes),
+    requiresZeus: text(row.requiresZeus),
     tags,
     tools,
     hooks,

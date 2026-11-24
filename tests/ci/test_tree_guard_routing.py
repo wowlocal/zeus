@@ -11,7 +11,7 @@ from __future__ import annotations
 
 import pytest
 
-from hermes_agent.compat.paths import current_path
+from zeus_agent.compat.paths import current_path
 from tests.ci import _gha_expr as gha
 from tests.ci.test_update_ci_routing import _REPO, _ci_run, _real_classifier
 

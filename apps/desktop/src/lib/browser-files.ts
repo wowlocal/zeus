@@ -1,6 +1,6 @@
-import { fileUrlToNativePath } from '@hermes/shared'
+import { fileUrlToNativePath } from '@zeus/shared'
 
-import type { HermesApiRequest } from '@/global'
+import type { ZeusApiRequest } from '@/global'
 import { translateNow } from '@/i18n'
 import { requireBrowserConnection } from '@/lib/browser-connection'
 import { fetchBrowserImage } from '@/lib/browser-image-download'
@@ -51,7 +51,7 @@ async function saveExplicitDownload(
 }
 
 interface BrowserFilesOptions {
-  api: <T>(request: HermesApiRequest) => Promise<T>
+  api: <T>(request: ZeusApiRequest) => Promise<T>
   bootstrap: BrowserBootstrap
   currentProfile: () => string | null
   /** The bootstrap a file of *connectionId* is read through: a relayed gateway's, when the serving
@@ -66,7 +66,7 @@ export function createBrowserFilesBridge({
   currentProfile,
   bootstrapFor
 }: BrowserFilesOptions): Pick<
-  Window['hermesDesktop'],
+  Window['zeusDesktop'],
   | 'getGatewayFileStreamUrl'
   | 'readDir'
   | 'readFileDataUrl'
@@ -90,14 +90,14 @@ export function createBrowserFilesBridge({
 
     const target = bootstrapFor(connectionId)
 
-    return { api: <T>(request: HermesApiRequest) => browserApi<T>(target, request), bootstrap: target }
+    return { api: <T>(request: ZeusApiRequest) => browserApi<T>(target, request), bootstrap: target }
   }
 
   const downloadUrl = async (url: string, filename = '') => {
     const target = new URL(url, window.location.href)
 
     // Cross-origin anchors ignore download and navigate the current tab.
-    // Fetch without Hermes credentials; CORS denial must not fall back to navigation.
+    // Fetch without Zeus credentials; CORS denial must not fall back to navigation.
     if (target.origin !== window.location.origin && !['blob:', 'data:'].includes(target.protocol)) {
       const image = await fetchBrowserImage(target)
 
@@ -130,11 +130,11 @@ export function createBrowserFilesBridge({
       ).href
     },
     readDir: (path: string) =>
-      fsGet<Awaited<ReturnType<Window['hermesDesktop']['readDir']>>>('list', path),
+      fsGet<Awaited<ReturnType<Window['zeusDesktop']['readDir']>>>('list', path),
     readFileDataUrl: readDataUrl,
     readFileDataUrlForAttach: readDataUrl,
     readFileText: (path: string) =>
-      fsGet<Awaited<ReturnType<Window['hermesDesktop']['readFileText']>>>('read-text', path),
+      fsGet<Awaited<ReturnType<Window['zeusDesktop']['readFileText']>>>('read-text', path),
     saveGatewayFile: async payload => {
       const target = owner(payload.connectionId)
 

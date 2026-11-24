@@ -24,10 +24,10 @@ VERSION = "1.2.3+canary.20261021T064100Z"
 COMMIT = "a" * 40
 TAG_OBJECT = "b" * 40
 CONTROLLER_ENV = {
-    "GITHUB_REPOSITORY": "example/hermes-agent",
+    "GITHUB_REPOSITORY": "example/zeus-agent",
     "GITHUB_EVENT_NAME": "workflow_dispatch",
     "GITHUB_REF": "refs/heads/main",
-    "GITHUB_WORKFLOW_REF": "example/hermes-agent/.github/workflows/stable-release.yml@refs/heads/main",
+    "GITHUB_WORKFLOW_REF": "example/zeus-agent/.github/workflows/stable-release.yml@refs/heads/main",
     "GITHUB_SHA": "e" * 40,
 }
 
@@ -180,15 +180,15 @@ def canary_candidates(tag=CANARY, *, digest="2" * 64):
         suffix = ".msixbundle" if platform == "windows" else ".zip"
         packages.append({
             "platform": platform, "arch": arch, "tag": tag, "commit": COMMIT,
-            "identity": "NousResearch.HermesBundledCanary",
+            "identity": "NousResearch.ZeusBundledCanary",
             "version": quad if platform == "windows" else stable.payload_version(tag),
-            **({"executableVersion": quad, "publisher": "CN=Test", "applicationId": "HermesBundledCanary"}
+            **({"executableVersion": quad, "publisher": "CN=Test", "applicationId": "ZeusBundledCanary"}
                if platform == "windows" else {"teamId": "ABCDEFGHIJ"}),
             "artifact": {"sha256": digest, "url": f"{BASE}/releases/tag/{tag}/{arch}{suffix}"},
         })
     packages.append({"platform": "termux", "arch": "aarch64", "tag": tag, "commit": COMMIT,
-                     "identity": "hermes-agent", "version": deb_version_for_tag(tag),
-                     "artifact": {"sha256": digest, "url": f"{BASE}/releases/tag/{tag}/deb/hermes.deb"}})
+                     "identity": "zeus-agent", "version": deb_version_for_tag(tag),
+                     "artifact": {"sha256": digest, "url": f"{BASE}/releases/tag/{tag}/deb/zeus.deb"}})
     return {"schema": 2, "tag": tag, "commit": COMMIT, "releaseEpoch": stable.canary_epoch(tag),
             "archive": tag, "packages": packages,
             "smoke_results": {job: {"result": "success"} for job in stable.SMOKE_JOBS}}
@@ -293,7 +293,7 @@ def test_canary_promotion_writes_only_canary_feeds(tmp_path, monkeypatch):
     monkeypatch.setattr(release_artifacts, "publish_canary_appinstaller", appinstaller)
     monkeypatch.setattr(release_artifacts, "_pointer_publisher", lambda tag, base: (
         lambda key, file, upload=True: pointers.append((key, upload))))
-    apt = tmp_path / "apt" / "dists" / "hermes-canary"
+    apt = tmp_path / "apt" / "dists" / "zeus-canary"
     apt.mkdir(parents=True)
     (apt / "InRelease").write_text("signed", encoding="utf-8")
     release_artifacts.promote(manifest, tmp_path, BASE)
@@ -305,7 +305,7 @@ def test_canary_promotion_writes_only_canary_feeds(tmp_path, monkeypatch):
     assert materialized[1]["only"] == {"arm64.msixbundle"}
     assert appinstallers[0]["tag"] == CANARY and appinstallers[0]["version"] == "26.1021.6.4100"
     assert pointers == [("releases/win32/canary/canary.appinstaller", False),
-                        ("releases/termux/canary/dists/hermes-canary/InRelease", True)]
+                        ("releases/termux/canary/dists/zeus-canary/InRelease", True)]
     assert not any("stable" in key for key, _upload in pointers)
 
 
@@ -327,7 +327,7 @@ def _custody_run(*, default="main"):
 
 
 def test_the_canary_controller_custody_is_the_stable_pipeline_after_its_accepted_candidate():
-    from hermes_cli.release_channels import ChannelError
+    from zeus_cli.release_channels import ChannelError
     from scripts.releases import channel_releases
 
     needs = {"admit": {"result": "success"}, "candidate-manifest": {"result": "success"},
@@ -380,7 +380,7 @@ def test_the_pruner_keeps_the_live_canary_however_old(monkeypatch, capsys):
     from scripts.releases import r2
 
     live, stale = "canary.20260101T000000Z-v1.2.3", "canary.20251201T000000Z-v1.2.2"
-    keys = [f"releases/tag/{live}/x64.msixbundle", f"releases/termux/canary/pool/{live}/hermes.deb",
+    keys = [f"releases/tag/{live}/x64.msixbundle", f"releases/termux/canary/pool/{live}/zeus.deb",
             f"releases/tag/{stale}/x64.msixbundle", "releases/canary/release-candidates.json",
             "releases/channels/canary.json"]
     monkeypatch.setattr(r2, "credentials", lambda: (None, "https://r2.example", "bucket"))

@@ -18,16 +18,16 @@ case "$phase" in
   build)
     # GH file commands are individual mounts, not the runner's temp directory.
     args=(--user "$(id -u):$(id -g)" --volume "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" --workdir "$GITHUB_WORKSPACE"
-          --env HOME=/build-home --env GITHUB_WORKSPACE --env HERMES_PAYLOAD_TAG --env HERMES_PAYLOAD_VERSION
-          --env HERMES_RELEASE_COMMIT --env RELEASE_CLAIM_TAG --env RELEASE_CLAIM_OBJECT --env HERMES_DESKTOP_VARIANT
-          --env HERMES_PYTHON --env HERMES_NODE --env HERMES_RUNTIME_DIR --env HERMES_HOME --env PYTHONUTF8)
+          --env HOME=/build-home --env GITHUB_WORKSPACE --env ZEUS_PAYLOAD_TAG --env ZEUS_PAYLOAD_VERSION
+          --env ZEUS_RELEASE_COMMIT --env RELEASE_CLAIM_TAG --env RELEASE_CLAIM_OBJECT --env ZEUS_DESKTOP_VARIANT
+          --env ZEUS_PYTHON --env ZEUS_NODE --env ZEUS_RUNTIME_DIR --env ZEUS_HOME --env PYTHONUTF8)
     for key in GITHUB_ENV GITHUB_PATH; do
       args+=(--volume "${!key}:/commands/$key" --env "$key=/commands/$key")
     done
     # desktop_commands exports the job-local PM commands after preparation.
     prepared="$GITHUB_WORKSPACE/.build/desktop-job/commands"
-    if [[ -n ${HERMES_NODE:-} && -n ${HERMES_PYTHON:-} ]]; then
-      args+=(--env "PATH=$prepared:$(dirname "$HERMES_NODE"):$(dirname "$HERMES_PYTHON"):/usr/local/bin:/usr/bin:/bin")
+    if [[ -n ${ZEUS_NODE:-} && -n ${ZEUS_PYTHON:-} ]]; then
+      args+=(--env "PATH=$prepared:$(dirname "$ZEUS_NODE"):$(dirname "$ZEUS_PYTHON"):/usr/local/bin:/usr/bin:/bin")
     else
       [[ -f ${X64_BOOTSTRAP_PYTHON:-} && -x ${X64_BOOTSTRAP_PYTHON:-} ]] || { printf '%s\n' 'Missing PM x64 bootstrap Python' >&2; exit 1; }
       args+=(--env "PATH=$(dirname "$X64_BOOTSTRAP_PYTHON"):/usr/local/bin:/usr/bin:/bin")
@@ -35,7 +35,7 @@ case "$phase" in
     docker run --rm -i "${args[@]}" "$X64_BUILDER_IMAGE" bash -eo pipefail -s < "$1" ;;
   stage-gpu)
     docker run --rm --user "$(id -u):$(id -g)" --env HOME=/build-home --env PYTHONDONTWRITEBYTECODE=1 \
-      --env HERMES_HOME=/build-home/state --env HERMES_RUNTIME_DIR=/build-home/tools \
+      --env ZEUS_HOME=/build-home/state --env ZEUS_RUNTIME_DIR=/build-home/tools \
       --volume "$GITHUB_ENV:/commands/GITHUB_ENV" --env GITHUB_ENV=/commands/GITHUB_ENV \
       --volume "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" --workdir "$GITHUB_WORKSPACE" \
       "$X64_GPU_IMAGE" python3 -B -m scripts.bundles.stage_x64_gpu ;;
@@ -55,8 +55,8 @@ case "$phase" in
         policy=(--security-opt "seccomp=$GITHUB_WORKSPACE/scripts/ci/linux_x64_userland.seccomp.json")
       fi
       docker run --rm --init --network none --cap-drop ALL "${policy[@]}" --user "$(id -u):$(id -g)" --workdir /work \
-        --shm-size=512m --env HOME=/work/home --env HERMES_HOME=/work/home/.hermes --env XDG_RUNTIME_DIR=/work/runtime \
-        --env UV_OFFLINE=1 --env HERMES_DISABLE_LAZY_INSTALLS=1 --env npm_config_offline=true \
+        --shm-size=512m --env HOME=/work/home --env ZEUS_HOME=/work/home/.zeus --env XDG_RUNTIME_DIR=/work/runtime \
+        --env UV_OFFLINE=1 --env ZEUS_DISABLE_LAZY_INSTALLS=1 --env npm_config_offline=true \
         --volume "${images[0]}:/image.AppImage:ro" \
         --volume "$GITHUB_WORKSPACE/scripts/bundles/appimage_checks.py:/checks.py:ro" \
         --volume "$GITHUB_WORKSPACE/scripts/smoke-payload.sh:/smoke-payload.sh:ro" \

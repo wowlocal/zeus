@@ -10,7 +10,7 @@ maintainer: daji-dev
 tier: community
 category: memory
 version: "0.7.1"
-requires_hermes: ">=0.23.1"
+requires_zeus: ">=0.23.1"
 docs_url: https://github.com/daji-dev/mem-diffs
 platforms: []
 capabilities:

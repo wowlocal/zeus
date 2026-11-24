@@ -49,7 +49,7 @@ beforeEach(() => {
   vi.spyOn(performance, 'now').mockImplementation(() => now)
   vi.stubGlobal('window', {
     localStorage: window.localStorage,
-    hermesDesktop: {
+    zeusDesktop: {
       scheduleStreamWorkWake: (token: string, delayMs: number | null) => requests.push({ token, delayMs }),
       onStreamWorkWake: (callback: (token: string) => void) => {
         listeners.add(callback)

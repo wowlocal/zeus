@@ -25,7 +25,7 @@ test.beforeAll(async () => {
                 await vite.transformIndexHtml(
                   '/statusbar-viewport-test',
                   `<!doctype html>
-<html lang="en" data-hermes-desktop-host="browser" style="height:100%">
+<html lang="en" data-zeus-desktop-host="browser" style="height:100%">
 <head><meta name="viewport" content="width=device-width, initial-scale=1"></head>
 <body style="margin:0;height:100%"><div id="root" style="height:100%"></div>
 <script type="module" src="/src/test/statusbar-viewport.fixture.tsx"></script></body></html>`
@@ -41,7 +41,7 @@ test.beforeAll(async () => {
   })
   await server.listen()
   url = `${server.resolvedUrls!.local[0]}statusbar-viewport-test`
-  browser = await chromium.launch({ executablePath: process.env.HERMES_E2E_CHROMIUM || undefined })
+  browser = await chromium.launch({ executablePath: process.env.ZEUS_E2E_CHROMIUM || undefined })
 })
 
 test.afterAll(async () => {

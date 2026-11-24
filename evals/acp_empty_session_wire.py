@@ -64,10 +64,10 @@ def main():
 
     server = ThreadingHTTPServer(('127.0.0.1', 0), Model)
     threading.Thread(target=server.serve_forever, daemon=True).start()
-    home = Path(tempfile.mkdtemp(prefix='hermes-acp-empty-'))
-    hermes = home / '.hermes'
-    hermes.mkdir()
-    (hermes / 'config.yaml').write_text(
+    home = Path(tempfile.mkdtemp(prefix='zeus-acp-empty-'))
+    zeus = home / '.zeus'
+    zeus.mkdir()
+    (zeus / 'config.yaml').write_text(
         'model:\n  provider: custom\n  default: fixture-model\n'
         f'  base_url: http://127.0.0.1:{server.server_port}/v1\n'
         '  api_key: local-fixture-key\n  api_mode: chat_completions\n'
@@ -75,8 +75,8 @@ def main():
         'agent:\n  max_iterations: 1\n  disabled_toolsets: [all]\n'
     )
     env = {k: os.environ[k] for k in ('PATH', 'LANG', 'TZ') if k in os.environ}
-    env.update(HOME=str(home), HERMES_HOME=str(hermes), PYTHONPATH=os.pathsep.join([str(repo), os.environ.get('PYTHONPATH', '')]),
-               HERMES_ACP_SKIP_CONFIGURED_MCP='1', OPENAI_API_KEY='local-fixture-key',
+    env.update(HOME=str(home), ZEUS_HOME=str(zeus), PYTHONPATH=os.pathsep.join([str(repo), os.environ.get('PYTHONPATH', '')]),
+               ZEUS_ACP_SKIP_CONFIGURED_MCP='1', OPENAI_API_KEY='local-fixture-key',
                OPENAI_BASE_URL=f'http://127.0.0.1:{server.server_port}/v1')
     stderr = open(str(args.output) + '.stderr', 'w', encoding='utf-8')
     proc = subprocess.Popen([sys.executable, '-m', 'acp_adapter'], cwd=repo, env=env,
@@ -104,7 +104,7 @@ def main():
                 return response['result']
 
     def rows():
-        with open_persistence_reader(hermes / 'state.db') as store:
+        with open_persistence_reader(zeus / 'state.db') as store:
             entries = store.sessions.search_sessions(window=SessionWindow(limit=None))
         return sorted((e.session.session_id, e.session.source, e.session.message_count) for e in entries)
 
@@ -122,7 +122,7 @@ def main():
         forked = rpc('session/fork', {'sessionId': sid, 'cwd': str(home), 'mcpServers': []})
         result['fork_id'] = forked['sessionId']
         result['after_fork'] = rows()
-        with open_persistence_reader(hermes / 'state.db') as store:
+        with open_persistence_reader(zeus / 'state.db') as store:
             exported = store.maintenance.export_all(include_inactive=True)
         result['messages'] = [(m.session_id, m.role, m.content)
                               for m in sorted((m for e in exported for m in e.messages), key=lambda m: m.id)]
@@ -133,13 +133,13 @@ def main():
         assert any(r[0] == sid and r[2] > 0 for r in result['after_prompt'])
         assert any(r[0] == result['fork_id'] and r[2] > 0 for r in result['after_fork'])
         legacy = rpc('session/new', {'cwd': str(home), 'mcpServers': []})['sessionId']
-        with sqlite3.connect(hermes / 'state.db') as db:
+        with sqlite3.connect(zeus / 'state.db') as db:
             db.execute("INSERT OR IGNORE INTO sessions (id, source, started_at) VALUES (?, 'acp', 1)",
                        (legacy,))
         moved = home / 'moved'
         moved.mkdir()
         rpc('session/load', {'sessionId': legacy, 'cwd': str(moved), 'mcpServers': []})
-        with open_persistence_reader(hermes / 'state.db') as store:
+        with open_persistence_reader(zeus / 'state.db') as store:
             record = store.sessions.get(legacy)
         result['existing_empty_metadata'] = (record.model_config_json, record.message_count)
         assert json.loads(result['existing_empty_metadata'][0])['cwd'] == str(moved)

@@ -358,7 +358,7 @@ def test_workflow_write_and_preflight_steps_replay_end_to_end(tmp_path: Path):
             "FAKE_XCRUN_RC": str(xcrun_rc),
             "FAKE_XCRUN_STDOUT": xcrun_stdout,
             "FAKE_XCRUN_STDERR": xcrun_stderr,
-            "HERMES_BUILD_COMMIT": build_commit,
+            "ZEUS_BUILD_COMMIT": build_commit,
         }
         write_proc = subprocess.run(
             ["bash", "--noprofile", "--norc", "-eo", "pipefail", "-c", write_step["run"]],

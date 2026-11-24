@@ -20,7 +20,7 @@ from gateway.status_report.payload import ReportKind, build_report, read_status_
 from gateway.status_report.target import ReportTarget, report_target_from_env
 from gateway.status_report.transport import Outcome, post_report
 from gateway.status_scoped_locks import release_scoped_lock
-from hermes_constants import get_process_hermes_home, profile_name_for_home
+from zeus_constants import get_process_zeus_home, profile_name_for_home
 
 logger = logging.getLogger(__name__)
 
@@ -343,7 +343,7 @@ def status_reporter_from_launch_env(environ: Optional[Mapping[str, str]] = None)
     target = report_target_from_env(environ)
     if target is None:
         return None
-    launch_home = get_process_hermes_home()  # launch profile, pre-identity
+    launch_home = get_process_zeus_home()  # launch profile, pre-identity
     if profile_name_for_home(launch_home) != "default":
         logger.info("status report: off for this gateway (only the default profile's gateway reports)")
         return None

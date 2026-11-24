@@ -7,7 +7,7 @@ from types import SimpleNamespace
 
 import pytest
 
-from hermes_cli.update_channel import release_version
+from zeus_cli.update_channel import release_version
 from scripts.bundles.desktop_inputs import identity_environment
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -36,7 +36,7 @@ def test_commit_claim_renders_the_same_icons_as_its_tagless_commit(tmp_path):
     claimed = tmp_path / "claimed"
     result = render(claimed, env)
     assert result.returncode == 0, result.stdout + result.stderr
-    env.pop("HERMES_PAYLOAD_TAG")
+    env.pop("ZEUS_PAYLOAD_TAG")
     tagless = tmp_path / "tagless"
     result = render(tagless, env)
     assert result.returncode == 0, result.stdout + result.stderr
@@ -52,7 +52,7 @@ def test_commit_claim_renders_the_same_icons_as_its_tagless_commit(tmp_path):
 ])
 def test_commit_icons_reject_incompatible_payload_tags_before_writing(tmp_path, tag):
     env = icon_environment()
-    env["HERMES_PAYLOAD_TAG"] = tag
+    env["ZEUS_PAYLOAD_TAG"] = tag
     result = render(tmp_path / "icons", env)
     assert result.returncode != 0
     assert "Commit builds cannot also select" in result.stderr

@@ -1,6 +1,6 @@
 name: Catalog core imports index
 
-# Daily: refresh scripts/ci/catalog_core_imports/, the index of every Hermes import each pinned
+# Daily: refresh scripts/ci/catalog_core_imports/, the index of every Zeus import each pinned
 # plugin-catalog entry makes, for the entries whose pin changed since the last run (new entries and
 # repins). The PR check in repo-guards.yml reads that index to tell a core PR which catalog plugins it
 # breaks; it never fetches a plugin itself.

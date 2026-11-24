@@ -9,7 +9,7 @@ import ProfilesPage from "./ProfilesPage";
 
 // Both dashboard name checks take their grammar from the shared PROFILE_ID_ARG_RE owner
 // (state-24, #155595). Under a swapped owner a private copy keeps accepting `work` and fails here.
-vi.mock("@hermes/shared/profile-id", () => ({ PROFILE_ID_ARG_RE: /^zz\.[a-z]+$/ }));
+vi.mock("@zeus/shared/profile-id", () => ({ PROFILE_ID_ARG_RE: /^zz\.[a-z]+$/ }));
 const header = vi.hoisted(() => ({ setEnd: vi.fn() }));
 vi.mock("@/contexts/usePageHeader", () => ({ usePageHeader: () => header }));
 vi.mock("@/contexts/useProfileScope", () => ({ useProfileScope: () => ({ setProfile: vi.fn() }) }));

@@ -7,7 +7,7 @@ version: "0.1.2"
 tier: community
 category: general
 maintainer: Investorquab
-requires_hermes: ">=0.19"
+requires_zeus: ">=0.19"
 docs_url: https://github.com/Investorquab/Seedguard#readme
 readme: true
 platforms: []
@@ -27,4 +27,4 @@ capabilities:
     - tool_request
   requires_env: []
 known_issues:
-  - "Auxiliary side-model calls (session titles, compression, smart approvals) don't run middleware: secrets typed in the CLI can reach them. Run /seedguard doctor for the config fixes. Chat-app input is cleaned before storage. Confirmed on Hermes 0.23: its new pre_auxiliary_call/post_auxiliary_call events are observer-only (metrics, not request body) and cannot redact the call."
+  - "Auxiliary side-model calls (session titles, compression, smart approvals) don't run middleware: secrets typed in the CLI can reach them. Run /seedguard doctor for the config fixes. Chat-app input is cleaned before storage. Confirmed on Zeus 0.23: its new pre_auxiliary_call/post_auxiliary_call events are observer-only (metrics, not request body) and cannot redact the call."

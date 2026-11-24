@@ -5,10 +5,10 @@ import { Navigate, useLocation, useNavigate } from 'react-router'
 import { codiconIcon } from '@/components/ui/codicon'
 import { KbdCombo } from '@/components/ui/kbd'
 import { Tip } from '@/components/ui/tooltip'
-import { getHermesConfigDefaults, getHermesConfigRecord, saveHermesConfig } from '@/hermes'
+import { getZeusConfigDefaults, getZeusConfigRecord, saveZeusConfig } from '@/zeus'
 import { useI18n } from '@/i18n'
 import { triggerHaptic } from '@/lib/haptics'
-import { servedByHermesCloud } from '@/lib/hermes-cloud-host'
+import { servedByZeusCloud } from '@/lib/zeus-cloud-host'
 import {
   Archive,
   BarChart3,
@@ -214,12 +214,12 @@ export function SettingsView({ onClose, onConfigSaved, onMainModelChanged }: Set
 
   const exportConfig = async () => {
     try {
-      const cfg = await getHermesConfigRecord()
+      const cfg = await getZeusConfigRecord()
       const blob = new Blob([JSON.stringify(cfg, null, 2)], { type: 'application/json' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'hermes-config.json'
+      a.download = 'zeus-config.json'
       a.click()
       URL.revokeObjectURL(url)
       triggerHaptic('success')
@@ -240,7 +240,7 @@ export function SettingsView({ onClose, onConfigSaved, onMainModelChanged }: Set
     }
 
     try {
-      await saveHermesConfig(await getHermesConfigDefaults())
+      await saveZeusConfig(await getZeusConfigDefaults())
       triggerHaptic('success')
       onConfigSaved?.()
     } catch (err) {
@@ -425,12 +425,12 @@ export function SettingsView({ onClose, onConfigSaved, onMainModelChanged }: Set
             label: t.settings.nav.sessions,
             onSelect: () => setActiveView('sessions')
           },
-          // On a Webapp Hermes Cloud serves, the page is backup only: that tab IS a cloud agent.
+          // On a Webapp Zeus Cloud serves, the page is backup only: that tab IS a cloud agent.
           {
             active: activeView === 'backup',
-            icon: servedByHermesCloud() ? Archive : CloudUpload,
+            icon: servedByZeusCloud() ? Archive : CloudUpload,
             id: 'backup',
-            label: servedByHermesCloud() ? t.settings.nav.backupOnly : t.settings.nav.backup,
+            label: servedByZeusCloud() ? t.settings.nav.backupOnly : t.settings.nav.backup,
             onSelect: () => setActiveView('backup')
           },
           {

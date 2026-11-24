@@ -16,11 +16,11 @@ description: >-
   standard library only: no network, no credentials, no third-party
   dependencies, no self-update; DOCTYPE and entity declarations are refused.
   Disclosure: reads the local report paths you pass it (read-only), only
-  regular files, and honours Hermes' core read denylist.
+  regular files, and honours Zeus' core read denylist.
 maintainer: rodricksz4h5
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_zeus: ">=0.22.0"
 docs_url: https://github.com/rodricksz4h5/testsift/tree/ebf734e37ec1a1e736292f26298632018c1e5428
 capabilities:
   provides_tools:

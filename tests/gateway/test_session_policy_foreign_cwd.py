@@ -14,7 +14,7 @@ import pytest
 from gateway.session_policy import build_policy, policy_scope, restore_policy, workspace_ready
 from persistence.core.errors import AuthorityRefusal
 
-WINDOWS_CWD = r"C:\Users\markl\AppData\Local\hermes"
+WINDOWS_CWD = r"C:\Users\markl\AppData\Local\zeus"
 
 
 def _stored_receipt(tmp_path, cwd):
@@ -37,7 +37,7 @@ def test_a_windows_cwd_receipt_restores_and_only_its_turn_refuses(tmp_path):
 
 
 # ``\Users\markl`` is rooted but has no drive: ``ntpath.isabs`` accepted it before Python 3.13.
-@pytest.mark.parametrize("cwd", ["relative/path", "C:hermes", r"\Users\markl"])
+@pytest.mark.parametrize("cwd", ["relative/path", "C:zeus", r"\Users\markl"])
 def test_a_non_absolute_cwd_is_still_refused(tmp_path, cwd):
     with pytest.raises(AuthorityRefusal, match="storage_unavailable") as caught:
         restore_policy(_stored_receipt(tmp_path, cwd))

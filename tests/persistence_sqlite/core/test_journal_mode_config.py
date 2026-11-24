@@ -7,14 +7,14 @@ import sqlite3
 import pytest
 
 import sqlite_support
-import hermes_yaml as yaml
+import zeus_yaml as yaml
 from persistence_assembly import store_location
 
 
 def _write_config(monkeypatch: pytest.MonkeyPatch, tmp_path, config: object) -> None:
-    home = tmp_path / "hermes-home"
+    home = tmp_path / "zeus-home"
     home.mkdir(exist_ok=True)
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
     (home / "config.yaml").write_text(
         yaml.safe_dump(config),
         encoding="utf-8",
@@ -95,11 +95,11 @@ def test_resolve_journal_mode_uses_real_database_config(monkeypatch, tmp_path):
     assert resolve_journal_mode() == "delete"
 
 
-def test_new_nonsecret_hermes_env_override_is_not_exposed(monkeypatch, tmp_path):
+def test_new_nonsecret_zeus_env_override_is_not_exposed(monkeypatch, tmp_path):
     from sqlite_support import resolve_journal_mode
 
     _configure_mode(monkeypatch, tmp_path, "wal")
-    monkeypatch.setenv("HERMES_JOURNAL_MODE", "delete")
+    monkeypatch.setenv("ZEUS_JOURNAL_MODE", "delete")
     assert resolve_journal_mode() == "wal"
 
 
@@ -180,7 +180,7 @@ def test_configured_delete_never_live_downgrades_existing_wal(monkeypatch, tmp_p
             "sqlite_support.is_sqlite_wal_reset_vulnerable",
             lambda **kwargs: True,
         )
-        with caplog.at_level("ERROR", logger="hermes_state"):
+        with caplog.at_level("ERROR", logger="zeus_state"):
             assert apply_wal_with_fallback(conn, db_label="existing-wal.db") == "wal"
         assert conn.execute("PRAGMA journal_mode").fetchone()[0].lower() == "wal"
         assert any(
@@ -205,7 +205,7 @@ def test_configured_delete_overridden_warns_on_non_vulnerable_runtime_too(monkey
     conn = sqlite3.connect(db_path)
     try:
         assert conn.execute("PRAGMA journal_mode=WAL").fetchone()[0].lower() == "wal"
-        with caplog.at_level("ERROR", logger="hermes_state"):
+        with caplog.at_level("ERROR", logger="zeus_state"):
             assert apply_wal_with_fallback(conn, db_label="existing-wal.db") == "wal"
             assert apply_wal_with_fallback(conn, db_label="existing-wal.db") == "wal"
         assert conn.execute("PRAGMA journal_mode").fetchone()[0].lower() == "wal"
@@ -235,7 +235,7 @@ def test_configured_delete_overridden_warning_fires_once_per_db(monkeypatch, tmp
     conn = sqlite3.connect(db_path)
     try:
         conn.execute("PRAGMA journal_mode=WAL").fetchone()
-        with caplog.at_level("ERROR", logger="hermes_state"):
+        with caplog.at_level("ERROR", logger="zeus_state"):
             assert apply_wal_with_fallback(conn, db_label="once.db") == "wal"
             assert apply_wal_with_fallback(conn, db_label="once.db") == "wal"
             assert apply_wal_with_fallback(conn, db_label="once.db") == "wal"
@@ -261,7 +261,7 @@ def test_configured_delete_with_require_wal_and_existing_wal_returns_wal(monkeyp
     conn = sqlite3.connect(db_path)
     try:
         assert conn.execute("PRAGMA journal_mode=WAL").fetchone()[0].lower() == "wal"
-        with caplog.at_level("ERROR", logger="hermes_state"):
+        with caplog.at_level("ERROR", logger="zeus_state"):
             result = apply_wal_with_fallback(
                 conn, db_label="existing-wal.db", require_wal=True
             )
@@ -283,8 +283,8 @@ def test_real_db_openers_honor_configured_delete(monkeypatch, tmp_path):
     from cron import executions
     from gateway import delivery_ledger
     from gateway.platforms.api_server import ResponseStore
-    from hermes_cli import projects_db
-    from hermes_cli import kanban_db_connect as kbc
+    from zeus_cli import projects_db
+    from zeus_cli import kanban_db_connect as kbc
     from persistence.sqlite._holder import StoreHolder
     from persistence_assembly import open_persistence_reader
     from plugins.platforms.discord.recovery import DiscordRecoveryStore
@@ -313,7 +313,7 @@ def test_real_db_openers_honor_configured_delete(monkeypatch, tmp_path):
     finally:
         cron_conn.close()
 
-    discord = DiscordRecoveryStore(hermes_home=tmp_path)
+    discord = DiscordRecoveryStore(zeus_home=tmp_path)
     observed["discord_recovery"] = discord.call(
         lambda conn: conn.execute("PRAGMA journal_mode").fetchone()[0].lower()
     )
@@ -380,5 +380,5 @@ def test_discord_recovery_ledger_skips_a_deleted_or_renamed_profile_home(tmp_pat
     from tests.fixtures.dead_profile_home import dead_named_home
 
     home = dead_named_home(tmp_path, move)
-    assert DiscordRecoveryStore(hermes_home=home).call(lambda conn: "wrote", default="skipped") == "skipped"
+    assert DiscordRecoveryStore(zeus_home=home).call(lambda conn: "wrote", default="skipped") == "skipped"
     assert not home.exists()

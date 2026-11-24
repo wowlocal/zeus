@@ -5,15 +5,15 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
-from hermes_constants import mark_named_profile_deleted
+from zeus_constants import mark_named_profile_deleted
 
 MOVES = ("delete", "rename")
 
 
 def dead_named_home(root: Path, move: str) -> Path:
-    """Build ``<root>/.hermes/profiles/b``, then delete it (tombstone + rmtree) or rename it to ``c``;
+    """Build ``<root>/.zeus/profiles/b``, then delete it (tombstone + rmtree) or rename it to ``c``;
     return the old ``b`` path, which must stay absent after any write."""
-    home = root / ".hermes" / "profiles" / "b"
+    home = root / ".zeus" / "profiles" / "b"
     home.mkdir(parents=True)
     (home / "config.yaml").write_text("{}\n", encoding="utf-8")
     if move == "delete":

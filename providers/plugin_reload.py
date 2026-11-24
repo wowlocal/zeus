@@ -1,4 +1,4 @@
-"""Load ``$HERMES_HOME`` provider plugins into a home layer, and swap in an updated one whole (#153300).
+"""Load ``$ZEUS_HOME`` provider plugins into a home layer, and swap in an updated one whole (#153300).
 
 A provider plugin used to be imported once per process. An update then never reached a running gateway, and a
 plugin importing part of its package on first use (inside ``create_client``) read that one file from the new
@@ -11,7 +11,7 @@ in ``sys.modules`` with its ``__path__`` on its own copy, so anything built from
 imports even its not-yet-loaded files from that version: every object runs one version end to end, never a mix.
 
 The copies are read for the whole life of the process, so they live under ``<root>/runtime/provider-plugins`` (the
-Hermes root, which deleting a profile never removes) and not in a temp dir that is cleaned by age (#156493). A
+Zeus root, which deleting a profile never removes) and not in a temp dir that is cleaned by age (#156493). A
 process that takes the setup lock makes an ``owned-`` root and holds an OS lock on its ``owner.lock`` until it exits;
 the next such process reclaims the owned roots whose lock file nobody holds: their process is gone, killed or
 crashed included. Creating a root and that sweep run under the setup lock, so a sweep never sees a root its owner has
@@ -33,15 +33,15 @@ import threading
 import uuid
 from pathlib import Path
 
-from hermes_cli.home_data_layout import PROVIDER_PLUGIN_SNAPSHOT_PARTS
-from hermes_constants import get_default_hermes_root, mkdir_under_hermes_home
+from zeus_cli.home_data_layout import PROVIDER_PLUGIN_SNAPSHOT_PARTS
+from zeus_constants import get_default_zeus_root, mkdir_under_zeus_home
 
 logger = logging.getLogger(__name__)
 
 # Directories inside a plugin tree that never hold code the provider imports.
 _SKIP_DIRS = frozenset({"__pycache__", ".git", "node_modules", "tests", "evals", ".venv"})
 _SNAPSHOT_IGNORE = shutil.ignore_patterns("__pycache__", ".git", "node_modules", ".venv")
-# The directory is Hermes-private, and these names are reserved in it. A sweep reclaims "owned-" roots (made under
+# The directory is Zeus-private, and these names are reserved in it. A sweep reclaims "owned-" roots (made under
 # the setup lock) once their owner.lock exists and nobody holds it, and finishes "_REAPING_PREFIX" claims; entries
 # under any other name are never touched.
 _OWNED_PREFIX = "owned-"
@@ -108,7 +108,7 @@ def _new_root() -> Path:
     when the setup lock is unavailable."""
     from pm.filesystem import lock_path
 
-    parent = mkdir_under_hermes_home(get_default_hermes_root().joinpath(*PROVIDER_PLUGIN_SNAPSHOT_PARTS))
+    parent = mkdir_under_zeus_home(get_default_zeus_root().joinpath(*PROVIDER_PLUGIN_SNAPSHOT_PARTS))
     try:
         setup_fd = lock_path(parent / _SETUP_LOCK, timeout=_SETUP_WAIT_SECONDS)
     except PermissionError:  # another user's lock file: a home shared across UIDs

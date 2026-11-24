@@ -22,13 +22,13 @@ async def test_recovered_route_read_off_loop_and_egress_primed_on_loop(tmp_path,
     from gateway.run_runtime import recover_profile_native_sessions
     from gateway.session_authority import SessionAuthority, initialize_session_authority
     from gateway.session_ingress_context import native_callback, register_transport_home
-    from hermes_constants import get_hermes_home
+    from zeus_constants import get_zeus_home
     from tests.gateway.test_command_bypass_active_session import _StubAdapter
 
-    monkeypatch.setenv('HERMES_HOME', str(tmp_path))
+    monkeypatch.setenv('ZEUS_HOME', str(tmp_path))
     monkeypatch.setenv('TELEGRAM_ALLOWED_USERS', '42')
-    monkeypatch.setattr('gateway.run._hermes_home', tmp_path)
-    monkeypatch.setattr('hermes_state.DEFAULT_DB_PATH', tmp_path / 'state.db')
+    monkeypatch.setattr('gateway.run._zeus_home', tmp_path)
+    monkeypatch.setattr('zeus_state.DEFAULT_DB_PATH', tmp_path / 'state.db')
     runner = GatewayRunner(GatewayConfig(multiplex_profiles=False, sessions_dir=tmp_path / 'sessions'))
     adapter = _StubAdapter(PlatformConfig(enabled=True, token='fixture', typing_indicator=False), Platform.TELEGRAM)
     loop_thread = threading.get_ident()
@@ -51,7 +51,7 @@ async def test_recovered_route_read_off_loop_and_egress_primed_on_loop(tmp_path,
     first._schedule = lambda ref: None
     first.register(source)
     head = MessageEvent(text='queued while the owner went away', source=source, message_id='head')
-    with native_callback(runner, head, get_hermes_home()):
+    with native_callback(runner, head, get_zeus_home()):
         await first.admit_native(head)
 
     recovered = await initialize_session_authority(runner, profile_id=str(tmp_path), instance_id='new')

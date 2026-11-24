@@ -15,7 +15,7 @@ from persistence.conversation.messages import NewMessage
 def _observe(monkeypatch, records):
     from gateway.session_authority import SessionAuthority
     from gateway.session_local import LocalSessionAdapter
-    from hermes_constants import get_hermes_home
+    from zeus_constants import get_zeus_home
     targets = [
         ('gateway.session_local_adoption', '_due'),
         ('gateway.session_local_recovery', 'local_receipt_ids'),
@@ -33,7 +33,7 @@ def _observe(monkeypatch, records):
         original = getattr(target, name)
 
         def call(*args, **kwargs):
-            records.append((name, threading.get_ident(), str(get_hermes_home())))
+            records.append((name, threading.get_ident(), str(get_zeus_home())))
             return original(*args, **kwargs)
 
         monkeypatch.setattr(target, name, call)

@@ -6,7 +6,7 @@ and copies .debs into pool/<first-char>/.
 
 Usage:
   python stage_apt_repo.py --pool POOL_DIR --out OUT_DIR \
-      --suite hermes-stable|hermes-canary [--gpg-key-file PATH]
+      --suite zeus-stable|zeus-canary [--gpg-key-file PATH]
 
 Exit codes:
   0 - success
@@ -226,14 +226,14 @@ def existing_published(out_dir: Path, suite: str) -> set:
 def pool_subdir_suite(pool_subdir: str) -> str | None:
     """The APT suite a pool prefix may stage into, or None if it is not a claim tag.
 
-    A stable attempt ref (rc.<N>-vX.Y.Z) stages hermes-stable; a canary claim
-    (canary.<stamp>-vX.Y.Z, which is its own release tag) stages hermes-canary.
+    A stable attempt ref (rc.<N>-vX.Y.Z) stages zeus-stable; a canary claim
+    (canary.<stamp>-vX.Y.Z, which is its own release tag) stages zeus-canary.
     """
     if parse_attempt_ref(pool_subdir) is not None:
-        return "hermes-stable"
+        return "zeus-stable"
     match = RELEASE_TAG_RE.fullmatch(pool_subdir) if isinstance(pool_subdir, str) else None
     if match is not None and match.group("kind") == "canary" and "\n" not in pool_subdir:
-        return "hermes-canary"
+        return "zeus-canary"
     return None
 
 
@@ -289,9 +289,9 @@ def stage(
                 "Package": fields["Package"],
                 "Version": fields["Version"],
                 "Architecture": arch,
-                "Maintainer": fields.get("Maintainer", "Hermes Agent <noreply@nousresearch.com>"),
+                "Maintainer": fields.get("Maintainer", "ZeusAgent <noreply@nousresearch.com>"),
                 "Installed-Size": fields.get("Installed-Size", "0"),
-                "Description": fields.get("Description", "Hermes Agent"),
+                "Description": fields.get("Description", "ZeusAgent"),
                 "Filename": filename,
                 "Size": str(size),
                 "SHA256": sha256,
@@ -319,14 +319,14 @@ def stage(
     # line ends the record, and apt then never sees the hashes ("weak
     # security information"). One paragraph, no blank lines.
     release_fields = [
-        "Origin: Hermes Agent",
-        "Label: hermes-agent",
+        "Origin: ZeusAgent",
+        "Label: zeus-agent",
         f"Suite: {suite}",
         f"Codename: {suite}",
         f"Architectures: {ARCH}",
         f"Components: {COMPONENT}",
         "Acquire-By-Hash: yes",
-        f"Description: Hermes Agent apt repository ({suite})",
+        f"Description: ZeusAgent apt repository ({suite})",
         "Date: " + time.strftime("%a, %d %b %Y %H:%M:%S UTC", time.gmtime()),
     ]
     checksums = []
@@ -538,13 +538,13 @@ def main(argv: list | None = None) -> int:
     ap = argparse.ArgumentParser(description="Stage a static APT repo layout.")
     ap.add_argument("--pool", required=True, type=Path)
     ap.add_argument("--out", required=True, type=Path)
-    # hermes-nightly is the suite actually published today
+    # zeus-nightly is the suite actually published today
     # (https://hermes-assets.nousresearch.com/releases/termux/nightly/,
-    # verified 2026-09-06); hermes-stable/hermes-canary are what CI stages
+    # verified 2026-09-06); zeus-stable/zeus-canary are what CI stages
     # for the stable/canary channels.
     ap.add_argument(
         "--suite", required=True,
-        choices=["hermes-stable", "hermes-canary", "hermes-nightly"],
+        choices=["zeus-stable", "zeus-canary", "zeus-nightly"],
     )
     ap.add_argument("--gpg-key-file", type=Path, default=None)
     ap.add_argument("--pool-subdir", default="")

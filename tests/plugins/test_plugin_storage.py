@@ -1,6 +1,6 @@
 """Tests for the per-plugin durable storage convention (plugins/plugin_storage).
 
-The contract under test: data lives under ``<hermes home>/plugin-data/<name>/``
+The contract under test: data lives under ``<zeus home>/plugin-data/<name>/``
 (NOT the ``plugins/<name>/`` install tree), names that could escape the root
 are rejected, and the sqlite helper opens a WAL-mode connection inside the
 data dir.
@@ -10,37 +10,37 @@ from __future__ import annotations
 
 import pytest
 
-from hermes_constants import reset_hermes_home_override, set_hermes_home_override
+from zeus_constants import reset_zeus_home_override, set_zeus_home_override
 from plugins.plugin_storage import plugin_data_dir, plugin_db
 from tests.fixtures.dead_profile_home import MOVES, dead_named_home
 
 
 @pytest.fixture
-def hermes_home(tmp_path):
-    token = set_hermes_home_override(str(tmp_path))
+def zeus_home(tmp_path):
+    token = set_zeus_home_override(str(tmp_path))
     try:
         yield tmp_path
     finally:
-        reset_hermes_home_override(token)
+        reset_zeus_home_override(token)
 
 
-def test_data_dir_lives_outside_the_install_tree(hermes_home):
+def test_data_dir_lives_outside_the_install_tree(zeus_home):
     root = plugin_data_dir("my-plugin")
 
-    assert root == hermes_home / "plugin-data" / "my-plugin"
+    assert root == zeus_home / "plugin-data" / "my-plugin"
     assert root.is_dir()
     # The invariant that motivated the module: data must not live under the
-    # install tree that `hermes plugins remove` deletes.
-    assert (hermes_home / "plugins") not in root.parents
+    # install tree that `zeus plugins remove` deletes.
+    assert (zeus_home / "plugins") not in root.parents
 
 
 @pytest.mark.parametrize("bad", ["", ".", "..", "../escape", "a/b", "a\\b", "x" * 65])
-def test_hostile_names_are_rejected(hermes_home, bad):
+def test_hostile_names_are_rejected(zeus_home, bad):
     with pytest.raises(ValueError):
         plugin_data_dir(bad)
 
 
-def test_plugin_db_journal_mode_is_the_shared_fallback_verdict(hermes_home):
+def test_plugin_db_journal_mode_is_the_shared_fallback_verdict(zeus_home):
     """Plugin DBs take the journal mode the core WAL helper decides for this SQLite build and
     filesystem (WAL normally; DELETE on WAL-reset-bug builds or network FS) — never a raw PRAGMA."""
     from sqlite_support import is_sqlite_wal_reset_vulnerable
@@ -56,10 +56,10 @@ def test_plugin_db_journal_mode_is_the_shared_fallback_verdict(hermes_home):
     finally:
         conn.close()
 
-    assert (hermes_home / "plugin-data" / "board" / "data.db").exists()
+    assert (zeus_home / "plugin-data" / "board" / "data.db").exists()
 
 
-def test_plugin_db_rejects_path_shaped_filenames(hermes_home):
+def test_plugin_db_rejects_path_shaped_filenames(zeus_home):
     with pytest.raises(ValueError):
         plugin_db("board", filename="../outside.db")
     with pytest.raises(ValueError):
@@ -69,10 +69,10 @@ def test_plugin_db_rejects_path_shaped_filenames(hermes_home):
 @pytest.mark.parametrize("move", MOVES)
 def test_data_dir_refuses_a_deleted_or_renamed_profile_home(tmp_path, move):
     home = dead_named_home(tmp_path, move)
-    token = set_hermes_home_override(str(home))
+    token = set_zeus_home_override(str(home))
     try:
         with pytest.raises(FileNotFoundError, match="Named profile home does not exist"):
             plugin_data_dir("my-plugin")
     finally:
-        reset_hermes_home_override(token)
+        reset_zeus_home_override(token)
     assert not home.exists()

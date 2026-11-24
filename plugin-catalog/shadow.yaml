@@ -6,7 +6,7 @@ description: "Find out which model is better at your work, from your real prompt
 maintainer: salch-cred
 tier: community
 category: models
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 docs_url: https://github.com/salch-cred/shadow
 version: "0.1.1"
 image: https://raw.githubusercontent.com/salch-cred/shadow/15a4808a71c6eed86add78aad74a5f7b84eb3c46/docs/assets/catalog.jpg

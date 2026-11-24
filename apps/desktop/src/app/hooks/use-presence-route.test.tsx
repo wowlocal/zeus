@@ -4,7 +4,7 @@ import { act, cleanup, render } from '@testing-library/react'
 import { HashRouter, type NavigateFunction, useNavigate } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { HermesGateway } from '@/api/client'
+import { ZeusGateway } from '@/api/client'
 import { createClientSessionState } from '@/lib/chat-runtime'
 import { $gateway } from '@/store/gateway'
 import { setNativeNotifyEnabled, setNativeNotifyKind } from '@/store/native-notifications'
@@ -79,7 +79,7 @@ function Told() {
 }
 
 async function chatOpenWithInput(told: boolean) {
-  const gateway = new HermesGateway()
+  const gateway = new ZeusGateway()
   const connected = gateway.connect('ws://example.invalid/api/ws')
   const socket = Sock.sockets.at(-1)!
   socket.open()

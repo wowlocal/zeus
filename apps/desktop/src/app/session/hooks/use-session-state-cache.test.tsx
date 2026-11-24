@@ -448,7 +448,7 @@ describe('useSessionStateCache — journal migration on stored-id rotation', () 
     })
 
     const journalKey = (storedSessionId: string) =>
-      `hermes.desktop.inflightTurnJournal.v2:${encodeURIComponent(storedSessionId)}`
+      `zeus.desktop.inflightTurnJournal.v2:${encodeURIComponent(storedSessionId)}`
 
     expect(window.localStorage.getItem(journalKey('stored-A'))).not.toBeNull()
 
@@ -699,7 +699,7 @@ describe('useSessionStateCache — per-session timers', () => {
     // provider in the model menu.
     setCurrentModel('claude-opus-5')
     setCurrentProvider('anthropic')
-    expect(window.localStorage.getItem('hermes.desktop.composer.provider')).toBe('anthropic')
+    expect(window.localStorage.getItem('zeus.desktop.composer.provider')).toBe('anthropic')
 
     let cache!: Cache
 
@@ -719,7 +719,7 @@ describe('useSessionStateCache — per-session timers', () => {
     expect($currentProvider.get()).toBe('custom')
     // ...but the user's persisted composer selection must survive the
     // heartbeat, so a fresh chat still follows it instead of `custom`.
-    expect(window.localStorage.getItem('hermes.desktop.composer.provider')).toBe('anthropic')
+    expect(window.localStorage.getItem('zeus.desktop.composer.provider')).toBe('anthropic')
   })
 })
 

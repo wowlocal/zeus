@@ -31,7 +31,7 @@ class DiscordCommandSyncMixin:
     _sleep_between_command_sync_mutations: Callable[[], Awaitable[None]]
 
     def _canonicalize_app_command_payload(self, payload: dict[str, Any]) -> dict[str, Any]:
-        """Reduce command payloads to the semantic fields Hermes manages."""
+        """Reduce command payloads to the semantic fields Zeus manages."""
         contexts = payload.get("contexts")
         integration_types = payload.get("integration_types")
         return {

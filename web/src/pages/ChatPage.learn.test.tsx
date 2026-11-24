@@ -197,12 +197,12 @@ beforeEach(() => {
       removeEventListener() {},
     },
   });
-  Object.defineProperty(window, "__HERMES_SESSION_TOKEN__", {
+  Object.defineProperty(window, "__ZEUS_SESSION_TOKEN__", {
     configurable: true,
     value: "test-token",
     writable: true,
   });
-  Object.defineProperty(window, "__HERMES_AUTH_REQUIRED__", {
+  Object.defineProperty(window, "__ZEUS_AUTH_REQUIRED__", {
     configurable: true,
     value: false,
     writable: true,

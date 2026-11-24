@@ -6,7 +6,7 @@ description: "Receipts for agent claims: checks the success claims in each final
 maintainer: cryptobandit
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_zeus: ">=0.22.0"
 docs_url: https://gitlab.com/cryptobandit/hermes-claim-check#readme
 version: "0.1.0"
 readme: true

@@ -28,9 +28,9 @@ export type BrowserPortalLayer = 'menu' | 'select' | 'tooltip'
 // #150729). Portaling into a full-viewport fixed host with `contain: layout`
 // gives Floating UI a real element containing block whose `getScale()` equals
 // the active CSS zoom so every Radix primitive scales natively. Native Desktop
-// leaves `data-hermes-desktop-host` unset and keeps Radix's default body portal.
+// leaves `data-zeus-desktop-host` unset and keeps Radix's default body portal.
 export function getBrowserPortalContainer(layer: BrowserPortalLayer): HTMLElement | undefined {
-  if (typeof document === 'undefined' || document.documentElement.dataset.hermesDesktopHost !== 'browser') {
+  if (typeof document === 'undefined' || document.documentElement.dataset.zeusDesktopHost !== 'browser') {
     return undefined
   }
 

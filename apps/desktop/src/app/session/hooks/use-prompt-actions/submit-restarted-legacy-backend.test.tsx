@@ -5,7 +5,7 @@ import { actRender, Harness, type HarnessHandle } from './index-test-utils'
 import { clearStoredJournal } from './prepared-submissions-test-utils'
 import { clearSingleFlightSessionResumeState } from './single-flight-resume'
 
-vi.mock('@/hermes', () => ({
+vi.mock('@/zeus', () => ({
   getLatestSessionMessages: vi.fn(async () => ({ messages: [], session_id: 'session' })),
   getProfiles: vi.fn(async () => ({ profiles: [] })),
   getSession: vi.fn(),
@@ -22,14 +22,14 @@ vi.mock('@/store/gateway', async importOriginal => ({
 beforeEach(() => {
   clearSingleFlightSessionResumeState()
   clearStoredJournal()
-  window.localStorage.removeItem('hermes.desktop.composerQueue.v1')
+  window.localStorage.removeItem('zeus.desktop.composerQueue.v1')
 })
 
 afterEach(cleanup)
 
 // A message held in the queue while its profile's backend restarts (use-composer-submit) drains the
 // moment the backend is back, still naming the chat's runtime id from before the restart: the new
-// backend process does not know it. A backend on the `hermes serve` contract also refuses
+// backend process does not know it. A backend on the `zeus serve` contract also refuses
 // `submission_id` (4000), so the send goes: with the id -> 4000, without it -> "session not found"
 // (4001). Both are refused before admission, so nothing ran: the resumed session takes the message.
 it('a queued send to a restarted legacy backend recovers the session and is sent once', async () => {
@@ -51,7 +51,7 @@ it('a queued send to a restarted legacy backend recovers the session and is sent
     if ('submission_id' in params!) {
       throw Object.assign(
         new Error(
-          'invalid params for prompt.submit: submission_id: Extra inputs are not permitted — the client and the Hermes backend are out of sync (different versions)'
+          'invalid params for prompt.submit: submission_id: Extra inputs are not permitted — the client and the Zeus backend are out of sync (different versions)'
         ),
         { code: 4000 }
       )

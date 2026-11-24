@@ -6,7 +6,7 @@ description: "Health export, structured diagnostics, fleet queries and how to ex
 # Gateway Monitoring
 
 Service health monitoring plus structured operational diagnostics for the
-Hermes gateway daemon, exported over OTLP/HTTP to an operator-configured
+Zeus gateway daemon, exported over OTLP/HTTP to an operator-configured
 endpoint (OpenTelemetry Collector, DataDog, or any OTLP receiver).
 
 This plane is content-free by construction. It exports gateway and cron
@@ -14,14 +14,14 @@ lifecycle state, platform connector health, and content-free warning/error
 diagnostics. It never exports prompts, messages, tool arguments or results,
 job names, destinations, schedules, raw errors, session history, usage
 analytics, audit logs, or detailed execution traces. Run/model/tool trajectory
-capture is a separate plane served by Hermes's native NeMo Relay SDK
+capture is a separate plane served by Zeus's native NeMo Relay SDK
 integration and explicitly configured Relay subscribers or exporters.
 
 ## What gets exported
 
 | Signal | OTLP route | Content |
 | --- | --- | --- |
-| Gateway gauges | `/v1/metrics` | `hermes.gateway.up/state/busy/drainable/active_agents/background_work/background_delegations/restart_requested`, `hermes.platform.up/degraded` with bounded `error_code` attributes |
+| Gateway gauges | `/v1/metrics` | `zeus.gateway.up/state/busy/drainable/active_agents/background_work/background_delegations/restart_requested`, `zeus.platform.up/degraded` with bounded `error_code` attributes |
 | Health/lifecycle events | `/v1/traces` | `gateway.lifecycle` state transitions (`starting -> running -> draining -> stopped`, `startup_failed`, exit), `gateway.health_snapshot`, platform state changes |
 | Diagnostics | `/v1/logs` | Warning/error gateway events with a constant body and bounded subsystem, severity, error class, and error code attributes; rendered log messages are never exported |
 | Cron scheduler gauges | `/v1/metrics` | Ticker heartbeat and last-success age (omitted when unavailable), a monotonic catch-up-occurrence count from the scheduler's stale-window branch, enabled/running job counts, and overdue count derived from persisted `next_run_at` plus the scheduler's existing grace rule |
@@ -31,8 +31,8 @@ Signals carry `service.name`, version, supervision mode, and a stable one-way
 hash of the install id so an operator can distinguish instances without
 exporting account/profile identity or the raw install identifier.
 
-`hermes.gateway.active_agents`, `hermes.gateway.background_work`, and
-`hermes.gateway.background_delegations` are complementary. `active_agents`
+`zeus.gateway.active_agents`, `zeus.gateway.background_work`, and
+`zeus.gateway.background_delegations` are complementary. `active_agents`
 counts foreground message turns plus in-flight cron jobs plus API runs — the
 work the gateway drains on shutdown. `background_work` counts detached work that
 `active_agents` never includes: backgrounded `delegate_task` subagents,
@@ -62,7 +62,7 @@ monitoring:
 Check the posture any time:
 
 ```bash
-hermes monitoring status
+zeus monitoring status
 ```
 
 The OpenTelemetry SDK belongs to the `otlp` extra and installs on first use
@@ -73,7 +73,7 @@ off the hot path, while terminal cron events make one bounded fail-open flush
 attempt of up to one second so the final state is less likely to be lost.
 
 Works identically under systemd/launchd/s6 supervision, containers, tmux, or
-a plain `hermes gateway run`: the exporter lives in the gateway process, so
+a plain `zeus gateway run`: the exporter lives in the gateway process, so
 no sidecar, agent, or collector is required on the host.
 
 ## Collecting into DataDog
@@ -98,7 +98,7 @@ service:
 ```
 
 Point `monitoring.export.otlp.endpoint` at the collector. Alerts belong on
-`hermes.gateway.up`, `hermes.platform.up`, and `hermes.platform.degraded`.
+`zeus.gateway.up`, `zeus.platform.up`, and `zeus.platform.degraded`.
 
 ## Generic fleet queries and alerts
 
@@ -112,36 +112,36 @@ explicit-state and missing-series detection.
 
 ```promql
 # Explicit gateway failure.
-hermes_gateway_up == 0
+zeus_gateway_up == 0
 
 # Box disappeared or stopped exporting. Choose a window longer than the
 # configured export interval and collector retry allowance.
-absent_over_time(hermes_gateway_up[5m])
+absent_over_time(zeus_gateway_up[5m])
 
 # Locally owned bridge is explicitly down.
-hermes_platform_up == 0
+zeus_platform_up == 0
 
 # Scheduler thread is stale even though the gateway may still be alive.
-hermes_cron_scheduler_heartbeat_age_seconds > 180
+zeus_cron_scheduler_heartbeat_age_seconds > 180
 
 # Ticker loops but has not completed a successful tick recently.
-hermes_cron_scheduler_last_success_age_seconds > 300
+zeus_cron_scheduler_last_success_age_seconds > 300
 
 # One or more jobs are beyond their existing scheduler grace window.
-hermes_cron_jobs_overdue > 0
+zeus_cron_jobs_overdue > 0
 
 # Catch-up counter increased, proving at least one stale occurrence was
 # collapsed and run once after a delay.
-increase(hermes_cron_scheduler_catch_up_occurrences[15m]) > 0
+increase(zeus_cron_scheduler_catch_up_occurrences[15m]) > 0
 ```
 
-Cron execution lifecycle records arrive as `hermes.cron_execution` spans.
+Cron execution lifecycle records arrive as `zeus.cron_execution` spans.
 Alert or derive events from bounded attributes such as:
 
 ```text
-hermes.status = failed|unknown
-hermes.delivery_outcome = failed|not_configured
-hermes.error_class = auth_failed|rate_limited|timeout|network_error|
+zeus.status = failed|unknown
+zeus.delivery_outcome = failed|not_configured
+zeus.error_class = auth_failed|rate_limited|timeout|network_error|
                      dispatch_failed|interrupted|empty_response|
                      invalid_config|unknown
 ```
@@ -152,7 +152,7 @@ Recommended operator views:
    state;
 2. scheduler heartbeat, last-success age, running count, overdue count, and
    catch-up increase;
-3. a cron lifecycle feed keyed only by opaque `hermes.job_key`;
+3. a cron lifecycle feed keyed only by opaque `zeus.job_key`;
 4. separate alerts for box absence, local bridge down, scheduler stale, cron
    failed/unknown, delivery failure, and overdue/catch-up activity.
 
@@ -177,7 +177,7 @@ collector and backend:
 5. **Killed gateway:** terminate one canary, verify missing-series detection,
    restart it, and confirm the same opaque instance identity returns.
 
-Hermes Agent-owned Relay transport health remains in scope. A separate gateway
+ZeusAgent-owned Relay transport health remains in scope. A separate gateway
 or connector service remains authoritative for any shared connected-platform
 state that it owns and should export that state through its own telemetry path.
 
@@ -190,13 +190,13 @@ spans, logs, and resource attributes remain content-free.
 ```bash
 # terminal 1: capture collector on :4318
 python scripts/observability/otel_capture_collector.py \
-  --host 127.0.0.1 --port 4318 --log ~/.hermes/cache/scratch/hermes_otel_capture.jsonl
+  --host 127.0.0.1 --port 4318 --log ~/.zeus/cache/scratch/zeus_otel_capture.jsonl
 
 # terminal 2: drive the real exporter through lifecycle transitions,
 # a fatal platform, and a structured warning event, then flush
 python scripts/observability/gateway_health_export_probe.py \
   --endpoint http://127.0.0.1:4318/v1/traces \
-  --log ~/.hermes/cache/scratch/hermes_otel_capture.jsonl --wait 8
+  --log ~/.zeus/cache/scratch/zeus_otel_capture.jsonl --wait 8
 # exit 0 prints: {"requests": 6, "paths": ["/v1/logs", "/v1/metrics", "/v1/traces"]}
 ```
 
@@ -267,7 +267,7 @@ classifier, never one without the other:
 Rules: keep the vocabulary SMALL and operationally meaningful (an error class
 should map to an operator action, not to an exception subclass); a new bucket
 must match on a stable keyword, not on message text that could vary; update the
-`hermes.error_class = ...` list in this file's alert section and the enum's unit
+`zeus.error_class = ...` list in this file's alert section and the enum's unit
 test so the contract is asserted, not frozen as a count.
 
 ### Adding a content-free attribute to an existing event/span
@@ -286,10 +286,10 @@ emitter attribute allowlist, and any collector allowlist each drop unlisted
 values with no error:
 
 ```bash
-hermes monitoring status                 # posture
+zeus monitoring status                 # posture
 python scripts/observability/gateway_health_export_probe.py \
   --endpoint http://127.0.0.1:4318/v1/traces \
-  --log ~/.hermes/cache/scratch/cap.jsonl --wait 8          # drive the real exporter
+  --log ~/.zeus/cache/scratch/cap.jsonl --wait 8          # drive the real exporter
 ```
 
 Decode the captured OTLP payload and assert the new name/attribute is present
@@ -318,7 +318,7 @@ When it suspends its own machine under scale-to-zero, it starts one more
 - **Not passed on.** The URL, like `GATEWAY_RELAY_SLEEP_URL`, is removed from
   the environment of the processes the gateway starts for the agent (the
   terminal tool, agent and delivery workers). A gateway it starts or restarts
-  inherits the ones it was launched with, and so does `hermes update`, which
+  inherits the ones it was launched with, and so does `zeus update`, which
   restarts gateways. A profile's own `GATEWAY_RELAY_SLEEP_URL` still wins for that
   profile's gateway. A gateway started by hand from the terminal tool does not
   inherit either; it still loads a sleep URL set in its profile's `.env`.
@@ -359,9 +359,9 @@ code is `gateway/status_report/`.
 
 ## Boundaries and roadmap
 
-The `hermes monitoring` CLI intentionally exposes `status` only. This first
-release covers only Hermes Agent-owned service-health and operational-diagnostic
-signals, including Hermes Agent-owned Relay transport health. Team Gateway's
+The `zeus monitoring` CLI intentionally exposes `status` only. This first
+release covers only ZeusAgent-owned service-health and operational-diagnostic
+signals, including ZeusAgent-owned Relay transport health. Team Gateway's
 authoritative shared connector/platform state is explicitly out of scope, as
 are product analytics, audit/quality reporting, and detailed execution traces.
 Shared client usage metrics and enterprise trace telemetry are being designed on

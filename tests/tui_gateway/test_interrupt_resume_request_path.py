@@ -1,11 +1,11 @@
 """Which contract checks a pausing ``session.interrupt``, by the socket it arrives on.
 
 The caller that pauses a turn (``resume: true``) is a host plugin's launcher. It writes the frame on the socket it
-relays to the backend it launched, a ``hermes serve`` (``--isolated``). That app has no session authority, so
+relays to the backend it launched, a ``zeus serve`` (``--isolated``). That app has no session authority, so
 ``tui_gateway.ws`` hands every frame to ``server.dispatch`` and the standalone contract (``SessionInterruptParams``)
 checks it: ``resume`` is taken there and the turn's ``message.complete`` says ``paused``.
 
-A gateway-owned socket (``hermes-gateway-v1``, the Desktop's own dial to the local gateway) checks the same method
+A gateway-owned socket (``zeus-gateway-v1``, the Desktop's own dial to the local gateway) checks the same method
 name against the canonical contract (``CanonicalControlParams``), which is a closed key set without ``resume``:
 it answers ``4001 invalid_params`` and stops nothing. Nothing sends ``resume`` there; a caller that pauses a
 gateway-owned turn needs the canonical contract extended first.
@@ -36,7 +36,7 @@ def pause_frame(sid: str, **extra) -> dict:
 
 
 class Socket:
-    """A WebSocket of an app without a session authority (``hermes serve``)."""
+    """A WebSocket of an app without a session authority (``zeus serve``)."""
 
     def __init__(self):
         self.inbound: asyncio.Queue = asyncio.Queue()

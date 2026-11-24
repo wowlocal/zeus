@@ -3,11 +3,11 @@ title: Cutout
 image: https://raw.githubusercontent.com/TakeshiTGAL/hermes-plugin-cutout/e58247e2806722c0132994f9d3c97471939af54c/assets/catalog-banner.png
 repo: https://github.com/TakeshiTGAL/hermes-plugin-cutout
 sha: e58247e2806722c0132994f9d3c97471939af54c
-description: "Cutout returns one transparent PNG. Disclosure — on first use downloads the u2netp background model (about 4.6 MB) from rembg's GitHub release, checks its sha256 and keeps it in HERMES_HOME/models/cutout; the photo is processed on your machine and never uploaded. Each write asks for approval and creates one new PNG in any folder you name without overwriting an existing file. On chat platforms that can show files the reply gains a MEDIA line for that PNG. Enabling installs rembg and onnxruntime."
+description: "Cutout returns one transparent PNG. Disclosure — on first use downloads the u2netp background model (about 4.6 MB) from rembg's GitHub release, checks its sha256 and keeps it in ZEUS_HOME/models/cutout; the photo is processed on your machine and never uploaded. Each write asks for approval and creates one new PNG in any folder you name without overwriting an existing file. On chat platforms that can show files the reply gains a MEDIA line for that PNG. Enabling installs rembg and onnxruntime."
 maintainer: TakeshiTGAL
 tier: community
 category: tools
-requires_hermes: ">=0.21.6"
+requires_zeus: ">=0.21.6"
 docs_url: https://github.com/TakeshiTGAL/hermes-plugin-cutout#readme
 screenshots:
   - https://raw.githubusercontent.com/TakeshiTGAL/hermes-plugin-cutout/e58247e2806722c0132994f9d3c97471939af54c/assets/before-after.png

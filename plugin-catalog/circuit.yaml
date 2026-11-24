@@ -7,7 +7,7 @@ description: "Design real PCBs by talking to your agent — a two-layer board co
 maintainer: odtboun
 tier: community
 category: tools
-requires_hermes: ">=0.21.5"
+requires_zeus: ">=0.21.5"
 docs_url: https://github.com/odtboun/hermes-circuit#readme
 version: "1.0.0"
 image: https://raw.githubusercontent.com/odtboun/hermes-circuit/da20db3ca15193ece9fec49eff8f6be0a803b0da/docs/assets/catalog-banner.png

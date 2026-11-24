@@ -9,7 +9,7 @@ from pathlib import Path
 import subprocess
 import tempfile
 
-from hermes_cli.release_channels import (
+from zeus_cli.release_channels import (
     ChannelError, build_prefix, canonical_json, validate_identity,
 )
 from scripts.bundles.channel_artifacts import assemble
@@ -34,8 +34,8 @@ def select_channel(publisher: ChannelPublisher, policy: str) -> str:
 
 def product_identity(tag: str, run=subprocess.check_output) -> dict:
     """Consume the packager's identity, not a Python copy of its naming rules."""
-    env = dict(os.environ, HERMES_DESKTOP_VARIANT="bundled", HERMES_PAYLOAD_TAG=tag)
-    for key in ("HERMES_BUILD_COMMIT", "_HERMES_CHANNEL_REQUEST_JSON"):
+    env = dict(os.environ, ZEUS_DESKTOP_VARIANT="bundled", ZEUS_PAYLOAD_TAG=tag)
+    for key in ("ZEUS_BUILD_COMMIT", "_ZEUS_CHANNEL_REQUEST_JSON"):
         env.pop(key, None)
     raw = run(["node", "-e", "console.log(JSON.stringify(require('./apps/desktop/product-identity.cjs')))"],
               env=env, text=True, encoding="utf-8", timeout=30)
@@ -117,8 +117,8 @@ def admit_transaction(policy: str, env: dict, *, require_published: bool = False
                       run=stable.output) -> tuple[str, str]:
     """A callable CLI is not permission to bypass the existing workflow gate."""
     from scripts.releases.semver import is_release_version
-    from hermes_cli.release_channels import require_commit, validate_repository
-    from hermes_cli.update_channel import is_canary_tag, release_version
+    from zeus_cli.release_channels import require_commit, validate_repository
+    from zeus_cli.update_channel import is_canary_tag, release_version
 
     repository = validate_repository(env.get("GITHUB_REPOSITORY"))
     tag = env.get("RELEASE_TAG", "")
@@ -195,7 +195,7 @@ def admit_transaction(policy: str, env: dict, *, require_published: bool = False
 def accepted_stable(publisher: ChannelPublisher, env: dict, tag: str, commit: str,
                     release_epoch: int, *, lanes: frozenset[str]) -> dict:
     """Read the accepted candidate from the attempt-scoped release archive."""
-    from hermes_cli.release_channels import decode_json, require_sha256
+    from zeus_cli.release_channels import decode_json, require_sha256
 
     parsed = parse_attempt_ref(tag)
     payload_tag = f"v{parsed[0]}" if parsed else tag
@@ -265,11 +265,11 @@ def promote_stable_feeds(candidate: dict, root: Path, public_base: str) -> None:
 
 def verify_bootstrap(request: dict, manifest: dict, base: str, repository: str) -> bool:
     """Bootstrap from published release outputs, never caller attestations."""
-    from hermes_cli.release_channels import ChannelReader, decode_json
+    from zeus_cli.release_channels import ChannelReader, decode_json
     tag = request.get("releaseTag", "")
     if not tag or manifest.get("request") != request:
         raise ChannelError("Bootstrap requires published release metadata")
-    from hermes_cli.update_channel import is_canary_tag
+    from zeus_cli.update_channel import is_canary_tag
     canary = is_canary_tag(tag)
     reader = ChannelReader(base, repository)
     payload_tag = tag
@@ -405,7 +405,7 @@ def publish_release(policy: str, env: dict, root: Path) -> dict:
         return accepted_stable(publisher, env, tag, commit, release_epoch,
                                lanes=accepted_lanes) == accepted
 
-    from hermes_cli.update_channel import release_version, tag_core
+    from zeus_cli.update_channel import release_version, tag_core
 
     source_version, version = tag_core(payload_tag), release_version(payload_tag)
     if source_version is None or version is None:
@@ -448,7 +448,7 @@ def publish_release(policy: str, env: dict, root: Path) -> dict:
         if live is not None and live[0]["head"] is not None:
             live_build = live[0]["head"]["buildId"]
             if live_build != request["buildId"]:
-                from hermes_cli.update_channel import published_canary_timestamp
+                from zeus_cli.update_channel import published_canary_timestamp
                 previous = published_canary_timestamp(publisher.request(live_build)["releaseTag"])
                 candidate = published_canary_timestamp(payload_tag)
                 if previous is None or candidate is None or candidate <= previous:

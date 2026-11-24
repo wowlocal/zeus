@@ -6,7 +6,7 @@ description: Learned least-privilege for cron jobs. Observes what a job does, pr
 maintainer: JoeProAI
 tier: community
 category: automation
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 docs_url: https://github.com/JoeProAI/mandate#readme
 version: "0.1.0"
 readme: true

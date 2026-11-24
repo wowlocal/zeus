@@ -22,7 +22,7 @@ import zipfile
 
 import pytest
 
-from hermes_platform.resolver import locate_command
+from zeus_platform.resolver import locate_command
 from scripts.bundles import release_artifacts
 from scripts.releases import lanes, r2, stable
 
@@ -49,7 +49,7 @@ def _write_msix(path: Path, *, arch: str, version: str, identity: str, stamp: di
         '<Package xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10">'
         f'<Identity Name="{identity}" Publisher="CN=Nous Research" Version="{version}" '
         f'ProcessorArchitecture="{arch}" />'
-        '<Applications><Application Id="HermesBundled" Executable="app\\Hermes.exe" /></Applications>'
+        '<Applications><Application Id="ZeusBundled" Executable="app\\Zeus.exe" /></Applications>'
         '</Package>'
     )
     with zipfile.ZipFile(path, "w") as archive:
@@ -71,7 +71,7 @@ def _tree(files: dict[str, str]):
 # The claim readers' source text as the PR's first commit (bd507fa031) had it: before its
 # packaging could build a claim, so it must still build through the tagless path.
 READERS_WITHOUT_PACKAGING = {
-    "hermes_cli/update_channel.py": "def is_commit_tag(tag): return True\n",
+    "zeus_cli/update_channel.py": "def is_commit_tag(tag): return True\n",
     "scripts/msix-shared.mjs": "export const COMMIT_TAG_RE = /commit/\n",
     "scripts/termux/deb_version.py": 'r"^(?:(?P<kind>canary|commit)\\."\n',
 }
@@ -81,7 +81,7 @@ def test_verify_detects_pre_pr_commit_and_emits_legacy_flag(tmp_path, monkeypatc
     claim = {
         "claim_tag": COMMIT_TAG, "claim_object": "b" * 40, "claim_epoch": 1793037600,
         "policy": "commit", "lanes": ("macos-arm64", "smoke", "windows"),
-        "bundle_env": {"HERMES_PREVIEW_FULL_CONNECTORS": "1"},
+        "bundle_env": {"ZEUS_PREVIEW_FULL_CONNECTORS": "1"},
         "require_green": True, "autopublish": False,
     }
     monkeypatch.setattr(stable, "stable_context", lambda _env: (COMMIT_TAG, COMMIT, claim))
@@ -92,7 +92,7 @@ def test_verify_detects_pre_pr_commit_and_emits_legacy_flag(tmp_path, monkeypatc
                       run=_tree(tree))
         return dict(line.split("=", 1) for line in out.read_text(encoding="utf-8").splitlines())
 
-    parsed_old = verified("old-output", {"hermes_cli/update_channel.py": "def release_version(tag): ...\n"})
+    parsed_old = verified("old-output", {"zeus_cli/update_channel.py": "def release_version(tag): ...\n"})
     assert parsed_old["legacy-commit-build"] == "true"
     assert parsed_old["core-version"] == "0.33.0"
     assert parsed_old["channel"] == "commit"
@@ -124,16 +124,16 @@ def test_claim_support_refuses_a_failed_read_or_an_unknown_contract():
 @pytest.mark.skipif(not locate_command("dpkg-deb").found, reason="builds a real .deb")
 def test_legacy_termux_record_accepts_the_tagless_commit_version(tmp_path):
     package = tmp_path / "package"
-    stamp = package / "data/data/com.termux/files/usr/opt/hermes-agent/install-stamp.json"
+    stamp = package / "data/data/com.termux/files/usr/opt/zeus-agent/install-stamp.json"
     stamp.parent.mkdir(parents=True)
     stamp.write_text(json.dumps({"source": "commit-build", "commit": COMMIT, "tag": None}), encoding="utf-8")
     (package / "DEBIAN").mkdir()
     (package / "DEBIAN/control").write_text(
-        f"Package: hermes-agent\nVersion: {LEGACY_DEB_VERSION}\nArchitecture: aarch64\n"
+        f"Package: zeus-agent\nVersion: {LEGACY_DEB_VERSION}\nArchitecture: aarch64\n"
         "Maintainer: Fixture <fixture@example.invalid>\nDescription: fixture\n", encoding="utf-8")
     root = tmp_path / "termux-build"
     (root / "deb").mkdir(parents=True)
-    subprocess.run(["dpkg-deb", "--root-owner-group", "--build", str(package), str(root / "deb/hermes-agent.deb")],
+    subprocess.run(["dpkg-deb", "--root-owner-group", "--build", str(package), str(root / "deb/zeus-agent.deb")],
                    check=True, capture_output=True, timeout=60)
     out = root / "metadata-termux-aarch64.json"
 
@@ -169,9 +169,9 @@ def test_legacy_commit_record_and_candidate_validation_round_trip(tmp_path):
         "source": "commit-build", "commit": COMMIT, "tag": None,
         "baseVersion": "0.33.0", "updateMechanism": "external", "branch": None,
     }
-    msix = tmp_path / "HermesBundled-0.33.0-win-x64.msix"
+    msix = tmp_path / "ZeusBundled-0.33.0-win-x64.msix"
     _write_msix(msix, arch="x64", version="0.33.0.0",
-                identity=f"NousResearch.HermesBundledCommit{COMMIT[:7]}", stamp=stamp)
+                identity=f"NousResearch.ZeusBundledCommit{COMMIT[:7]}", stamp=stamp)
     (tmp_path / "version-info-x64.json").write_text(json.dumps({"productVersion": "0.33.0"}), encoding="utf-8")
     out = tmp_path / "metadata-windows-x64.json"
 
@@ -181,7 +181,7 @@ def test_legacy_commit_record_and_candidate_validation_round_trip(tmp_path):
     assert row["legacyCommitBuild"] is True
     assert row["version"] == "0.33.0.0"
     assert row["executableVersion"] == "0.33.0"
-    assert row["identity"] == f"NousResearch.HermesBundledCommit{COMMIT[:7]}"
+    assert row["identity"] == f"NousResearch.ZeusBundledCommit{COMMIT[:7]}"
 
     # Stable or canary tags may never use legacy_commit_build.
     with pytest.raises(ValueError, match="Legacy commit build"):
@@ -195,24 +195,24 @@ def test_legacy_commit_record_and_candidate_validation_round_trip(tmp_path):
             {
                 **row,
                 "artifact": {
-                    "url": f"{PUBLIC_BASE}/releases/tag/{COMMIT_TAG}/HermesBundled-0.33.0.0-win.msixbundle",
+                    "url": f"{PUBLIC_BASE}/releases/tag/{COMMIT_TAG}/ZeusBundled-0.33.0.0-win.msixbundle",
                     "sha256": "c" * 64,
                 },
             },
             {
                 "platform": "macos", "arch": "arm64", "tag": COMMIT_TAG, "commit": COMMIT,
-                "identity": f"com.nousresearch.hermes.bundled.commit.{COMMIT[:7]}",
+                "identity": f"com.nousresearch.zeus.bundled.commit.{COMMIT[:7]}",
                 "teamId": "ABCDE12345", "version": "0.33.0", "legacyCommitBuild": True,
                 "artifact": {
-                    "url": f"{PUBLIC_BASE}/releases/tag/{COMMIT_TAG}/HermesBundled-0.33.0-mac-arm64.zip",
+                    "url": f"{PUBLIC_BASE}/releases/tag/{COMMIT_TAG}/ZeusBundled-0.33.0-mac-arm64.zip",
                     "sha256": "d" * 64,
                 },
             },
             {
                 "platform": "termux", "arch": "aarch64", "tag": COMMIT_TAG, "commit": COMMIT,
-                "identity": "hermes-agent", "version": LEGACY_DEB_VERSION, "legacyCommitBuild": True,
+                "identity": "zeus-agent", "version": LEGACY_DEB_VERSION, "legacyCommitBuild": True,
                 "artifact": {
-                    "url": f"{PUBLIC_BASE}/releases/tag/{COMMIT_TAG}/deb/hermes-agent_{LEGACY_DEB_VERSION}_aarch64.deb",
+                    "url": f"{PUBLIC_BASE}/releases/tag/{COMMIT_TAG}/deb/zeus-agent_{LEGACY_DEB_VERSION}_aarch64.deb",
                     "sha256": "e" * 64,
                 },
             },
@@ -228,7 +228,7 @@ def test_legacy_commit_record_and_candidate_validation_round_trip(tmp_path):
         "packages": [{
             **manifest["packages"][0], "tag": "v0.33.0",
             "artifact": {
-                "url": f"{PUBLIC_BASE}/releases/tag/rc.1-v0.33.0/HermesBundled-0.33.0.0-win.msixbundle",
+                "url": f"{PUBLIC_BASE}/releases/tag/rc.1-v0.33.0/ZeusBundled-0.33.0.0-win.msixbundle",
                 "sha256": "c" * 64,
             },
         }],
@@ -241,21 +241,21 @@ def test_legacy_commit_record_and_candidate_validation_round_trip(tmp_path):
 def test_commit_claim_page_lists_all_downloadable_assets_commit_link_and_bundle_env():
     render = _load_render_module()
     files = [
-        f"releases/tag/{COMMIT_TAG}/HermesBundled-26.1026.18.0000-win.msixbundle",
-        f"releases/tag/{COMMIT_TAG}/HermesBundled-0.33.0+commit.20261026T180000Z-win-x64.msix",
-        f"releases/tag/{COMMIT_TAG}/HermesBundled-0.33.0+commit.20261026T180000Z-win-arm64.msix",
-        f"releases/tag/{COMMIT_TAG}/HermesBundled-0.33.0+commit.20261026T180000Z-mac-arm64.dmg",
-        f"releases/tag/{COMMIT_TAG}/HermesBundled-0.33.0+commit.20261026T180000Z-mac-arm64.zip",
-        f"releases/tag/{COMMIT_TAG}/HermesBundled-0.33.0+commit.20261026T180000Z-mac-arm64.zip.blockmap",
-        f"releases/tag/{COMMIT_TAG}/deb/hermes-agent_0.33.0~commit.20261026T180000Z-1_aarch64.deb",
+        f"releases/tag/{COMMIT_TAG}/ZeusBundled-26.1026.18.0000-win.msixbundle",
+        f"releases/tag/{COMMIT_TAG}/ZeusBundled-0.33.0+commit.20261026T180000Z-win-x64.msix",
+        f"releases/tag/{COMMIT_TAG}/ZeusBundled-0.33.0+commit.20261026T180000Z-win-arm64.msix",
+        f"releases/tag/{COMMIT_TAG}/ZeusBundled-0.33.0+commit.20261026T180000Z-mac-arm64.dmg",
+        f"releases/tag/{COMMIT_TAG}/ZeusBundled-0.33.0+commit.20261026T180000Z-mac-arm64.zip",
+        f"releases/tag/{COMMIT_TAG}/ZeusBundled-0.33.0+commit.20261026T180000Z-mac-arm64.zip.blockmap",
+        f"releases/tag/{COMMIT_TAG}/deb/zeus-agent_0.33.0~commit.20261026T180000Z-1_aarch64.deb",
     ]
-    bundle_env = {"HERMES_PREVIEW_FULL_CONNECTORS": "1", "HERMES_HOME": None}
+    bundle_env = {"ZEUS_PREVIEW_FULL_CONNECTORS": "1", "ZEUS_HOME": None}
     page = render.render_page(
         COMMIT_TAG, {}, PUBLIC_BASE, repo="NousResearch/hermes-agent",
         commit=COMMIT, bundle_env=bundle_env, commit_files=files,
     )
     assert f'href="https://github.com/NousResearch/hermes-agent/commit/{COMMIT}"' in page
-    assert "Bundle environment" in page and "HERMES_PREVIEW_FULL_CONNECTORS" in page and "Unset" in page
+    assert "Bundle environment" in page and "ZEUS_PREVIEW_FULL_CONNECTORS" in page and "Unset" in page
     for expected in (".msixbundle", "-win-x64.msix", "-win-arm64.msix",
                      "-mac-arm64.dmg", "-mac-arm64.zip", ".deb"):
         assert expected in page, expected
@@ -277,11 +277,11 @@ def test_commit_r2_retention_ages_out_claim_archives_and_legacy_commit_prefixes(
     cutoff_dt = now - timedelta(days=r2.COMMIT_KEEP_DAYS)
     cutoff = cutoff_dt.strftime("%Y%m%d")
     cutoff_ms = cutoff_dt.timestamp() * 1000
-    old_claim = "releases/tag/commit.20260701T000000Z-v0.30.0/HermesBundled-0.30.0-mac-arm64.dmg"
-    fresh_claim = "releases/tag/commit.20261101T000000Z-v0.33.0/HermesBundled-0.33.0-mac-arm64.dmg"
-    stable_tag = "releases/tag/v0.30.0/HermesBundled-0.30.0-mac-arm64.dmg"
-    old_legacy = f"releases/commit/{COMMIT}/HermesBundled-0.30.0-mac-arm64.dmg"
-    fresh_legacy = f"releases/commit/{'b' * 40}/HermesBundled-0.33.0-mac-arm64.dmg"
+    old_claim = "releases/tag/commit.20260701T000000Z-v0.30.0/ZeusBundled-0.30.0-mac-arm64.dmg"
+    fresh_claim = "releases/tag/commit.20261101T000000Z-v0.33.0/ZeusBundled-0.33.0-mac-arm64.dmg"
+    stable_tag = "releases/tag/v0.30.0/ZeusBundled-0.30.0-mac-arm64.dmg"
+    old_legacy = f"releases/commit/{COMMIT}/ZeusBundled-0.30.0-mac-arm64.dmg"
+    fresh_legacy = f"releases/commit/{'b' * 40}/ZeusBundled-0.33.0-mac-arm64.dmg"
 
     keys = [old_claim, fresh_claim, stable_tag, old_legacy, fresh_legacy]
     last_modified = {

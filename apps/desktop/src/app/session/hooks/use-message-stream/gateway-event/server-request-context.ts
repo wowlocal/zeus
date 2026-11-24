@@ -1,4 +1,4 @@
-import { JSON_RPC_INTERNAL_ERROR } from '@hermes/shared'
+import { JSON_RPC_INTERNAL_ERROR } from '@zeus/shared'
 
 import type { ScopedServerRequest } from '@/store/gateway'
 

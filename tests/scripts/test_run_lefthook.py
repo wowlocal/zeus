@@ -126,12 +126,12 @@ def test_linked_worktree_runs_the_main_checkouts_lefthook(checkout: Path):
 
 
 def test_job_without_just_runs_it_in_the_checkouts_own_env(checkout: Path):
-    """An unactivated shell has no `just`: a job gets it from scripts/run-in-hermes-env, never uv."""
+    """An unactivated shell has no `just`: a job gets it from scripts/run-in-zeus-env, never uv."""
     if shutil.which("just", path="/usr/bin:/bin"):
         pytest.skip("a system `just` would take the activated-shell branch")
     (checkout.parent / "bin" / "just").unlink()
     runner = checkout.parent / "runner"
-    _shim(checkout / "scripts" / "run-in-hermes-env", f'echo "$@" > "{posix(runner)}"')
+    _shim(checkout / "scripts" / "run-in-zeus-env", f'echo "$@" > "{posix(runner)}"')
 
     run = subprocess.run(["sh", str(checkout / "scripts" / "hook-just"), "ruff", "a.py"], cwd=checkout,
                          env={**os.environ, "PATH": f"{posix(checkout.parent / 'bin')}:/usr/bin:/bin"},
@@ -203,7 +203,7 @@ def test_commit_no_job_matches_sets_up_no_environment(checkout: Path, tmp_path: 
     shutil.copy2(pinned, native)
     (tmp_path / "bin" / "just").unlink()
     runner = tmp_path / "runner"
-    _shim(checkout / "scripts" / "run-in-hermes-env", f'echo "$@" >> "{posix(runner)}"; exit 1')
+    _shim(checkout / "scripts" / "run-in-zeus-env", f'echo "$@" >> "{posix(runner)}"; exit 1')
 
     commit = _commit(checkout, env, "README.md")
 

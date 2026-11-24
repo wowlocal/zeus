@@ -9,7 +9,7 @@ import { dispatchNativeNotification, setNativeNotifyEnabled, setNativeNotifyKind
 import { __resetNativeNotifyBaselineForTests, markNativeNotifyBaseline } from './notify-baseline'
 import { setActiveSessionId } from './session'
 
-const desktopWindow = window as unknown as { hermesDesktop?: Window['hermesDesktop'] }
+const desktopWindow = window as unknown as { zeusDesktop?: Window['zeusDesktop'] }
 const shown: string[] = []
 
 class FakeNotification {
@@ -38,8 +38,8 @@ beforeEach(() => {
 })
 
 afterEach(() => {
-  delete desktopWindow.hermesDesktop
-  delete document.documentElement.dataset.hermesDesktopHost
+  delete desktopWindow.zeusDesktop
+  delete document.documentElement.dataset.zeusDesktopHost
   setActiveSessionId(null)
   vi.unstubAllGlobals()
 })
@@ -60,7 +60,7 @@ describe('turnDoneNotificationWouldFire', () => {
     'Desktop: enabled %s, turnDone %s, quiet %s, focused %s, hidden %s, active %s agrees with dispatch',
     async (enabled, turnDone, quiet, focused, hidden, active) => {
       const supported = Promise.resolve(true)
-      desktopWindow.hermesDesktop = { notify: vi.fn(async () => true), notifySupported: () => supported } as unknown as Window['hermesDesktop']
+      desktopWindow.zeusDesktop = { notify: vi.fn(async () => true), notifySupported: () => supported } as unknown as Window['zeusDesktop']
       const sessionId = `session-${(counter += 1)}`
       setNativeNotifyEnabled(enabled)
       setNativeNotifyKind('turnDone', turnDone)
@@ -88,7 +88,7 @@ describe('turnDoneNotificationWouldFire', () => {
     let answer = (_supported: boolean) => undefined as void
     const reply = new Promise<boolean>(resolve => (answer = resolve))
     const notifySupported = vi.fn(() => reply)
-    desktopWindow.hermesDesktop = { notify: vi.fn(async () => true), notifySupported } as unknown as Window['hermesDesktop']
+    desktopWindow.zeusDesktop = { notify: vi.fn(async () => true), notifySupported } as unknown as Window['zeusDesktop']
     const sessionId = `session-${(counter += 1)}`
     setActiveSessionId(sessionId)
     setWindow({ focused: false, hidden: true })
@@ -114,8 +114,8 @@ describe('turnDoneNotificationWouldFire', () => {
   })
 
   it.each(['granted', 'denied', 'default'] as const)('Webapp: live permission %s agrees with what the browser shows', permission => {
-    document.documentElement.dataset.hermesDesktopHost = 'browser'
-    desktopWindow.hermesDesktop = { notify: async (payload: BrowserNotifyPayload) => showBrowserNotification(payload) } as unknown as Window['hermesDesktop']
+    document.documentElement.dataset.zeusDesktopHost = 'browser'
+    desktopWindow.zeusDesktop = { notify: async (payload: BrowserNotifyPayload) => showBrowserNotification(payload) } as unknown as Window['zeusDesktop']
     FakeNotification.permission = permission
     const sessionId = `session-${(counter += 1)}`
     setActiveSessionId(sessionId)

@@ -254,7 +254,7 @@ describe('JsonRpcRequestChannel', () => {
   })
 
   it('announces which client it is in a call of its own after server_requests, once per connection', async () => {
-    const client = { kind: 'desktop', name: 'hermes-desktop', version: '2.1.0' }
+    const client = { kind: 'desktop', name: 'zeus-desktop', version: '2.1.0' }
     const errors: unknown[] = []
 
     const channel = new JsonRpcRequestChannel({

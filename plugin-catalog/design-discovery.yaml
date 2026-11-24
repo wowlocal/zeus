@@ -6,7 +6,7 @@ description: "Turns a vague product idea into a DESIGN.md a coding agent can bui
 maintainer: adip1303
 tier: community
 category: desktop
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 version: "0.1.1"
 docs_url: https://github.com/adip1303/hermes-design-discovery/blob/374d83b7d69d96d0bbdc04d71265ef39bb25bad3/README.md
 readme: true

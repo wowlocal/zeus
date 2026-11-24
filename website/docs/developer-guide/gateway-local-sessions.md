@@ -41,10 +41,10 @@ Add `kind` only when the owner also lists `client-identity-v1` in its capabiliti
 
 The name is stored with the frozen creation request, so it is part of the exact-retry identity
 and survives a restart. `session.info` returns it as `client` (absent when none was sent), and
-plugins read it through `hermes_cli.plugin_session.session_client()` and the `client` /
+plugins read it through `zeus_cli.plugin_session.session_client()` and the `client` /
 `client_version` keys of prompt-section session info. It is attribution only: `source` still
 picks the session policy (send `source: "tui"` for terminal-client behaviour), and no toolset,
-approval, permission, prompt text or telemetry reads `client`. Hermes does not verify the name,
+approval, permission, prompt text or telemetry reads `client`. Zeus does not verify the name,
 so any client can claim any name: never grant anything based on it.
 
 The same label also names the connection, not just one session: after its
@@ -53,15 +53,15 @@ The same label also names the connection, not just one session: after its
 every reconnect, and ignores an error reply (an older owner refuses the unknown param for that
 call only). An owner listing `client-identity-v1` in `runtime.describe` capabilities keeps it for
 the connection's life; a malformed label leaves the earlier one in place and answers `4001` (an
-unknown key in it `4000`, like any unknown param). The Desktop app sends `hermes-desktop` /
-`desktop` and the Webapp `hermes-webapp` / `webapp`.
+unknown key in it `4000`, like any unknown param). The Desktop app sends `zeus-desktop` /
+`desktop` and the Webapp `zeus-webapp` / `webapp`.
 
 An owner listing `client-activity-v1` answers `client.capabilities` with `client_activity: true`
 on a connection that keeps presence (a WebSocket; stdio answers `false`), and only then does a
 client send `client.activity {sessions, idle_seconds, basis, can_alert?,
 away?}`: the sessions it has in view (at most 16 ids, each at most 256 characters), how long
 ago the user's last input was,
-whether that comes from the OS idle clock (`basis: "system"`) or from input inside the Hermes
+whether that comes from the OS idle clock (`basis: "system"`) or from input inside the Zeus
 window (`"page"`), whether it can get the user's attention for those sessions itself, and
 `away: true` when the screen locks. The owner keeps, per connection and session, the newest of
 that report and the input it sees itself (prompts, answers to its requests, interrupts, steers), in
@@ -77,7 +77,7 @@ nothing.
 
 Each turn a connection submits is stamped with its label (`surface_v1.client` on the admission,
 never a `prompt.submit` field; a retry from another or no label is the same request). Plugins read
-the turn's label with `hermes_cli.plugin_session.turn_client()` and the attached connections with
+the turn's label with `zeus_cli.plugin_session.turn_client()` and the attached connections with
 their idle data with `session_viewers()`.
 
 Attach another authenticated viewer with `session.resume({session_id})`, and submit
@@ -104,19 +104,19 @@ The server issues `session:operator` only at these existing trusted boundaries:
   legacy session token when that authentication path is enabled. With `webapp.enabled`, that
   session token is the browser-hosted Desktop's credential: the gateway keeps it in its home so
   Webapp tabs survive a restart, hands it out only through a one-use link minted for a same-user
-  control-socket peer, and replaces it on `hermes webapp --sign-out` and whenever the Webapp's
+  control-socket peer, and replaces it on `zeus webapp --sign-out` and whenever the Webapp's
   listener fails to start, since its port then belongs to someone else. Behind the sign-in gate a
-  Webapp login is bound to that token by the `hermes_webapp_signin_<gateway>` cookie (HMAC-SHA256 of
+  Webapp login is bound to that token by the `zeus_webapp_signin_<gateway>` cookie (HMAC-SHA256 of
   `webapp-sign-in` keyed with the token), so replacing it ends those logins too; sign-out closes
   every socket the token or a bound login opened, Bot Desktop viewers included. The Webapp's listener
-  names every sign-in cookie it sets that way (`hermes_session_at_<gateway>` and the rest; `<gateway>`
+  names every sign-in cookie it sets that way (`zeus_session_at_<gateway>` and the rest; `<gateway>`
   comes from a digest of the gateway home), so two gateways' Webapps on one hostname keep their own
   logins, whatever their sign-in providers, and leave the standalone dashboard's cookies alone. The provider tokens
   such a login keeps in its cookies never work there on their own: the Webapp's listener accepts a
   bearer token or a socket's `?token=`, and renews a refresh token, only when it gave that token to a
   native app's RFC 8252 sign-in (digests kept in `webapp/native-sign-in-tokens.json` in the gateway home until they
   expire), so native apps stay signed in across a sign-out and a restart. The deployment session
-  token (`HERMES_DASHBOARD_SESSION_TOKEN`) also works there as a bearer token or `?token=` while the
+  token (`ZEUS_DASHBOARD_SESSION_TOKEN`) also works there as a bearer token or `?token=` while the
   session-token provider is enabled; it has no refresh token.
 - The HTTP mutation gate, after a verified dashboard Session, native HTTP owner grant,
   or permitted legacy session token has been accepted.
@@ -150,7 +150,7 @@ listener keeps working.
   The native local routing identity remains server-owned `Platform.LOCAL`; source never
   grants messaging/native trust. Default TUI selection folds in `project`; GUI folds in
   the client-surface toolsets (`project`, `desktop_ui`, `catalog`). GUI policy is
-  independent of `HERMES_DESKTOP` and of the attaching viewer's identity. Without explicit
+  independent of `ZEUS_DESKTOP` and of the attaching viewer's identity. Without explicit
   `toolsets`, the gateway applies the coding posture (`agent.coding_context: focus` in a
   code workspace, `agent/coding_context.py`) from the `cwd` a `session.create` names,
   decided once at creation; clients never send it as a pick. Only `session.create` applies
@@ -184,7 +184,7 @@ listener keeps working.
   excludes hidden/archived/internal and foreign-owned rows, and never adopts a session merely
   by listing it. Explicit resume performs adoption; the default live feed is unchanged.
   Both scopes take `workspace`: only conversations whose first row is in that folder, by
-  `hermes -c`'s rule (`persistence.conversation.sessions.workspace_key`): the row's git repo root equals it, or
+  `zeus -c`'s rule (`persistence.conversation.sessions.workspace_key`): the row's git repo root equals it, or
   (no root recorded) its cwd is the folder or under it. Pass the caller's repo root (else its cwd).
   With `picker: true` each row also carries what a picker shows (`gateway/session_picker_fields.py`):
   `cwd` and `workspace` from the same first row the filter reads, and from the conversation's current
@@ -196,7 +196,7 @@ listener keeps working.
   advertise `session-list-cursor-v1` in `runtime.describe.capabilities`:
   - `query`: only conversations whose title or id contains this text (case-insensitive; a title
     also matches with `-`, `_`, `.` and spaces removed, and every segment of a compression chain
-    counts). The same rule as `hermes sessions list --search`. It must be 1 to 200 characters and
+    counts). The same rule as `zeus sessions list --search`. It must be 1 to 200 characters and
     not only spaces.
   - Each stored result carries `next_cursor`: an opaque string when more rows may follow, `null` when
     the listing is exhausted. A last page may be empty. Send it back as `cursor` to read the next
@@ -318,7 +318,7 @@ fixtures described below provide separate coverage; their results must not be pr
 a new end-to-end cross-authentication gateway-crash test.
 
 `tests/gateway/test_local_session.py` launches a disposable process with temporary HOME
-and HERMES_HOME, the production composed HTTP/WS listener, real single-use authenticated
+and ZEUS_HOME, the production composed HTTP/WS listener, real single-use authenticated
 tickets, a loopback OpenAI-compatible model, the real TurnRunner/AIAgent, and the real
 terminal tool. It proves persisted identity and same-agent reattachment; closes both
 viewers while approval is pending; reconnects and consents before deleting only an owned

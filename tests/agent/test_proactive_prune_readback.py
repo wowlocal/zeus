@@ -26,12 +26,12 @@ def _own_archive(home):
 @pytest.mark.parametrize("path_style", ["absolute", "tilde"])
 def test_archive_readback_reuses_the_original_pointer(tmp_path, monkeypatch, path_style):
     """A read-back of a file in this home's cache/pruned points at that file again: no second copy."""
-    home = tmp_path / "home" / "hermes"
+    home = tmp_path / "home" / "zeus"
     home.mkdir(parents=True)
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     archive = _own_archive(home)
-    path = str(archive) if path_style == "absolute" else "~/hermes/cache/pruned/x.json"
+    path = str(archive) if path_style == "absolute" else "~/zeus/cache/pruned/x.json"
     messages = _readback_messages(json.dumps({"path": path}))
     result, count = _compressor().prune_tool_results_only(messages, current_tokens=100_000)
     assert count == 1
@@ -42,9 +42,9 @@ def test_archive_readback_reuses_the_original_pointer(tmp_path, monkeypatch, pat
 
 def test_a_reused_call_id_keeps_the_older_results_own_original(tmp_path, monkeypatch):
     """A resumed history repeats call_0: the older terminal result is archived itself, not pointed at the later read-back."""
-    home = tmp_path / "home" / "hermes"
+    home = tmp_path / "home" / "zeus"
     home.mkdir(parents=True)
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     archive = _own_archive(home)
     messages = [{"role": "system", "content": "sys"}, {"role": "user", "content": "go"}]
@@ -64,9 +64,9 @@ def test_a_reused_call_id_keeps_the_older_results_own_original(tmp_path, monkeyp
 @pytest.mark.parametrize("case", ["lookalike_elsewhere", "missing_in_archive_dir", "relative", "nul"])
 def test_a_path_that_is_not_an_existing_archive_is_archived_normally(tmp_path, monkeypatch, case):
     """Only an existing file in this home's cache/pruned counts; anything else keeps its own archive."""
-    home = tmp_path / "home" / "hermes"
+    home = tmp_path / "home" / "zeus"
     home.mkdir(parents=True)
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
     monkeypatch.setenv("HOME", str(tmp_path / "home"))
     if case == "lookalike_elsewhere":
         other = tmp_path / "work" / "cache" / "pruned" / "x.json"

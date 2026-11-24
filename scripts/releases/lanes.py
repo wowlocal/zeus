@@ -46,7 +46,7 @@ NAMES = tuple(lane.name for lane in LANES)
 DEFAULT = frozenset(lane.name for lane in LANES if lane.default)
 # A canary is a run of the stable pipeline with every lane on but one: it has no claim to narrow
 # it, so Termux runs too, and a lane added above runs in the canary with no other
-# edit. The exception is `upgrade`, the signed-package arms: the canary is its own app (Hermes
+# edit. The exception is `upgrade`, the signed-package arms: the canary is its own app (Zeus
 # Canary), so no signed package of it can upgrade a stable install, and canary-to-canary says
 # nothing about what stable users get. Old stable to this commit is install-e2e's job, which
 # installs released stable tags and updates them to the commit under test, with no bundle.

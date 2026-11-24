@@ -1,6 +1,6 @@
-import { externalUrlTarget, LOCAL_CONNECTION_ID } from '@hermes/shared'
+import { externalUrlTarget, LOCAL_CONNECTION_ID } from '@zeus/shared'
 
-import type { HermesApiRequest } from '@/global'
+import type { ZeusApiRequest } from '@/global'
 import { BROWSER_BRIDGE_STUBS } from '@/lib/browser-bridge-stubs'
 import { createBrowserClipboardBridge } from '@/lib/browser-clipboard'
 import { createBrowserCloudBridge } from '@/lib/browser-cloud'
@@ -27,7 +27,7 @@ import { tagRegistrySessionResponse } from '../../electron/profile-session-routi
 
 /**
  * Install a capability-limited Desktop bridge when the real renderer is served
- * directly by Hermes' authenticated web server.
+ * directly by Zeus' authenticated web server.
  *
  * Electron remains authoritative everywhere it exists: no injected dashboard
  * token means this is a normal Vite/Electron renderer, and an existing preload
@@ -37,11 +37,11 @@ import { tagRegistrySessionResponse } from '../../electron/profile-session-routi
  */
 /** The Webapp serves this machine's saved connections; the standalone dashboard does not. */
 function savedConnectionsServed(): boolean {
-  return (window as Window & { __HERMES_UI_SURFACE__?: string }).__HERMES_UI_SURFACE__ === 'webapp'
+  return (window as Window & { __ZEUS_UI_SURFACE__?: string }).__ZEUS_UI_SURFACE__ === 'webapp'
 }
 
 export function installBrowserDesktopBridge(): boolean {
-  if (window.hermesDesktop) {
+  if (window.zeusDesktop) {
     return false
   }
 
@@ -56,7 +56,7 @@ export function installBrowserDesktopBridge(): boolean {
     announceWebappWindow()
   }
 
-  const api = <T>(request: HermesApiRequest) => browserApi<T>(bootstrap, request)
+  const api = <T>(request: ZeusApiRequest) => browserApi<T>(bootstrap, request)
 
   // This machine's saved gateway connections (the list native Desktop keeps): each other gateway's
   // requests ride `/api/relay/<id>` on this origin (browser-saved-connections.ts). A host that does
@@ -66,7 +66,7 @@ export function installBrowserDesktopBridge(): boolean {
   const activeConnectionId = () => $connection.get()?.connectionId ?? LOCAL_CONNECTION_ID
 
   // A request names its connection; untagged, it goes to the one this window is on.
-  const activeApi = <T>(request: HermesApiRequest) =>
+  const activeApi = <T>(request: ZeusApiRequest) =>
     browserApi<T>(bootstrapFor(request.connectionId ?? activeConnectionId()), request)
 
   // Members with no connection of their own (host files, uploads) follow the window's connection.
@@ -90,7 +90,7 @@ export function installBrowserDesktopBridge(): boolean {
   // already name (`local` for the one serving this page). An untagged listed row beside a `local`
   // new chat read as two owners, which split one gateway's sessions into an unowned group and a
   // `local` gateway group.
-  const rendererApi = async <T>(request: HermesApiRequest): Promise<T> => {
+  const rendererApi = async <T>(request: ZeusApiRequest): Promise<T> => {
     const owner = request.connectionId || LOCAL_CONNECTION_ID
     const response = await browserApi<T>(bootstrapFor(owner), request)
 
@@ -147,7 +147,7 @@ export function installBrowserDesktopBridge(): boolean {
     currentProfile
   })
 
-  const bridge: Window['hermesDesktop'] = {
+  const bridge: Window['zeusDesktop'] = {
     ...BROWSER_BRIDGE_STUBS,
     cloud: createBrowserCloudBridge({ api, relays }),
     ...createBrowserClipboardBridge({ saveBuffer: uploads.saveImageBuffer }),
@@ -162,7 +162,7 @@ export function installBrowserDesktopBridge(): boolean {
     getVersion: async () => ({
       appVersion: await resolveGatewayVersion(path => api({ path, timeoutMs: 5000 })),
       electronVersion: '',
-      hermesRoot: '',
+      zeusRoot: '',
       nodeVersion: '',
       platform: 'browser'
     }),
@@ -240,8 +240,8 @@ export function installBrowserDesktopBridge(): boolean {
     zoom: createBrowserZoom(bootstrap.basePath)
   }
 
-  window.hermesDesktop = bridge
-  document.documentElement.dataset.hermesDesktopHost = 'browser'
+  window.zeusDesktop = bridge
+  document.documentElement.dataset.zeusDesktopHost = 'browser'
 
   return true
 }

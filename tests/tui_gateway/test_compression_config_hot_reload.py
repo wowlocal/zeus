@@ -1,7 +1,7 @@
 """Desktop/TUI sessions must adopt live compression config on the next turn.
 
 Regression for #95151: ``_sync_agent_model_with_config`` only compared the
-model/provider. After ``hermes config set compression.threshold_tokens 100000``
+model/provider. After ``zeus config set compression.threshold_tokens 100000``
 the already-open session kept the computed threshold from agent creation.
 """
 
@@ -118,7 +118,7 @@ def test_unchanged_compression_config_is_noop(monkeypatch):
 
 
 def _default_cap():
-    from hermes_cli.config_defaults import DEFAULT_CONFIG
+    from zeus_cli.config_defaults import DEFAULT_CONFIG
 
     return DEFAULT_CONFIG["compression"]["threshold_tokens"]
 
@@ -281,7 +281,7 @@ def test_post_archive_noop_names_the_actual_reason(tmp_path, monkeypatch, write_
     from agent.context_compressor import _estimate_msg_budget_tokens
     from tests.agent.test_proactive_prune_archive import _compressor, _round
 
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     messages = [{"role": "system", "content": "sys"}, {"role": "user", "content": "read"}]
     for i in range(8):
         messages += _round(i, "original output\n" + "x" * 12_000 if i == 0 else "ok")

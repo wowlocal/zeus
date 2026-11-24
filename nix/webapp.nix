@@ -2,8 +2,8 @@
 # already installed the locked workspace (without lifecycle scripts, so no
 # native module and no Electron binary), so it compiles there, with no
 # private workspace.
-{ hermesNpmLib, ... }:
-hermesNpmLib.buildPnpmPackage {
+{ zeusNpmLib, ... }:
+zeusNpmLib.buildPnpmPackage {
   dirs = [
     "apps/desktop"
     "apps/shared"
@@ -16,7 +16,7 @@ hermesNpmLib.buildPnpmPackage {
     "scripts/build/freshness.mjs"
     "scripts/build/frontend-common.mjs"
   ];
-  pname = "hermes-webapp";
+  pname = "zeus-webapp";
 
   doCheck = false;
 

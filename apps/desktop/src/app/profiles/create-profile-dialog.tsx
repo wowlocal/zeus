@@ -1,4 +1,4 @@
-import { PROFILE_ID_ARG_RE } from '@hermes/shared/profile-id'
+import { PROFILE_ID_ARG_RE } from '@zeus/shared/profile-id'
 import { useEffect, useState } from 'react'
 
 import { ActionStatus } from '@/components/ui/action-status'
@@ -15,12 +15,12 @@ import { Field, FieldHint } from '@/components/ui/field'
 import { SanitizedInput } from '@/components/ui/sanitized-input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { createProfile, updateProfileSoul } from '@/hermes'
+import { createProfile, updateProfileSoul } from '@/zeus'
 import { useI18n } from '@/i18n'
 import { dropBrowserProfilePrefs } from '@/lib/browser-profile-prefs'
 import { AlertTriangle } from '@/lib/icons'
 import { slug } from '@/lib/sanitize'
-import type { ProfileInfo } from '@/types/hermes'
+import type { ProfileInfo } from '@/types/zeus'
 
 export function isValidProfileName(name: string): boolean {
   return PROFILE_ID_ARG_RE.test(name.trim())

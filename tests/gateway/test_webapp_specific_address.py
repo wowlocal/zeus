@@ -1,5 +1,5 @@
 """``webapp.host`` may be one literal IP address of this machine (a LAN or Tailscale address), as
-``hermes dashboard --host`` took it, so a gateway that takes over an old backend keeps its address.
+``zeus dashboard --host`` took it, so a gateway that takes over an old backend keeps its address.
 
 Such a bind is gated by sign-in exactly like a wildcard bind, never treated as loopback. The listener
 also binds loopback on the same port, behind the same sign-in, so native clients (Desktop accepts only
@@ -31,7 +31,7 @@ def _home(tmp_path, config):
     ("'[fd7a:115c:a1e0::5]'", "fd7a:115c:a1e0::5", "::1"),
 ])
 def test_one_address_of_this_machine_is_a_gated_bind_with_a_loopback_dial(tmp_path, host, bind_host, companion):
-    from hermes_cli.web_server_boundary import should_require_auth
+    from zeus_cli.web_server_boundary import should_require_auth
 
     settings = webapp.webapp_settings(_home(tmp_path, f"webapp:\n  enabled: true\n  host: {host}\n  port: 9119\n"))
     assert settings.enabled and settings.bind == (bind_host, 9119), settings.reason
@@ -41,7 +41,7 @@ def test_one_address_of_this_machine_is_a_gated_bind_with_a_loopback_dial(tmp_pa
 
 
 @pytest.mark.parametrize("host", [
-    "hermes.example.net", "my-laptop", "127.0.0.2", "'::ffff:192.168.1.20'", "224.0.0.1", "'fe80::1%eth0'",
+    "zeus.example.net", "my-laptop", "127.0.0.2", "'::ffff:192.168.1.20'", "224.0.0.1", "'fe80::1%eth0'",
     "255.255.255.255", "240.0.0.1", "'ff02::1'", "'fe80::1'", "0.0.0.1",
 ])
 def test_names_and_other_odd_addresses_keep_the_webapp_off_and_say_what_works(tmp_path, host):
@@ -60,12 +60,12 @@ def test_loopback_and_wildcard_binds_get_no_second_socket(bind, companion):
 
 
 def _this_machines_address():
-    from hermes_cli.webapp_access import lan_address
+    from zeus_cli.webapp_access import lan_address
     return lan_address()
 
 
 def test_a_gateway_bound_to_its_own_address_serves_it_behind_sign_in_and_native_clients_over_loopback(tmp_path):
-    from hermes_cli.gateway_runtime import _endpoint
+    from zeus_cli.gateway_runtime import _endpoint
 
     address = _this_machines_address()
     if address is None:
@@ -155,7 +155,7 @@ SPECIFIC_SERVING = {"state": "serving", "url": "http://127.0.0.1:9119", "reason"
 
 
 def test_status_names_the_address_the_running_gateway_is_bound_to(monkeypatch, tmp_path, capsys):
-    from hermes_cli import webapp_launcher as launcher
+    from zeus_cli import webapp_launcher as launcher
 
     _status(monkeypatch, tmp_path, "webapp:\n  enabled: true\n  host: 100.101.102.103\n  port: 9119\n",
             SPECIFIC_SERVING)
@@ -182,14 +182,14 @@ def test_status_reports_the_live_bind_and_names_a_config_change_pending_a_restar
     assert lines[0] == (f"Serving at {served} (this machine's own clients use {live['url']})" if served
                         else f"Serving at {live['url']}")
     assert lines[-1] == (f"{home / 'config.yaml'} now sets webapp.host: {pending}: the gateway serves it after a "
-                         "restart (hermes gateway restart).")
+                         "restart (zeus gateway restart).")
 
 
 def _status(monkeypatch, tmp_path, config, status):
-    from hermes_cli import webapp_launcher as launcher
+    from zeus_cli import webapp_launcher as launcher
 
     home = _home(tmp_path, config)
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
     monkeypatch.setattr(launcher, "_control", lambda _home, verb, params=None: {"ok": True, "result": status})
     args = Namespace(no_open=False, status=True, sign_out=False, build_only=False, force_build=False, skip_build=False)
     assert launcher.cmd_webapp(args) == 0
@@ -208,10 +208,10 @@ def _specific_webapp(monkeypatch, tmp_path, *, registered=None, public_url=""):
 
     from gateway import run_api, run_runtime
     from gateway.control_socket import GatewayControlServer
-    from hermes_cli import webapp_access
+    from zeus_cli import webapp_access
 
     home = _home(tmp_path, f"webapp:\n  enabled: true\n  host: {BOUND}\n  port: 9555\n")
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
 
     async def start(runner, *, host="127.0.0.1", port=0, webapp=None):
         return SimpleNamespace(api_origin=f"http://127.0.0.1:{port or 50001}")
@@ -281,7 +281,7 @@ def test_a_loopback_socket_that_cannot_bind_is_named_with_the_oss_reason(monkeyp
     from gateway.control_socket import GatewayControlServer
 
     home = _home(tmp_path, "webapp:\n  enabled: true\n  host: 'fd7a:115c:a1e0::5'\n  port: 9555\n")
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
 
     async def start(runner, *, host="127.0.0.1", port=0, webapp=None):
         if webapp is not None:
@@ -305,7 +305,7 @@ def test_a_loopback_socket_that_cannot_bind_is_named_with_the_oss_reason(monkeyp
 ])
 def test_a_registered_callback_with_no_port_is_port_80(tmp_path, registered, note):
     import json
-    from hermes_cli.webapp_access import sign_in_address
+    from zeus_cli.webapp_access import sign_in_address
 
     home = _home(tmp_path, f"webapp:\n  enabled: true\n  host: {BOUND}\n  port: 80\n")
     record = home / "webapp" / "sign-in-registration.json"
@@ -316,9 +316,9 @@ def test_a_registered_callback_with_no_port_is_port_80(tmp_path, registered, not
 
 def test_a_wildcard_bind_on_port_80_ignores_a_registered_callback_with_no_port(tmp_path, monkeypatch):
     """Control, as on main: a wildcard bind opens a registered LAN address only for a callback that
-    names its port, so a hand-edited callback with none leaves ``hermes webapp`` on loopback."""
+    names its port, so a hand-edited callback with none leaves ``zeus webapp`` on loopback."""
     import json
-    from hermes_cli import webapp_access
+    from zeus_cli import webapp_access
 
     monkeypatch.setattr(webapp_access, "lan_address", lambda: "192.168.1.20")
     home = _home(tmp_path, "webapp:\n  enabled: true\n  host: 0.0.0.0\n  port: 80\n")
@@ -339,7 +339,7 @@ def test_a_specific_binds_own_public_url_still_wins(monkeypatch, tmp_path):
 
 def test_specific_bind_reports_an_own_client_still_registered_for_https(monkeypatch, tmp_path):
     import json
-    from hermes_cli.webapp_access import sign_in_client
+    from zeus_cli.webapp_access import sign_in_client
 
     public = "https://proxy.example/work"
     runner = _specific_webapp(monkeypatch, tmp_path, registered=public + "/auth/callback")
@@ -352,13 +352,13 @@ def test_specific_bind_reports_an_own_client_still_registered_for_https(monkeypa
     assert "webapp.public_url" in link.get("note", "")
 
 
-def test_hermes_webapp_prints_the_note_before_opening_the_address(monkeypatch, tmp_path, capsys):
-    from hermes_cli import webapp_launcher as launcher
+def test_zeus_webapp_prints_the_note_before_opening_the_address(monkeypatch, tmp_path, capsys):
+    from zeus_cli import webapp_launcher as launcher
 
     link = {"url": f"http://{BOUND}:9555/", "private": False, "expires_in_seconds": None, "sign_in": True,
             "note": "Nous sign-in that Settings → Web Access registered returns to elsewhere."}
     home = _home(tmp_path, f"webapp:\n  enabled: true\n  host: {BOUND}\n  port: 9555\n")
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
     monkeypatch.setattr(launcher, "_ensure", lambda _target: None)
     monkeypatch.setattr(launcher, "_build", lambda _args: None)
     monkeypatch.setattr(launcher, "_control", lambda _home, verb, params=None: {"ok": True, "result": link})
@@ -371,15 +371,15 @@ def test_hermes_webapp_prints_the_note_before_opening_the_address(monkeypatch, t
 
 
 def test_web_access_counts_a_specific_address_as_the_lan(tmp_path):
-    from hermes_cli.webapp_access import _mode
+    from zeus_cli.webapp_access import _mode
     for host, mode in (("100.101.102.103", "lan"), ("0.0.0.0", "lan"), ("127.0.0.1", "local")):
         settings = webapp.webapp_settings(_home(tmp_path / host, f"webapp:\n  enabled: true\n  host: {host}\n"))
         assert _mode(settings) == mode
 
 
 def test_only_a_listener_with_a_loopback_socket_accepts_a_loopback_host_beside_its_address():
-    """Control: ``hermes dashboard --host <address>`` (no loopback socket) still refuses a loopback Host."""
-    from hermes_cli.web_server_boundary import _is_accepted_host
+    """Control: ``zeus dashboard --host <address>`` (no loopback socket) still refuses a loopback Host."""
+    from zeus_cli.web_server_boundary import _is_accepted_host
     assert not _is_accepted_host("127.0.0.1:9119", "100.101.102.103")
     assert _is_accepted_host("127.0.0.1:9119", "100.101.102.103", frozenset(), True)
     assert _is_accepted_host("100.101.102.103:9119", "100.101.102.103", frozenset(), True)

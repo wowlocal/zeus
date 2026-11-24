@@ -18,7 +18,7 @@ const { copyFiles } = await import(
   pathToFileURL(path.join(path.dirname(require.resolve('app-builder-lib')), 'fileMatcher.js')).href
 )
 
-process.env.HERMES_DESKTOP_VARIANT = 'bundled'
+process.env.ZEUS_DESKTOP_VARIANT = 'bundled'
 const config = require('../electron-builder.config.cjs')
 
 const roots = []
@@ -47,15 +47,15 @@ function packContext(platform = 'linux') {
   const packager = platform === 'darwin'
     ? Object.assign(Object.create(PlatformPackager.prototype), {
       platform: Platform.MAC,
-      appInfo: { productFilename: 'Hermes' },
+      appInfo: { productFilename: 'Zeus' },
       info: { framework: { distMacOsAppName: 'Electron.app' }, config, projectDir }
     })
     : { config, projectDir }
   const context = { appOutDir: path.join(root, `${platform}-unpacked`), electronPlatformName: platform, packager }
   const prepared = path.join(projectDir, 'build', 'agent-payload')
-  write(path.join(prepared, 'hermes-agent', 'run_agent.py'), 'print("hermes")\n')
-  write(path.join(prepared, 'hermes-agent', 'contributors', 'emails', 'someone@example.com'), 'someone\n')
-  write(path.join(prepared, 'hermes-agent', 'contributors', 'emails', '.gitkeep'))
+  write(path.join(prepared, 'zeus-agent', 'run_agent.py'), 'print("zeus")\n')
+  write(path.join(prepared, 'zeus-agent', 'contributors', 'emails', 'someone@example.com'), 'someone\n')
+  write(path.join(prepared, 'zeus-agent', 'contributors', 'emails', '.gitkeep'))
   write(path.join(prepared, 'tools', 'pnpm', 'dist', 'llhttp', '.gitkeep'))
   write(path.join(prepared, 'tools', 'pnpm', 'bin', 'pnpm'), '#!/bin/sh\n')
   fs.mkdirSync(path.join(prepared, 'uv-cache', 'builds-v0'), { recursive: true })
@@ -63,7 +63,7 @@ function packContext(platform = 'linux') {
   write(asar, 'stub archive')
   write(
     path.join(`${asar}.unpacked`, 'dist', 'electron-main.mjs'),
-    'const re = /HERMES_(?:BACKEND|DASHBOARD)_READY[^\\n]*port=(\\d+)/m\n'
+    'const re = /ZEUS_(?:BACKEND|DASHBOARD)_READY[^\\n]*port=(\\d+)/m\n'
   )
   const resources = path.dirname(asar)
   return { context, prepared, resources, packaged: path.join(resources, 'agent-payload') }
@@ -83,7 +83,7 @@ it('lets an exact payload copy through afterPack and fails a lossy one, naming e
   }).filter(matcher => matcher.from === lossy.prepared)
   expect(matchers).toHaveLength(1)
   await copyFiles(matchers, null, false)
-  fs.rmSync(path.join(lossy.packaged, 'hermes-agent', 'run_agent.py'))
+  fs.rmSync(path.join(lossy.packaged, 'zeus-agent', 'run_agent.py'))
   // Under vitest builder-util hard-links its copies; a new inode keeps the prepared file intact.
   fs.rmSync(path.join(lossy.packaged, 'tools', 'pnpm', 'bin', 'pnpm'))
   write(path.join(lossy.packaged, 'tools', 'pnpm', 'bin', 'pnpm'), '#!')
@@ -91,11 +91,11 @@ it('lets an exact payload copy through afterPack and fails a lossy one, naming e
   const failure = await afterPack(lossy.context).catch(error => error)
   expect(failure).toBeInstanceOf(Error)
   for (const difference of [
-    'missing file of 0 bytes: hermes-agent/contributors/emails/.gitkeep',
+    'missing file of 0 bytes: zeus-agent/contributors/emails/.gitkeep',
     'missing file of 0 bytes: tools/pnpm/dist/llhttp/.gitkeep',
     'missing directory: tools/pnpm/dist/llhttp',
     'missing directory: uv-cache/builds-v0',
-    'missing file of 16 bytes: hermes-agent/run_agent.py',
+    'missing file of 14 bytes: zeus-agent/run_agent.py',
     'tools/pnpm/bin/pnpm: file of 10 bytes became file of 2 bytes',
     'unexpected file of 11 bytes: tools/stray.tmp'
   ]) {
@@ -103,13 +103,13 @@ it('lets an exact payload copy through afterPack and fails a lossy one, naming e
   }
 })
 
-it('fails a bundled pack whose payload never arrived but leaves Hermes Light alone', async () => {
+it('fails a bundled pack whose payload never arrived but leaves Zeus Light alone', async () => {
   const missing = packContext()
   const failure = await afterPack(missing.context).catch(error => error)
   expect(failure).toBeInstanceOf(Error)
   expect(failure.message).toContain(`packaged payload ${missing.packaged} is missing`)
 
-  vi.stubEnv('HERMES_DESKTOP_VARIANT', 'light')
+  vi.stubEnv('ZEUS_DESKTOP_VARIANT', 'light')
   for (const module of ['../electron-builder.config.cjs', '../product-identity.cjs']) {
     delete require.cache[require.resolve(module)]
   }
@@ -167,11 +167,11 @@ it('checks the macOS copy before signing repairs a flattened Chromium framework'
 
   signed.length = 0
   const lossy = pack()
-  fs.rmSync(path.join(lossy.packaged, 'hermes-agent', 'contributors', 'emails', '.gitkeep'))
+  fs.rmSync(path.join(lossy.packaged, 'zeus-agent', 'contributors', 'emails', '.gitkeep'))
   fs.appendFileSync(path.join(lossy.packaged, framework, 'Versions', 'A', 'F'), ' and more')
   const failure = await afterPack(lossy.context).catch(error => error)
   expect(failure).toBeInstanceOf(Error)
-  expect(failure.message).toContain('missing file of 0 bytes: hermes-agent/contributors/emails/.gitkeep')
+  expect(failure.message).toContain('missing file of 0 bytes: zeus-agent/contributors/emails/.gitkeep')
   expect(failure.message).toContain(
     `${framework.split(path.sep).join('/')}/Versions/A/F: file of 6 bytes became file of 15 bytes`
   )

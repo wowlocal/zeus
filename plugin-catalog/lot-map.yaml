@@ -1,12 +1,12 @@
 name: lot-map
-title: Lot Map for Hermes
+title: Lot Map for Zeus
 repo: https://github.com/thanhduy1706/lot-map-hermes
 sha: e9c77dd87333b613aa5439d2cce9e035a689da37
-description: "Community port of the original MIT Lot Map SVG/braille renderers with provider themes, customizable UI, session insights and optional quota-cache display. Disclosure: passive hooks store bounded local tool metadata; native quota RPC may contact providers via Hermes; opt-in cache uses fixed cli.exec quota status command; no direct credential reads or telemetry."
+description: "Community port of the original MIT Lot Map SVG/braille renderers with provider themes, customizable UI, session insights and optional quota-cache display. Disclosure: passive hooks store bounded local tool metadata; native quota RPC may contact providers via Zeus; opt-in cache uses fixed cli.exec quota status command; no direct credential reads or telemetry."
 maintainer: thanhduy1706
 tier: community
 category: desktop
-requires_hermes: ">=0.23.3"
+requires_zeus: ">=0.23.3"
 version: "0.2.0"
 docs_url: https://github.com/thanhduy1706/lot-map-hermes#readme
 screenshots:

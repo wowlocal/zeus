@@ -6,7 +6,7 @@ description: "Source-backed web search through Seltz's hosted MCP server, with a
 maintainer: seltz-ai
 tier: community
 category: web
-requires_hermes: ">=0.22.2"
+requires_zeus: ">=0.22.2"
 docs_url: https://github.com/seltz-ai/seltz-hermes-plugin/blob/fb10dbae50c0a7d48c9999a2d6e2f14f63f567e0/README.md
 version: "1.0.0"
 platforms: []

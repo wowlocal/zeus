@@ -1,13 +1,13 @@
 name: personal-task-manager
-title: Hermes Personal Task Manager
+title: Zeus Personal Task Manager
 repo: https://github.com/RudiFreeman/hermes-personal-task-manager
 sha: "5feee35b6d0080d11f0188ed8b4f92cb528ed6d2"
 version: "1.0.0"
-description: Shared personal tasks, subtasks and notes for Hermes chat, Dashboard and WebApp, with resizable task details, seven languages, Archive and restorable Trash.
+description: Shared personal tasks, subtasks and notes for Zeus chat, Dashboard and WebApp, with resizable task details, seven languages, Archive and restorable Trash.
 maintainer: RudiFreeman
 tier: community
 category: tools
-requires_hermes: ">=0.23.1"
+requires_zeus: ">=0.23.1"
 docs_url: https://github.com/RudiFreeman/hermes-personal-task-manager/blob/5feee35b6d0080d11f0188ed8b4f92cb528ed6d2/README.md
 readme: true
 screenshots:

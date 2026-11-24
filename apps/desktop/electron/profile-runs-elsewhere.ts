@@ -1,8 +1,8 @@
 // Core's host-only marker for a profile a plugin runs somewhere other than this
 // host's backend (for example in a sandbox behind the plugin's launcher). One
-// file per profile: `<hermes root>/profiles_run_elsewhere/<profile>.json`, whose
+// file per profile: `<zeus root>/profiles_run_elsewhere/<profile>.json`, whose
 // presence is the marker and whose `{"plugin": "<id>"}` only names the owner
-// (`hermes_cli/profiles_run_elsewhere.py`).
+// (`zeus_cli/profiles_run_elsewhere.py`).
 //
 // The desktop reads it to fail closed: while a profile is marked, nothing on
 // this host may start or serve it, so a profile whose route to its launcher is
@@ -47,7 +47,7 @@ function markedProfiles(dir: string): Error | Set<string> {
  * error) marks every profile.
  */
 export function readRunElsewhereMarker(
-  hermesRoot: string,
+  zeusRoot: string,
   profile: null | string | undefined
 ): null | RunElsewhereMarker {
   const id = String(profile ?? '').trim().toLowerCase() || 'default'
@@ -56,7 +56,7 @@ export function readRunElsewhereMarker(
     return null
   }
 
-  const dir = path.join(hermesRoot, PROFILES_RUN_ELSEWHERE_DIR)
+  const dir = path.join(zeusRoot, PROFILES_RUN_ELSEWHERE_DIR)
   const marked = markedProfiles(dir)
 
   if (marked instanceof Error) {
@@ -78,9 +78,9 @@ export function readRunElsewhereMarker(
 }
 
 /** Refuse a local start of a profile core marks as run elsewhere: this app has no route to its backend. */
-export function assertProfileMayRunLocally(hermesRoot: string, profile: null | string | undefined): void {
+export function assertProfileMayRunLocally(zeusRoot: string, profile: null | string | undefined): void {
   const name = String(profile ?? '').trim() || 'default'
-  const marker = readRunElsewhereMarker(hermesRoot, name)
+  const marker = readRunElsewhereMarker(zeusRoot, name)
 
   if (!marker) {
     return
@@ -89,6 +89,6 @@ export function assertProfileMayRunLocally(hermesRoot: string, profile: null | s
   const runner = marker.plugin ? `runs through the ${marker.plugin} plugin` : 'runs through a plugin'
 
   throw new Error(
-    `Profile "${name}" ${runner}, but this app has no connection to it. Hermes won't start it on this computer.`
+    `Profile "${name}" ${runner}, but this app has no connection to it. Zeus won't start it on this computer.`
   )
 }

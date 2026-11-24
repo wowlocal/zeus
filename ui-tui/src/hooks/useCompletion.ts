@@ -1,7 +1,7 @@
-import type { CompletionResponse } from '@hermes/shared/gateway-types'
-import { looksLikeSlashCommand } from '@hermes/shared/slash'
-import { inlineSlashTrigger } from '@hermes/shared/slash-input'
-import { rankSlashItems } from '@hermes/shared/slash-score'
+import type { CompletionResponse } from '@zeus/shared/gateway-types'
+import { looksLikeSlashCommand } from '@zeus/shared/slash'
+import { inlineSlashTrigger } from '@zeus/shared/slash-input'
+import { rankSlashItems } from '@zeus/shared/slash-score'
 import { useEffect, useRef, useState } from 'react'
 
 import type { CompletionItem } from '../app/interfaces.js'

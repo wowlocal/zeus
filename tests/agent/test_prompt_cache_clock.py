@@ -146,7 +146,7 @@ def test_nous_ceiling_is_data_on_the_wire_and_in_the_clock(tmp_path, monkeypatch
     the wire and the clock."""
     from agent.prompt_caching import effective_cache_ttl
 
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     portal = "https://inference-api.nousresearch.com/v1"
     for provider in ("nous", "custom"):
         assert effective_cache_ttl("1h", provider=provider, model="anthropic/claude-sonnet-4.6", base_url=portal) == "1h"
@@ -172,7 +172,7 @@ def test_a_configured_ceiling_applies_on_the_measured_provider_path_too(tmp_path
     """opencode-go returns early as a measured 1h route; a configured 5m ceiling must still win there."""
     from agent.prompt_caching import effective_cache_ttl
 
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     assert effective_cache_ttl("1h", provider="opencode-go", model="qwen3.6-plus") == "1h"
     (tmp_path / "config.yaml").write_text("prompt_caching:\n  route_ttl_ceilings:\n    opencode-go: 5m\n",
                                           encoding="utf-8")

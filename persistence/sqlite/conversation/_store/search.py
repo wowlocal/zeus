@@ -22,7 +22,7 @@ from persistence.sqlite.conversation._store.sessions import list_sessions_rich
 from persistence.sqlite.conversation._store.sql_common import MAX_FTS5_QUERY_CHARS, _in_one_read, escape_like as _escape_like
 
 
-logger = logging.getLogger("hermes_state")
+logger = logging.getLogger("zeus_state")
 
 
 @dataclass
@@ -44,7 +44,7 @@ class _BackfillProgress:
 
 def _search_slow_ms() -> float:
     """``sessions.search_slow_ms`` for the served profile (default 1000; 0 logs every call)."""
-    value = routed_sessions_setting("search_slow_ms", "HERMES_SEARCH_SLOW_MS")
+    value = routed_sessions_setting("search_slow_ms", "ZEUS_SEARCH_SLOW_MS")
     try:
         return 1000.0 if value is None or str(value).strip() == "" else float(value)
     except (TypeError, ValueError):
@@ -528,7 +528,7 @@ def _detach_fts_for_search(holder: StoreHolder, exc: sqlite3.DatabaseError) -> b
     if not holder._fts_enabled or not is_fts_scoped_corruption_error(exc):
         return False
     logger.warning("FTS search on a read-only handle hit index damage (%s); this handle answers from canonical "
-                   "rows. A writable handle that hits it detaches the index for repair, or run `hermes sessions optimize-storage`.",
+                   "rows. A writable handle that hits it detaches the index for repair, or run `zeus sessions optimize-storage`.",
                    exc)
     _mark_fts_detached(holder)
     return True
@@ -661,7 +661,7 @@ def search_messages(
     after_ts: Optional[int] = None, before_ts: Optional[int] = None,
 ) -> list[dict[str, Any]]:
     """:meth:`_search_messages_impl` plus one log line per slow search with the routing
-    path taken. Threshold HERMES_SEARCH_SLOW_MS (default 1000; 0 logs every call)."""
+    path taken. Threshold ZEUS_SEARCH_SLOW_MS (default 1000; 0 logs every call)."""
     started = time.time()
     rows = None
     try:
@@ -891,7 +891,7 @@ def rebuild_fts(holder: StoreHolder) -> int:
                     if is_malformed_db_error(exc):
                         logger.error(
                             "FTS rebuild failed with a corruption-class error for %s: %s; "
-                            "run 'hermes sessions repair' (or 'hermes doctor --fix') to rebuild the index offline",
+                            "run 'zeus sessions repair' (or 'zeus doctor --fix') to rebuild the index offline",
                             tbl, exc)
                     else:
                         logger.warning("FTS rebuild failed for %s: %s", tbl, exc)

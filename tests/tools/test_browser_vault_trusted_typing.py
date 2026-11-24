@@ -230,7 +230,7 @@ def test_a_plugin_page_appearing_after_a_focused_answer_stops_the_keystroke(tmp_
     session and document are unchanged, so only the channel recheck right before the insert stops
     the identifier from reaching the browser the operation no longer runs on. The password is
     already on the page by then (the JS write runs before any keystroke), so the refusal says that
-    nothing FURTHER was typed, in Hermes's fixed text."""
+    nothing FURTHER was typed, in Zeus's fixed text."""
     from tools.browser_vault_tool import _MOVED_WHILE_TYPING
 
     sup = _Supervisor(_LOGIN)
@@ -370,9 +370,9 @@ def test_a_takeover_between_two_keys_of_a_retype_stops_the_next_key(tmp_path):
     assert sup.typed == [IDENTIFIER, IDENTIFIER[0]]
 
 
-def test_a_moved_channel_is_reported_with_hermes_text_not_the_browser_error(tmp_path):
+def test_a_moved_channel_is_reported_with_zeus_text_not_the_browser_error(tmp_path):
     """A failed script whose error names the supervisor is reported as a moved channel. That error is
-    the browser's (a page exception's message is in it), so the fill reports Hermes's fixed text."""
+    the browser's (a page exception's message is in it), so the fill reports Zeus's fixed text."""
     from tools.browser_vault_tool import _MOVED
 
     sup = _Supervisor(_LOGIN)

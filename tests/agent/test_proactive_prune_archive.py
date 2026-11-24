@@ -1,6 +1,6 @@
 """The proactive prune loses no information and never shortens the turn in progress.
 
-Every result it shortens is first written byte-exact to ``$HERMES_HOME/cache/pruned/`` and the stub
+Every result it shortens is first written byte-exact to ``$ZEUS_HOME/cache/pruned/`` and the stub
 names that file; a result whose write fails stays whole. The archive shares the spillover sweeper:
 kept while state.db points at it, retired with its session.
 """
@@ -21,7 +21,7 @@ from tools.tool_result_storage import archive_compaction_drops, archive_pruned_o
 
 @pytest.fixture
 def home(tmp_path, monkeypatch):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     return tmp_path
 
 
@@ -231,4 +231,4 @@ def test_compaction_on_a_synced_backend_names_the_remote_archive(home, monkeypat
     replacement = [{"role": "tool", "content": "shorter"}]
     rows, written, reverted = archive_compaction_drops(original, replacement, "s1")
     assert (len(written), reverted) == (1, 0)
-    assert "full result: ~/.hermes/cache/pruned/" in rows[0]["content"]
+    assert "full result: ~/.zeus/cache/pruned/" in rows[0]["content"]

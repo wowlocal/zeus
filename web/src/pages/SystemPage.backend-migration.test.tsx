@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-// A dashboard user with no older Hermes server sees the System page as before: the same requests on
-// load (plus the one plan read) and no "move to a single Hermes" card, whether the server has the
+// A dashboard user with no older Zeus server sees the System page as before: the same requests on
+// load (plus the one plan read) and no "move to a single Zeus" card, whether the server has the
 // backend-migration routes or not.
 
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -20,7 +20,7 @@ const PAGE_REQUESTS = [
   "GET /api/ops/hooks",
   "GET /api/curator",
   "GET /api/portal",
-  "GET /api/hermes/update/check",
+  "GET /api/zeus/update/check",
   "GET /api/gateway/migrate/plan",
 ];
 const PLAN = "GET /api/gateway/migrate/backends/plan";
@@ -58,7 +58,7 @@ async function loadPage(planAnswer: { status: number; body: unknown }): Promise<
   return requests;
 }
 
-describe("System page without an older Hermes server", () => {
+describe("System page without an older Zeus server", () => {
   it.each([
     ["a server without the routes (404)", { status: 404, body: { detail: "Not Found" } }],
     ["nothing to move", { status: 200, body: NOTHING_TO_MOVE }],

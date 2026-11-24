@@ -20,7 +20,7 @@ async def _authority(tmp_path, monkeypatch, answer):
     from gateway.session import SessionSource, SessionStore
     from gateway.session_authority import LiveSession, initialize_session_authority
 
-    monkeypatch.setenv('HERMES_HOME', str(tmp_path))
+    monkeypatch.setenv('ZEUS_HOME', str(tmp_path))
     store = SessionStore(tmp_path / 'sessions', GatewayConfig())
     runner = SimpleNamespace(_session_db=store.persistence, session_store=store, _draining=False,
                              _handle_message=answer, _adapter_for_source=lambda source: None)
@@ -103,8 +103,8 @@ async def test_voice_turn_is_admitted_and_scoped_to_its_own_turn(tmp_path, monke
     assert seen == [('spoken', True, ''), ('typed', False, '')]
 
 @pytest.mark.parametrize('client, committed', [
-    ({'name': 'hermes-desktop', 'version': '2.1.0', 'kind': 'desktop'},
-     {'name': 'hermes-desktop', 'version': '2.1.0', 'kind': 'desktop'}),
+    ({'name': 'zeus-desktop', 'version': '2.1.0', 'kind': 'desktop'},
+     {'name': 'zeus-desktop', 'version': '2.1.0', 'kind': 'desktop'}),
     ({'name': 'a-watch', 'kind': 'watch'}, {'name': 'a-watch'}),  # a kind this owner does not know
 ])
 def test_the_owner_stamped_client_is_committed_restored_and_never_a_note(client, committed):
@@ -117,7 +117,7 @@ def test_the_owner_stamped_client_is_committed_restored_and_never_a_note(client,
     assert submit_surface_fields({'text': 'x', 'client': client}) == {}
 
 
-_BAD_CLIENTS = [{'name': 'Not A Name'}, 'hermes-desktop', {'name': 'hermes-desktop', 'extra': 1}]
+_BAD_CLIENTS = [{'name': 'Not A Name'}, 'zeus-desktop', {'name': 'zeus-desktop', 'extra': 1}]
 
 
 @pytest.mark.parametrize('client', [{'name': 'a-watch', 'kind': 'watch'}, *_BAD_CLIENTS])
@@ -158,7 +158,7 @@ def test_real_daemon_accepts_hud_and_voice_live_submits_and_notes_the_model(tmp_
     home, user = tmp_path / 'state', tmp_path / 'user'
     home.mkdir(mode=0o700)
     user.mkdir()
-    monkeypatch.setenv('HERMES_HOME', str(home))
+    monkeypatch.setenv('ZEUS_HOME', str(home))
     monkeypatch.setenv('HOME', str(user))
     monkeypatch.setenv('USERPROFILE', str(user))
     model = ThreadingHTTPServer(('127.0.0.1', 0), Model)
@@ -173,7 +173,7 @@ def test_real_daemon_accepts_hud_and_voice_live_submits_and_notes_the_model(tmp_
         'auxiliary': {'title_generation': {'enabled': False}},
         'platform_toolsets': {'gui': []}, 'terminal': {'cwd': str(home)},
     }))
-    env = child_env() | dict(HOME=str(user), USERPROFILE=str(user), HERMES_HOME=str(home),
+    env = child_env() | dict(HOME=str(user), USERPROFILE=str(user), ZEUS_HOME=str(home),
         PYTHONPATH=str(root), OPENAI_API_KEY='loopback-only', OPENAI_BASE_URL=base, PYTHONUNBUFFERED='1')
 
     async def drive(desc):
@@ -238,7 +238,7 @@ def test_managed_worker_turn_carries_the_committed_surface_to_the_model(tmp_path
             'provider': 'custom', 'model': 'voice-model', 'base_url': base, 'api_key': 'loopback-only'}},
         'platform_toolsets': {'cli': []},
     }))
-    env = child_env() | dict(HOME=str(user), USERPROFILE=str(user), HERMES_HOME=str(home),
+    env = child_env() | dict(HOME=str(user), USERPROFILE=str(user), ZEUS_HOME=str(home),
         PYTHONPATH=str(root), OPENAI_API_KEY='loopback-only', OPENAI_BASE_URL=base, PYTHONUNBUFFERED='1')
 
     async def drive(desc):

@@ -1,18 +1,18 @@
 """Real config → SQLite persistence → explicit /save A/B, without provider calls.
 
-Run with a clean HOME/HERMES_HOME and PYTHONPATH pointing at the tree under test.
+Run with a clean HOME/ZEUS_HOME and PYTHONPATH pointing at the tree under test.
 """
 import json
 import os
 from pathlib import Path
 
-home = Path(os.environ["HERMES_HOME"])
+home = Path(os.environ["ZEUS_HOME"])
 home.mkdir(parents=True, exist_ok=True)
 (home / "config.yaml").write_text("sessions:\n  write_json_snapshots: true\n", encoding="utf-8")
 from agent.agent_init import _init_session_state
 from agent.session_persistence import SessionPersistenceMixin
-from hermes_cli.cli_session_mixin import _write_save
-from hermes_cli.session_export import load_save_snapshot, render_session_for_save
+from zeus_cli.cli_session_mixin import _write_save
+from zeus_cli.session_export import load_save_snapshot, render_session_for_save
 from persistence.conversation.sessions import NewSession
 from persistence_assembly import open_persistence, profile_scope
 

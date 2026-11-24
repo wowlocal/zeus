@@ -119,8 +119,8 @@ def _scheduler_runs() -> bool:
     """Whether this process is the gateway serving the bound profile, so its watcher will run the resume (a
     background child's completion route is this process's). A classic CLI parent has no scheduler: no promise."""
     from gateway.runtime_ownership import process_ownership
-    from hermes_constants import get_hermes_home
-    return process_ownership.owns(get_hermes_home())
+    from zeus_constants import get_zeus_home
+    return process_ownership.owns(get_zeus_home())
 
 
 def waiting_text(auto: dict[str, Any]) -> str:

@@ -2,7 +2,7 @@
 exit reason as a code (#90700).
 
 One projection for the two readers that get no more than that: an unverified ``/api/status``
-caller (``hermes_cli.web_routers.status_public``) and the deployment a status report goes to
+caller (``zeus_cli.web_routers.status_public``) and the deployment a status report goes to
 (``gateway.status_report.payload``).
 """
 from __future__ import annotations

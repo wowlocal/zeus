@@ -46,7 +46,7 @@ export interface LaunchedProfileHostDeps<Backend> {
   /** The backend `resolveProfileBackendRoute` gives a local profile. */
   ensureProfileBackend: (profile: string) => Promise<Backend>
   fetchJson: (backend: Backend, path: string, opts: { method: 'GET'; timeoutMs: number }) => Promise<unknown>
-  hermesHome: string
+  zeusHome: string
   isProfileName: (name: string) => boolean
   primaryProfile: () => string
   readConfig: () => Record<string, any>
@@ -61,19 +61,19 @@ export interface PinnedConnection<Backend> {
 
 export function createLaunchedProfileHost<Backend>(deps: LaunchedProfileHostDeps<Backend>) {
   const isLaunched = (profile: null | string | undefined) => profileIsLaunched(deps.readConfig(), profile)
-  const isMarked = (profile: string) => Boolean(readRunElsewhereMarker(deps.hermesHome, profile))
+  const isMarked = (profile: string) => Boolean(readRunElsewhereMarker(deps.zeusHome, profile))
 
-  // Hermes's own backend on this computer serves the profile: no plugin runs
+  // Zeus's own backend on this computer serves the profile: no plugin runs
   // it (a launcher entry is a remote connection too), core does not mark it,
   // and the user has not connected it to a remote host, whose backend would
   // list that computer's profiles.
   const runsHere = (profile: string) => !isMarked(profile) && !profileHasRemoteConnection(deps.readConfig(), profile)
 
-  // Local profile names (folders under <HERMES_HOME>/profiles), default first.
+  // Local profile names (folders under <ZEUS_HOME>/profiles), default first.
   const localProfileNames = (): string[] => {
     try {
       const names = fs
-        .readdirSync(path.join(deps.hermesHome, 'profiles'), { withFileTypes: true })
+        .readdirSync(path.join(deps.zeusHome, 'profiles'), { withFileTypes: true })
         .filter(entry => entry.isDirectory() && entry.name !== 'default' && deps.isProfileName(entry.name))
         .map(entry => entry.name)
 
@@ -106,10 +106,10 @@ export function createLaunchedProfileHost<Backend>(deps: LaunchedProfileHostDeps
   const rosterBackend = (kind: unknown, dial: () => Promise<Backend>): Promise<Backend> =>
     kind === 'local' && isLaunched(deps.primaryProfile()) ? ensureHostBackend() : dial()
 
-  // The sticky CLI profile (`hermes profile use`), as /api/profiles/active reports it.
+  // The sticky CLI profile (`zeus profile use`), as /api/profiles/active reports it.
   const stickyActiveProfile = (): string => {
     try {
-      return fs.readFileSync(path.join(deps.hermesHome, 'active_profile'), 'utf8').trim() || 'default'
+      return fs.readFileSync(path.join(deps.zeusHome, 'active_profile'), 'utf8').trim() || 'default'
     } catch {
       return 'default'
     }
@@ -170,7 +170,7 @@ export function createLaunchedProfileHost<Backend>(deps: LaunchedProfileHostDeps
       start: (...args: Args) => Promise<Result> | Result,
       ...args: Args
     ): Promise<Result> {
-      assertProfileMayRunLocally(deps.hermesHome, profile)
+      assertProfileMayRunLocally(deps.zeusHome, profile)
 
       return start(...args)
     },
@@ -188,7 +188,7 @@ export function createLaunchedProfileHost<Backend>(deps: LaunchedProfileHostDeps
       const servedElsewhere = route.profileRemoteOverride || route.globalRemote || route.primaryRemoteActive
 
       if (profile !== deps.primaryProfile() && !servedElsewhere) {
-        assertProfileMayRunLocally(deps.hermesHome, profile)
+        assertProfileMayRunLocally(deps.zeusHome, profile)
       }
 
       return join()

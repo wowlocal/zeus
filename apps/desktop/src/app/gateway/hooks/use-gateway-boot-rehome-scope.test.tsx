@@ -92,7 +92,7 @@ function Harness() {
     handleServerRequest: () => false,
     onConnectionReady: () => undefined,
     onGatewayReady: () => undefined,
-    refreshHermesConfig: async () => undefined,
+    refreshZeusConfig: async () => undefined,
     refreshSessions: async () => undefined
   })
 
@@ -140,7 +140,7 @@ afterEach(() => {
   $connection.set(null)
   vi.useRealTimers()
   ;(globalThis as { WebSocket: unknown }).WebSocket = originalWebSocket
-  delete (window as { hermesDesktop?: unknown }).hermesDesktop
+  delete (window as { zeusDesktop?: unknown }).zeusDesktop
 })
 
 async function flushAsync() {
@@ -152,7 +152,7 @@ async function flushAsync() {
 it('a Settings re-home publishes (box, default) as one pair while the new ticket is in flight', async () => {
   const desktop = fakeDesktop()
 
-  ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+  ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
   render(<Harness />)
   await flushAsync()
   expect($apiRequestScope.get()).toEqual({ connectionId: 'local', profile: 'alpha' })

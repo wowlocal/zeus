@@ -34,9 +34,9 @@ def test_root_session_no_compression(db, persistence):
     _mk(db, "root1")
     prov = build_session_provenance(persistence, "acp-1", "root1")
     assert prov["acpSessionId"] == "acp-1"
-    assert prov["currentHermesSessionId"] == "root1"
-    assert prov["rootHermesSessionId"] == "root1"
-    assert prov["parentHermesSessionId"] is None
+    assert prov["currentZeusSessionId"] == "root1"
+    assert prov["rootZeusSessionId"] == "root1"
+    assert prov["parentZeusSessionId"] is None
     assert prov["sessionKind"] == "root"
     assert prov["compressionDepth"] == 0
     assert "reason" not in prov  # no rotation signalled
@@ -50,13 +50,13 @@ def test_compression_split_continuation(db, persistence):
     _mk(db, "new", parent="old")
 
     prov = build_session_provenance(
-        persistence, "acp-1", "new", previous_hermes_session_id="old"
+        persistence, "acp-1", "new", previous_zeus_session_id="old"
     )
     assert prov["sessionKind"] == "continuation"
-    assert prov["parentHermesSessionId"] == "old"
-    assert prov["rootHermesSessionId"] == "old"
+    assert prov["parentZeusSessionId"] == "old"
+    assert prov["rootZeusSessionId"] == "old"
     assert prov["compressionDepth"] == 1
-    assert prov["previousHermesSessionId"] == "old"
+    assert prov["previousZeusSessionId"] == "old"
     # Head rotated this turn → reason/creatorKind flagged.
     assert prov["reason"] == "compression"
     assert prov["creatorKind"] == "compression"
@@ -72,7 +72,7 @@ def test_non_compression_parent_is_root_not_continuation(db, persistence):
     prov = build_session_provenance(persistence, "acp-1", "c")
     assert prov["sessionKind"] == "root"
     assert prov["compressionDepth"] == 0
-    assert prov["rootHermesSessionId"] == "p"  # lineage root still walked
+    assert prov["rootZeusSessionId"] == "p"  # lineage root still walked
 
 
 
@@ -82,6 +82,6 @@ def test_non_compression_parent_is_root_not_continuation(db, persistence):
 def test_meta_wrapper_shape(db, persistence):
     _mk(db, "root1")
     meta = session_provenance_meta(persistence, "acp-1", "root1")
-    assert set(meta.keys()) == {"hermes"}
-    assert "sessionProvenance" in meta["hermes"]
-    assert meta["hermes"]["sessionProvenance"]["currentHermesSessionId"] == "root1"
+    assert set(meta.keys()) == {"zeus"}
+    assert "sessionProvenance" in meta["zeus"]
+    assert meta["zeus"]["sessionProvenance"]["currentZeusSessionId"] == "root1"

@@ -2,7 +2,7 @@
 const fs = require('node:fs')
 const semver = require('semver')
 
-// vX.Y.Z or canary.<UTC stamp>-vX.Y.Z (hermes_cli/update_channel.py); a canary publishes X.Y.Z+canary.<stamp>.
+// vX.Y.Z or canary.<UTC stamp>-vX.Y.Z (zeus_cli/update_channel.py); a canary publishes X.Y.Z+canary.<stamp>.
 const TAG = /^(?:canary\.(20\d{6}T\d{6}Z)-)?v(\d+\.\d+\.\d+)$/
 const releaseVersion = tag => {
   const match = TAG.exec(tag || '')

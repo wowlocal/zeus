@@ -7,16 +7,16 @@ description: >-
   before they execute, while post_tool_call keeps a local SQLite audit ledger. Two tools
   manage it: permission_tiers_report (rules + ledger) and permission_tiers_set (add/update/
   remove). Implements the per-tool permission-levels feature requested in issue #527 without
-  touching Hermes core — public hooks only. Safe defaults: shell and MCP tools ask, everything
-  else keeps Hermes' existing behaviour; hook errors fail open; unattended runs fail closed
+  touching Zeus core — public hooks only. Safe defaults: shell and MCP tools ask, everything
+  else keeps Zeus' existing behaviour; hook errors fail open; unattended runs fail closed
   on ask escalations (the plugin never auto-approves). Disclosure — no network calls, no
   third-party services, no stored credentials; reads/writes only its own tiers.json and
-  ledger under the Hermes plugin-data directory; bundled permission-tiers skill documents
+  ledger under the Zeus plugin-data directory; bundled permission-tiers skill documents
   usage.
 maintainer: imperator-clawdius
 tier: community
 category: tools
-requires_hermes: ">=0.23"
+requires_zeus: ">=0.23"
 docs_url: https://github.com/imperator-clawdius/hermes-permission-tiers#readme
 version: "0.1.0"
 platforms: []

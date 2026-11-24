@@ -64,12 +64,12 @@ describe.skipIf(process.platform !== 'linux')('perf first-spawn display selectio
     writeFileSync(join(home, 'config.yaml'), config)
     let instance
     try {
-      instance = await startIsolatedInstance({ prod: true, coldStart: true, hermesHome: home, port: 41123 })
+      instance = await startIsolatedInstance({ prod: true, coldStart: true, zeusHome: home, port: 41123 })
       expect(launch.spawns).toHaveLength(1)
       const [{ args, env: childEnv }] = launch.spawns
       expect(args).toContain('--remote-debugging-port=41123')
-      expect(childEnv.HERMES_DESKTOP_CDP_PORT).toBe('41123')
-      expect(childEnv.HERMES_HOME).toBe(home)
+      expect(childEnv.ZEUS_DESKTOP_CDP_PORT).toBe('41123')
+      expect(childEnv.ZEUS_HOME).toBe(home)
       expect(args.filter(arg => arg.startsWith('--ozone-platform='))).toEqual(
         ozone ? [`--ozone-platform=${ozone}`] : []
       )

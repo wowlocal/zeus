@@ -16,7 +16,7 @@ from gateway import status as gateway_status
 from gateway.status_report.payload import read_status_source
 from gateway.status_report.reporter import StatusReporter, status_reporter_from_launch_env
 from gateway.status_report.target import STATUS_REPORT_URL_ENV, report_target_from_env
-from hermes_constants import get_hermes_home, get_process_hermes_home
+from zeus_constants import get_zeus_home, get_process_zeus_home
 from tests.gateway.status_report.support import (
     AFTER_INTERVAL_S,
     FAULT_PATH,
@@ -205,7 +205,7 @@ async def test_the_status_is_read_under_the_launch_profile_whatever_scope_is_amb
     homes = []
 
     def source():
-        homes.append(get_hermes_home())
+        homes.append(get_zeus_home())
         return a_status_source()
 
     reporter = make_reporter(Receiver(), source=source)
@@ -215,12 +215,12 @@ async def test_the_status_is_read_under_the_launch_profile_whatever_scope_is_amb
     with bind_profile_scope(other, hydrate_secrets=False):
         await reporter.poll()
 
-    assert homes == [get_process_hermes_home()]
+    assert homes == [get_process_zeus_home()]
 
 @pytest.fixture
 def unreadable_profile_env():
     """The launch profile's ``.env`` as an elevated write leaves it: there, and not readable by this user."""
-    env_file = get_process_hermes_home() / ".env"
+    env_file = get_process_zeus_home() / ".env"
     env_file.write_text("UNRELATED=1\n", encoding="utf-8")
     env_file.chmod(0)
     yield env_file
@@ -253,7 +253,7 @@ async def test_neither_the_url_nor_the_credential_reaches_the_logs(clock, caplog
     receiver.reply_with(
         Reply(), Reply(401), Reply(500), Reply(error=urllib.error.URLError(f"cannot reach {stamp}")),
         Reply(429, {"Retry-After": "30"}), Reply(404), Reply(error=ValueError(f"Invalid header value {credential}")))
-    reporter = StatusReporter(report_target_from_env(), launch_home=get_process_hermes_home(),
+    reporter = StatusReporter(report_target_from_env(), launch_home=get_process_zeus_home(),
                               read_source=a_status_source, opener=receiver)
 
     for _ in range(8):
@@ -428,7 +428,7 @@ async def test_every_reporter_starts_at_the_normal_interval_and_reports_at_once(
     await expect_next_report_at_the_interval(clock, reporter, receiver)
 
 def _kept_outside_the_reporter() -> tuple[dict, dict]:
-    home = get_process_hermes_home()
+    home = get_process_zeus_home()
     files = {str(path.relative_to(home)): path.read_bytes() for path in home.rglob("*") if path.is_file()}
     return files, dict(os.environ)
 

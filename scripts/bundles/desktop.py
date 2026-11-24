@@ -34,7 +34,7 @@ def flavored_assets(icons: Path, assets: Path):
     flavored (canary/commit) build cannot package from the rendered product
     directory alone. Restore the admitted files once packaging ends: the source
     custody check refuses a dirty checkout, and a build that leaves its own
-    render behind breaks every later build in that tree and `hermes update`.
+    render behind breaks every later build in that tree and `zeus update`.
     """
     admitted = {path.relative_to(assets): path.read_bytes()
                 for path in assets.rglob("*") if path.is_file()}
@@ -52,7 +52,7 @@ def flavored_assets(icons: Path, assets: Path):
 
 
 def release_version(_repo: Path, tag: str) -> str:
-    from hermes_cli.update_channel import release_version as version_for
+    from zeus_cli.update_channel import release_version as version_for
 
     version = version_for(tag)
     if version is None:
@@ -71,7 +71,7 @@ def build(repo: Path, tag: str | None, variant: str, builder_args: list[str],
     from scripts.releases.bundle_env import decode
     request = BuildRequest.create(repo, tag=tag, commit=commit_build, variant=variant,
                                   work=repo / ".build/desktop-job", cache=repo / ".cache/desktop-inputs",
-                                  bundle_env=decode(os.environ.get("HERMES_BUNDLE_ENV_JSON", "")))
+                                  bundle_env=decode(os.environ.get("ZEUS_BUNDLE_ENV_JSON", "")))
     build_prepared(prepare(request), builder_args)
 
 
@@ -96,7 +96,7 @@ def _build_prepared(prepared, builder_args: list[str], variant: str | None) -> N
     repo, node = request.source, str(prepared.node)
     env = build_environment(prepared, variant, os.environ)
     if request.release_epoch is not None:
-        env["HERMES_RELEASE_EPOCH"] = str(request.release_epoch)
+        env["ZEUS_RELEASE_EPOCH"] = str(request.release_epoch)
     desktop = repo / "apps/desktop"
     targets = {"win32": ["--win", "msix"], "darwin": ["--mac", "dmg", "zip"], "linux": ["--linux", "AppImage"]}[sys.platform]
     package_args = ["--prepared", str(prepared.packager), "--native-deps", str(prepared.native),
@@ -136,7 +136,7 @@ def _build_prepared(prepared, builder_args: list[str], variant: str | None) -> N
         version_args = []
         if sys.platform == "win32" and request.channel_request is None and request.tag is not None:
             # A Store package carries the Store scheme (revision zero) even on a canary.
-            script = ("const m=require('./scripts/msix-shared.mjs');const e=Number(process.env.HERMES_RELEASE_EPOCH);"
+            script = ("const m=require('./scripts/msix-shared.mjs');const e=Number(process.env.ZEUS_RELEASE_EPOCH);"
                       "console.log(process.argv[2]==='store'?m.storePackageVersionAt(e):m.nativeQuad(process.argv[1],e))")
             quad = capture([node, "-e", script, request.tag, variant], repo, env)
             version_args = [f'-c.extraMetadata.shortVersion={quad}', f'-c.extraMetadata.shortVersionWindows={quad}']
@@ -178,7 +178,7 @@ def main() -> None:
                                           variant=args.variant or "bundled",
                                           work=args.work or args.repo / ".build/desktop-job",
                                           cache=args.cache or args.repo / ".cache/desktop-inputs",
-                                          bundle_env=decode(os.environ.get("HERMES_BUNDLE_ENV_JSON", "")),
+                                          bundle_env=decode(os.environ.get("ZEUS_BUNDLE_ENV_JSON", "")),
                                           channel_request=json.loads(args.channel_request.read_text(encoding="utf-8-sig"))
                                           if args.channel_request else None,
                                           release_commit=args.release_commit)

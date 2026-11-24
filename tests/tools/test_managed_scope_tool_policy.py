@@ -1,9 +1,9 @@
 """Administrator (managed-scope) policy must reach the tool-layer readers.
 
-``/etc/hermes/config.yaml`` is the IT-pushed, user-immutable config layer
-(``hermes_cli/managed_scope.py``). It is merged by ``load_config()`` and by
+``/etc/zeus/config.yaml`` is the IT-pushed, user-immutable config layer
+(``zeus_cli/managed_scope.py``). It is merged by ``load_config()`` and by
 ``load_user_config_effective()``, but NOT by ``read_raw_config()``, which parses the
-user's own ``~/.hermes/config.yaml`` only. Three sandbox/network policy readers in
+user's own ``~/.zeus/config.yaml`` only. Three sandbox/network policy readers in
 ``tools/`` used the raw reader, so a value that exists ONLY in the managed scope was
 silently ignored — the same class as the MCP discovery gate (#91073).
 """
@@ -12,8 +12,8 @@ from __future__ import annotations
 
 import pytest
 
-from hermes_cli import managed_scope
-from hermes_constants import reset_hermes_home_override, set_hermes_home_override
+from zeus_cli import managed_scope
+from zeus_constants import reset_zeus_home_override, set_zeus_home_override
 from tools import credential_files, env_passthrough, url_safety
 
 _MANAGED_CONFIG = """\
@@ -39,17 +39,17 @@ def managed_profile(tmp_path, monkeypatch):
     managed.mkdir()
     (managed / "config.yaml").write_text(_MANAGED_CONFIG, encoding="utf-8")
 
-    monkeypatch.setenv("HERMES_MANAGED_DIR", str(managed))
-    monkeypatch.delenv("HERMES_ALLOW_PRIVATE_URLS", raising=False)
+    monkeypatch.setenv("ZEUS_MANAGED_DIR", str(managed))
+    monkeypatch.delenv("ZEUS_ALLOW_PRIVATE_URLS", raising=False)
     managed_scope.invalidate_managed_cache()
     url_safety._reset_allow_private_cache()
     env_passthrough._config_passthrough.clear()
     credential_files._config_files.clear()
-    token = set_hermes_home_override(home)
+    token = set_zeus_home_override(home)
     try:
         yield home
     finally:
-        reset_hermes_home_override(token)
+        reset_zeus_home_override(token)
         managed_scope.invalidate_managed_cache()
         url_safety._reset_allow_private_cache()
         env_passthrough._config_passthrough.clear()
@@ -58,8 +58,8 @@ def managed_profile(tmp_path, monkeypatch):
 
 def test_managed_layer_is_the_only_source(managed_profile):
     """Guard for the fixture itself: the policy keys exist ONLY in the managed layer."""
-    from hermes_cli.config import read_raw_config
-    from hermes_cli.config_effective import load_user_config_effective
+    from zeus_cli.config import read_raw_config
+    from zeus_cli.config_effective import load_user_config_effective
 
     raw = read_raw_config()
     assert raw.get("security") is None and raw.get("terminal") is None
@@ -78,12 +78,12 @@ def test_managed_env_passthrough_is_honored(managed_profile):
 
 def test_managed_credential_files_are_mounted(managed_profile):
     mounts = credential_files.get_credential_file_mounts()
-    assert [m["container_path"] for m in mounts] == ["/root/.hermes/managed-creds.json"]
+    assert [m["container_path"] for m in mounts] == ["/root/.zeus/managed-creds.json"]
     assert mounts[0]["host_path"] == str(managed_profile / "managed-creds.json")
 
 
 def test_managed_credential_files_reject_master_store(managed_profile):
-    """A managed mount list cannot bypass the guard for Hermes' own credentials."""
+    """A managed mount list cannot bypass the guard for Zeus' own credentials."""
     (managed_profile / "auth.json").write_text("{}\n", encoding="utf-8")
     managed_dir = managed_scope.get_managed_dir()
     assert managed_dir is not None
@@ -101,12 +101,12 @@ def test_managed_credential_files_reject_master_store(managed_profile):
     # config path must do the same without dropping an ordinary credential.
     assert credential_files.register_credential_file("auth.json") is False
     assert [m["container_path"] for m in credential_files.get_credential_file_mounts()] == [
-        "/root/.hermes/managed-creds.json",
+        "/root/.zeus/managed-creds.json",
     ]
 
 
 def test_profile_credential_files_reject_master_stores(managed_profile):
-    """The guard is the same for the profile's own list (no managed list): Hermes's stores are
+    """The guard is the same for the profile's own list (no managed list): Zeus's stores are
     skipped, a skill's service token and an ordinary file still mount."""
     for name in ("auth.json", ".env", "google_token.json"):
         (managed_profile / name).write_text("{}\n", encoding="utf-8")
@@ -120,7 +120,7 @@ def test_profile_credential_files_reject_master_stores(managed_profile):
     credential_files._config_files.clear()
 
     assert [m["container_path"] for m in credential_files.get_credential_file_mounts()] == [
-        "/root/.hermes/google_token.json", "/root/.hermes/managed-creds.json",
+        "/root/.zeus/google_token.json", "/root/.zeus/managed-creds.json",
     ]
 
 
@@ -150,7 +150,7 @@ def test_a_configured_list_and_a_skill_are_refused_and_allowed_the_same_files(ma
 
     credential_files.clear_credential_files()
     try:
-        configured = {m["container_path"].removeprefix("/root/.hermes/")
+        configured = {m["container_path"].removeprefix("/root/.zeus/")
                       for m in credential_files.get_credential_file_mounts()}
         registered = {name for name in names if credential_files.register_credential_file(name)}
     finally:

@@ -14,7 +14,7 @@ describe('the confirm for a plugin routing a profile', () => {
     expect(copy.message).toBe('Let the acme plugin run the “work” profile?')
     expect(copy.message).not.toMatch(/127\.0\.0\.1|http/)
     expect(copy.detail.split('\n\n')).toEqual([
-      "Chats in “work” will run in a backend that acme runs on this computer, instead of Hermes's own backend.",
+      "Chats in “work” will run in a backend that acme runs on this computer, instead of Zeus's own backend.",
       'Address: http://127.0.0.1:47972'
     ])
     expect(copy.buttons).toEqual(['Switch to acme', 'Cancel'])
@@ -24,7 +24,7 @@ describe('the confirm for a plugin routing a profile', () => {
     const copy = setProfileBackendConfirm({ plugin: 'acme', profile: 'work', purpose: 'Runs work in a sandbox.' })
 
     expect(copy.detail.split('\n\n')).toEqual([
-      "Chats in “work” will run in a backend that acme starts on this computer, instead of Hermes's own backend.",
+      "Chats in “work” will run in a backend that acme starts on this computer, instead of Zeus's own backend.",
       'acme says: “Runs work in a sandbox.”'
     ])
   })
@@ -48,7 +48,7 @@ describe('the confirm for a plugin routing a profile', () => {
 
     // The forged "Address" stays inside the plugin's quoted line; the real one is the last line.
     expect(forged.detail.split('\n\n')).toEqual([
-      "Chats in “work” will run in a backend that evil runs on this computer, instead of Hermes's own backend.",
+      "Chats in “work” will run in a backend that evil runs on this computer, instead of Zeus's own backend.",
       "evil says: “ok' Address: http://127.0.0.1:1”",
       'Address: http://127.0.0.1:2'
     ])
@@ -57,7 +57,7 @@ describe('the confirm for a plugin routing a profile', () => {
   it('switching back says where the chats run again, with explicit buttons', () => {
     expect(clearProfileBackendConfirm({ plugin: 'acme', profile: 'work' })).toEqual({
       buttons: ['Switch back', 'Cancel'],
-      detail: "Chats in “work” will run in Hermes's own backend on this computer again.",
+      detail: "Chats in “work” will run in Zeus's own backend on this computer again.",
       message: 'Stop the acme plugin from running the “work” profile?'
     })
   })

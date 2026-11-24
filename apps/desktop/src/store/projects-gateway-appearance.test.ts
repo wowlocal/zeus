@@ -19,10 +19,10 @@ vi.mock('@/store/gateway', () => ({
   requestGatewayForAgent: vi.fn()
 }))
 
-vi.mock('@/hermes', () => ({
-  getHermesConfig: vi.fn(),
+vi.mock('@/zeus', () => ({
+  getZeusConfig: vi.fn(),
   getProfiles: vi.fn(),
-  hermesApi: vi.fn(),
+  zeusApi: vi.fn(),
   setApiRequestProfile: vi.fn(),
   STARTUP_REQUEST_TIMEOUT_MS: 1000
 }))

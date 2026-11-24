@@ -6,7 +6,7 @@ description: "`/course <topic>` turns a subject into one self-contained HTML cou
 maintainer: NehuenD
 tier: community
 category: tools
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 docs_url: https://github.com/NehuenD/hermes_coursewright#readme
 version: "0.6.0"
 platforms: []

@@ -1,4 +1,4 @@
-"""Model-free API delegation delivery probe; run in an isolated HERMES_HOME.
+"""Model-free API delegation delivery probe; run in an isolated ZEUS_HOME.
 
 Uses real request-context binding, dispatch policy and SQLite persistence. This
 is local mechanism evidence, not provider inference or native Windows evidence.
@@ -32,7 +32,7 @@ async def probe():
             decisions[name] = _resolve_async_wake_sid(*args)
         finally:
             clear_session_vars(tokens)
-    store = open_persistence(profile_scope(home=Path(os.environ["HERMES_HOME"])), eager=True)
+    store = open_persistence(profile_scope(home=Path(os.environ["ZEUS_HOME"])), eager=True)
     store.sessions.create(NewSession(session_id="api-parent", source="api_server"))
     store.sessions.create(NewSession(session_id="stranger", source="api_server"))
     # The adapter opens this home's store itself.

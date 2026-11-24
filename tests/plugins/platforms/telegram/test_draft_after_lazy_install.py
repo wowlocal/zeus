@@ -24,7 +24,7 @@ _FIRST_RUN_PROBE = r"""
 import asyncio, importlib.abc, json, os, sys
 from unittest.mock import AsyncMock, MagicMock
 home = sys.argv[1]
-os.environ["HERMES_HOME"] = home
+os.environ["ZEUS_HOME"] = home
 with open(os.path.join(home, "config.yaml"), "w", encoding="utf-8") as fh:
     fh.write("platforms:\n  telegram:\n    enabled: true\n    token: '123456:offline'\n")
 class Block(importlib.abc.MetaPathFinder):
@@ -33,7 +33,7 @@ class Block(importlib.abc.MetaPathFinder):
             raise ModuleNotFoundError("No module named " + repr(name), name=name)
 blocker = Block()
 sys.meta_path.insert(0, blocker)
-from hermes_cli.plugins import discover_plugins
+from zeus_cli.plugins import discover_plugins
 discover_plugins()
 from gateway.config import Platform, load_gateway_config
 from gateway.platform_registry import platform_registry
@@ -88,7 +88,7 @@ def test_first_draft_after_on_demand_install_goes_out_as_markdown_v2(tmp_path):
     assert line, run.stdout[-2000:] + run.stderr[-6000:]
     result = json.loads(line[len("RESULT "):])
 
-    assert result["live_module"].startswith("hermes_plugins."), "not the production plugin-loading path"
+    assert result["live_module"].startswith("zeus_plugins."), "not the production plugin-loading path"
     assert result["preinstall_disconnected"] == {"success": False, "error": "not_connected"}
     assert result["outcome"] == {"success": True, "error": None}
     assert result["parse_modes"] == ["MarkdownV2"]

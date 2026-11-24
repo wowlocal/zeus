@@ -1,4 +1,4 @@
-"""A cron run fired in-process from a Kanban worker inherits ``HERMES_KANBAN_*`` but does not
+"""A cron run fired in-process from a Kanban worker inherits ``ZEUS_KANBAN_*`` but does not
 own the worker's card (#149512, #103883): naming that card explicitly must not pass the
 ownership gate, borrow the worker's run id, or extend the worker's claim."""
 from __future__ import annotations
@@ -10,16 +10,16 @@ import pytest
 
 @pytest.fixture
 def worker_board(monkeypatch, tmp_path):
-    home = tmp_path / ".hermes"
+    home = tmp_path / ".zeus"
     home.mkdir()
-    monkeypatch.setenv("HERMES_HOME", str(home))
-    monkeypatch.setenv("HERMES_PROFILE", "test-worker")
-    monkeypatch.delenv("HERMES_SESSION_ID", raising=False)
+    monkeypatch.setenv("ZEUS_HOME", str(home))
+    monkeypatch.setenv("ZEUS_PROFILE", "test-worker")
+    monkeypatch.delenv("ZEUS_SESSION_ID", raising=False)
     from pathlib import Path as _Path
     monkeypatch.setattr(_Path, "home", lambda: tmp_path)
 
-    from hermes_cli import kanban_db as kb
-    from hermes_cli import kanban_db_connect as kbc
+    from zeus_cli import kanban_db as kb
+    from zeus_cli import kanban_db_connect as kbc
     kb._INITIALIZED_PATHS.clear()
     kb.init_db()
     conn = kbc.connect()
@@ -30,15 +30,15 @@ def worker_board(monkeypatch, tmp_path):
         other_tid = kb.create_task(conn, title="other card")
     finally:
         conn.close()
-    monkeypatch.setenv("HERMES_KANBAN_TASK", worker_tid)
-    monkeypatch.setenv("HERMES_KANBAN_RUN_ID", str(run_id))
-    monkeypatch.setenv("HERMES_KANBAN_CLAIM_LOCK", "lock-abc")
+    monkeypatch.setenv("ZEUS_KANBAN_TASK", worker_tid)
+    monkeypatch.setenv("ZEUS_KANBAN_RUN_ID", str(run_id))
+    monkeypatch.setenv("ZEUS_KANBAN_CLAIM_LOCK", "lock-abc")
     return worker_tid, other_tid
 
 
 def _status(tid):
-    from hermes_cli import kanban_db as kb
-    from hermes_cli import kanban_db_connect as kbc
+    from zeus_cli import kanban_db as kb
+    from zeus_cli import kanban_db_connect as kbc
     conn = kbc.connect()
     try:
         return kb.get_task(conn, tid).status
@@ -47,8 +47,8 @@ def _status(tid):
 
 
 def _comments(tid):
-    from hermes_cli import kanban_db as kb
-    from hermes_cli import kanban_db_connect as kbc
+    from zeus_cli import kanban_db as kb
+    from zeus_cli import kanban_db_connect as kbc
     conn = kbc.connect()
     try:
         return kb.list_comments(conn, tid)
@@ -77,7 +77,7 @@ def test_cron_run_cannot_mutate_inherited_worker_card(worker_board, tool, extra)
 
 def test_cron_run_does_not_borrow_worker_identity(worker_board, monkeypatch):
     from agent.delegation_context import non_dispatcher_owned_context
-    from hermes_cli import kanban_db_connect as kbc
+    from zeus_cli import kanban_db_connect as kbc
     from tools import kanban_tools as kt
 
     worker_tid, _ = worker_board

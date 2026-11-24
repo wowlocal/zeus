@@ -18,23 +18,23 @@ description: >-
   jobs, write files to the project's branch, invite members, grant and revoke roles, create API
   tokens, declare and call external API connections, and send_feedback (sends a report to the while
   team). A person approves in while.sh before a tool goes public, data is restored or rights are
-  granted, and the agent never sees the credentials for people's other software. Hermes stores and
+  granted, and the agent never sees the credentials for people's other software. Zeus stores and
   refreshes the OAuth tokens. The MCP tool list comes from while's server at run time, so the pinned
   commit doesn't cover it. The repository's README also documents an optional install script
   (curl | sh) for other agents, and examples/ holds sample projects; the plugin runs neither. The
   bundled mcp.json works without an account; for the MCP tools of an account, enable OAuth with
-  `hermes mcp add while --url https://app.while.sh/mcp --auth oauth --connect-timeout 300`, then add
+  `zeus mcp add while --url https://app.while.sh/mcp --auth oauth --connect-timeout 300`, then add
   `trust: untrusted` to the `mcp_servers.while` entry in `config.yaml`; the package itself declares the
   server untrusted in plugin.json.
 maintainer: Nextmap
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_zeus: ">=0.22.0"
 docs_url: https://while.sh/en/docs/get-started/connect-your-agent/
 version: "1.0.0"
 platforms: []
 known_issues:
-  - "Sign in once after installing: hermes mcp add while --url https://app.while.sh/mcp --auth oauth --connect-timeout 300, then add trust: untrusted to the mcp_servers.while entry in config.yaml"
+  - "Sign in once after installing: zeus mcp add while --url https://app.while.sh/mcp --auth oauth --connect-timeout 300, then add trust: untrusted to the mcp_servers.while entry in config.yaml"
 capabilities:
   provides_tools: []
   provides_hooks: []

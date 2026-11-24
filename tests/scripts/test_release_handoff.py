@@ -176,7 +176,7 @@ def test_public_handoff_downloads_exact_staged_bytes_without_credentials(tmp_pat
         monkeypatch.delenv(key)
     r2_server.requests.clear()
     download = tmp_path / 'downloaded'
-    base = f'http://127.0.0.1:{r2_server.server_port}/hermes-releases'
+    base = f'http://127.0.0.1:{r2_server.server_port}/zeus-releases'
     args = ['fetch', *identity, '--public-base', base, '--name', 'win32-x64',
             '--root', str(download), '--include', '*.msix']
     handoff.main(args)
@@ -232,7 +232,7 @@ def test_public_handoff_rejects_unsafe_origins_paths_and_redirects(tmp_path, r2_
     class Redirect(BaseHTTPRequestHandler):
         def do_GET(self):
             self.send_response(302)
-            self.send_header('Location', f'http://127.0.0.1:{r2_server.server_port}/hermes-releases/unwanted')
+            self.send_header('Location', f'http://127.0.0.1:{r2_server.server_port}/zeus-releases/unwanted')
             self.send_header('Content-Length', '0')
             self.end_headers()
 
@@ -255,10 +255,10 @@ def test_public_handoff_rejects_unsafe_origins_paths_and_redirects(tmp_path, r2_
 
 
 def test_a_commit_claim_stages_under_its_claim_despite_its_commit_identity_env(tmp_path, monkeypatch):
-    # A commit claim's legs export HERMES_BUILD_COMMIT (the Commit<sha7> identity) beside the claim
+    # A commit claim's legs export ZEUS_BUILD_COMMIT (the Commit<sha7> identity) beside the claim
     # tag; the handoff CLI must stage under the claim archive, never fall into tagless commit mode.
     commit, tag = "a" * 40, "commit.20261026T180000Z-v1.2.3"
-    monkeypatch.setenv("HERMES_BUILD_COMMIT", commit)
+    monkeypatch.setenv("ZEUS_BUILD_COMMIT", commit)
     calls = []
     monkeypatch.setattr(handoff, "stage", lambda *args: calls.append(("tag", *args)))
     monkeypatch.setattr(handoff, "stage_commit_build", lambda *args: calls.append(("commit", *args)))

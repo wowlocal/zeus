@@ -22,7 +22,7 @@ def loader(tmp_path, monkeypatch):
     import providers.plugin_reload as module
 
     hooks = []
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path / "home"))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path / "home"))
     monkeypatch.setattr(module, "_snapshot_root", None)
     monkeypatch.setattr(module, "atexit", types.SimpleNamespace(register=lambda fn, *args: hooks.append((fn, args))))
     yield module, hooks
@@ -31,9 +31,9 @@ def loader(tmp_path, monkeypatch):
 
 
 def _parent() -> Path:
-    from hermes_constants import get_default_hermes_root
+    from zeus_constants import get_default_zeus_root
 
-    return get_default_hermes_root() / "runtime" / "provider-plugins"
+    return get_default_zeus_root() / "runtime" / "provider-plugins"
 
 
 def _seed(*roots: Path) -> None:
@@ -51,7 +51,7 @@ def test_dead_owned_roots_are_reclaimed_and_everything_else_is_kept(loader):
     # A root from a release without owner locks (its process may still be running), a root made without the setup
     # lock, a killed sweeper's claim lookalike that is not one, user data, and an owned-looking directory with no
     # owner.lock (not provably ours): never deleted.
-    kept = [parent / n for n in ("hermes-provider-plugins-older", f"{reload._UNSWEPT_PREFIX}x", ".reaping-mine", "notes",
+    kept = [parent / n for n in ("zeus-provider-plugins-older", f"{reload._UNSWEPT_PREFIX}x", ".reaping-mine", "notes",
                                  f"{owned}important-user-data")]
     _seed(dead, live, *kept)
     for root in (dead, *kept[:-1]):  # a dead lock file is no licence outside owned-* roots
@@ -155,7 +155,7 @@ def test_snapshots_live_under_the_root_even_for_a_named_profile(loader, tmp_path
     named = root_home / "profiles" / "work"
     named.mkdir(parents=True)
     (named / "config.yaml").write_text("")
-    monkeypatch.setenv("HERMES_HOME", str(named))
+    monkeypatch.setenv("ZEUS_HOME", str(named))
 
     root = reload._new_root()
 
@@ -163,8 +163,8 @@ def test_snapshots_live_under_the_root_even_for_a_named_profile(loader, tmp_path
 
 
 def test_backups_and_profile_clones_leave_the_snapshots_out(tmp_path):
-    from hermes_cli.backup import _should_exclude
-    from hermes_cli.profiles import _clone_all_copytree_ignore
+    from zeus_cli.backup import _should_exclude
+    from zeus_cli.profiles import _clone_all_copytree_ignore
 
     for rel in ("runtime/provider-plugins/x/owner.lock", "profiles/work/runtime/provider-plugins/x/a.py"):
         assert _should_exclude(Path(rel))
@@ -184,7 +184,7 @@ def test_backups_and_profile_clones_leave_the_snapshots_out(tmp_path):
 
 
 def test_a_data_only_uninstall_keeps_the_snapshots_live_processes_import(loader, tmp_path, monkeypatch):
-    from hermes_cli.data_cleanup import plan_data_removal, remove_data
+    from zeus_cli.data_cleanup import plan_data_removal, remove_data
 
     reload, _hooks = loader
     home = tmp_path / "home"
@@ -193,7 +193,7 @@ def test_a_data_only_uninstall_keeps_the_snapshots_live_processes_import(loader,
     (root / "pkg").mkdir()
     (root / "pkg" / "lazy.py").write_text("x = 1\n", encoding="utf-8")
     project = tmp_path / "project"
-    (project / "hermes_cli").mkdir(parents=True)
+    (project / "zeus_cli").mkdir(parents=True)
 
     _removed, failures = remove_data(plan_data_removal(home, project))
 

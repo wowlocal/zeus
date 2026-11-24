@@ -6,7 +6,7 @@ maintainer: modal-labs
 category: models
 docs_url: https://github.com/modal-projects/modal-hermes#readme
 version: "1.0.0"
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 capabilities:
   provides_tools: []
   provides_hooks: []

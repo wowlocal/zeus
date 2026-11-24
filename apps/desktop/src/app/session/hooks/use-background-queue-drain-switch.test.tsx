@@ -37,7 +37,7 @@ function Harness({ submitText }: { submitText: SubmitText }) {
 const settle = (ms = 0) => act(() => new Promise<void>(resolve => window.setTimeout(resolve, ms)))
 
 beforeEach(() => {
-  window.localStorage.removeItem('hermes.desktop.composerQueue.v1')
+  window.localStorage.removeItem('zeus.desktop.composerQueue.v1')
   resetFrozenQueuedTransportsForTests()
   clearAllSessionStates()
   setSessions([

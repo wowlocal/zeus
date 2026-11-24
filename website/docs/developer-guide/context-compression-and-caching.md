@@ -1,6 +1,6 @@
 # Context Compression and Caching
 
-Hermes Agent uses a dual compression system and Anthropic prompt caching to
+ZeusAgent uses a dual compression system and Anthropic prompt caching to
 manage context window usage efficiently across long conversations.
 
 Source files: `agent/context_engine.py` (ABC), `agent/context_compressor.py` (default engine),
@@ -19,10 +19,10 @@ Bedrock context resolution in `agent/model_metadata.py` uses this precedence:
 - **Legacy entries are revalidated.** Old scalar entries have no provenance and
   may be either probe results or fallbacks. Their size does not establish which.
 - **Failed probes use the current table without persisting it.** Failures have a
-  five-minute in-memory cooldown scoped to Hermes home, endpoint, model, and
+  five-minute in-memory cooldown scoped to Zeus home, endpoint, model, and
   region. Expiry or explicit cache invalidation permits another attempt.
 
-The cache remains at `context_length_cache.yaml` under the active Hermes home.
+The cache remains at `context_length_cache.yaml` under the active Zeus home.
 `context_lengths` retains scalar values for older readers. An additive
 `bedrock_confirmed_v1` map binds each confirmed key to its exact value in the
 same atomic write. Generic writes clear that key's provenance. Older writers
@@ -59,13 +59,13 @@ Selection is config-driven via `context.engine` in `config.yaml`. The resolution
 
 Plugin engines are **never auto-activated** — the user must explicitly set `context.engine` to the plugin's name. The default `"compressor"` always uses the built-in.
 
-Configure via `hermes plugins` → Provider Plugins → Context Engine, or edit `config.yaml` directly.
+Configure via `zeus plugins` → Provider Plugins → Context Engine, or edit `config.yaml` directly.
 
 For building a context engine plugin, see [Context Engine Plugins](./context-engine-plugin.md).
 
 ## Dual Compression System
 
-Hermes has two separate compression layers that operate independently:
+Zeus has two separate compression layers that operate independently:
 
 ```
                      ┌──────────────────────────┐
@@ -174,7 +174,7 @@ Images are priced at the per-image cost **learned from the provider's usage**
 (`agent/image_token_cost.py`), not a vendor formula: on a response whose delta
 since the previous anchor introduced N images, the residual between the real
 `prompt_tokens` and the text-only projection is N × the provider's price. The
-value is kept per `model@host` in `~/.hermes/cache/image_token_costs.json` and
+value is kept per `model@host` in `~/.zeus/cache/image_token_costs.json` and
 bound per turn so the trigger estimator, the tail-budget walk and gateway
 hygiene all use the same figure. Before the first vision turn a flat 1,500
 default applies.
@@ -248,7 +248,7 @@ text, the focus topic or error messages.
   `gateway_hygiene` or `overflow`. An automatic caller that passes no label
   reads `auto`; a refusal before any attempt began (pool saturation) reads
   `unknown`.
-- `route` is `hermes` for the local compressor and `codex_app_server` when the
+- `route` is `zeus` for the local compressor and `codex_app_server` when the
   Codex thread owns compaction.
 - `commit_status` is `committed`, `aborted`, `failed`, `skipped` or `blocked`.
   A `blocked` attempt was refused by an automatic guard; its `failure_class`
@@ -278,11 +278,11 @@ text, the focus topic or error messages.
   for like. `tool_results_pruned` and `reasoning_items_pruned` count the
   deterministic passes that ran before and after the summary.
 
-The opt-in `hermes.compression.count` shared metric keeps coarse triggers
+The opt-in `zeus.compression.count` shared metric keeps coarse triggers
 (`auto`, `manual`, `overflow`) and counts only attempts the local compressor
 ran; blocked and Codex-routed attempts appear in the log line only. When the
 NeMo Relay runtime is live, the same record, plus micro-compaction passes and
-committed proactive prunes, is also emitted as a `hermes.compaction` mark (see
+committed proactive prunes, is also emitted as a `zeus.compaction` mark (see
 [NeMo Relay Shared Metrics](./relay-shared-metrics.md#compaction-marks)).
 
 
@@ -303,7 +303,7 @@ compression:
   min_tail_user_messages: 1  # Real user messages guaranteed in the tail (default: 1)
   codex_gpt55_autoraise: true  # gpt-5.5 on Codex OAuth: raise trigger to 85% (default: true)
   codex_gpt55_autoraise_notice: true  # Show the one-time autoraise notice (default: true)
-  codex_app_server_auto: native  # native|hermes|off for Codex app-server thread compaction
+  codex_app_server_auto: native  # native|zeus|off for Codex app-server thread compaction
   codex_responses_native: false  # Opt-in server compaction: gpt-5.6 on OpenAI/Codex; Astra on Codex OAuth
   codex_responses_compact_threshold: null  # Server compaction trigger; only used when codex_responses_native: true
   in_place: true             # Compact on the same session id, no rotation (default: true)
@@ -332,7 +332,7 @@ auxiliary:
 | `idle_compact_after_seconds` | `0` | ≥0 seconds | Opt-in: compact up front when a session resumes after this many seconds idle (0 = disabled). Skips when context ≤ threshold × target_ratio; honors cooldown/anti-thrash/lock guards |
 | `codex_gpt55_autoraise` | `true` | bool | Raise the trigger to 85% for gpt-5.4/5.5/5.6 and gpt-6 Astra on the ChatGPT Codex OAuth route (see below). Set `false` to keep the global `threshold` |
 | `codex_gpt55_autoraise_notice` | `true` | bool | Show the one-time Codex gpt-5.5 autoraise notice. Set `false` to keep the 85% autoraise but suppress the banner |
-| `codex_app_server_auto` | `native` | `native`, `hermes`, `off` | Thread-compaction mode for Codex app-server sessions (see below) |
+| `codex_app_server_auto` | `native` | `native`, `zeus`, `off` | Thread-compaction mode for Codex app-server sessions (see below) |
 | `codex_responses_native` | `false` | bool | Opt in to OpenAI's server-side compaction on the Responses API. Engages for gpt-5.6-family models on the direct OpenAI API or a ChatGPT Codex subscription, and `gpt-6-astra` (including its `-900k` picker alias) on official Codex OAuth (see below) |
 | `codex_responses_compact_threshold` | `null` | `null` or positive integer | Server-side compaction trigger, read **only when `codex_responses_native: true`** — it never changes when local compression fires; the local trigger is `threshold` (ratio) capped by `threshold_tokens`. `null` follows the resolved local compression trigger with an 8,192 token safety margin. A positive integer remains absolute and only clamps downward when required. Invalid values use automatic behavior. Automatic mode falls back to `200000` when no usable local trigger exists |
 | `in_place` | `true` | bool | Compact on the same session id instead of rotating to a new one (see below) |
@@ -429,9 +429,9 @@ windows through some resellers). At the default 50% trigger, compaction would fi
 half the window the model can actually use. When the active route is Codex
 OAuth (`provider: openai-codex`) and the model is one of those families (Astra
 matches any slug containing `astra`; the opt-in `-900k` picker variants are
-excluded because they already unlock the wider window), Hermes raises the
+excluded because they already unlock the wider window), Zeus raises the
 trigger to **85%** (~231K) and shows a notice with the opt-out command. The
-notice is shown once per profile — a marker under `$HERMES_HOME`
+notice is shown once per profile — a marker under `$ZEUS_HOME`
 (`.codex_gpt55_autoraise_notice`) records that it ran, so repeated agent/session
 inits (e.g. every inbound gateway message) don't re-emit it; if the raised
 threshold later changes it re-notifies once. Only this exact route is affected;
@@ -439,27 +439,27 @@ the same models on any other provider keep your global `threshold`. To opt back 
 the global value:
 
 ```bash
-hermes config set compression.codex_gpt55_autoraise false
+zeus config set compression.codex_gpt55_autoraise false
 ```
 
 To keep the 85% autoraise but hide only the one-time notice:
 
 ```bash
-hermes config set compression.codex_gpt55_autoraise_notice false
+zeus config set compression.codex_gpt55_autoraise_notice false
 ```
 
 ### Codex large-context `-900k` picker variants (opt-in)
 
 The ChatGPT Codex backend *advertises* a 272K window for the gpt-5.4, gpt-5.6
 (Sol/Terra/Luna) and GPT-6 (Sol/Terra/Luna) families, but actually accepts ~911K input tokens
-for ChatGPT-subscription accounts (live-verified Aug 2026). Hermes keeps the
+for ChatGPT-subscription accounts (live-verified Aug 2026). Zeus keeps the
 **advertised 272K as the default** for the base slugs — a bigger window means
 more tokens per request and much faster subscription-usage burn, so the large
 window is strictly opt-in.
 
 To use the large window, pick the explicit `-900k` variant in `/model` (e.g.
 `gpt-6.1-sol-900k`, `gpt-6-sol-900k`, `gpt-6-luna-900k`, `gpt-5.6-sol-900k`,
-`gpt-5.6-terra-900k`, `gpt-5.6-luna-900k`, `gpt-5.4-900k`). These are Hermes-side aliases: the suffix is stripped before
+`gpt-5.6-terra-900k`, `gpt-5.6-luna-900k`, `gpt-5.4-900k`). These are Zeus-side aliases: the suffix is stripped before
 the model id is sent to the backend, and pricing/usage accounting treats them
 as the base model. Slugs that genuinely enforce 272K (gpt-5.5, gpt-5.4-mini)
 have no `-900k` variant. When the authenticated Codex catalog publishes a
@@ -476,7 +476,7 @@ wasting a small window, which a 900K window doesn't need.
 
 Codex app-server sessions (`api_mode: codex_app_server` — the codex CLI/agent
 runtime) are different from every other route: the codex agent owns the backing
-thread context, so Hermes' auxiliary summarizer cannot shrink it — rewriting the
+thread context, so Zeus' auxiliary summarizer cannot shrink it — rewriting the
 local transcript mirror leaves the real thread growing unbounded until a hard
 context reset. For this runtime, compaction goes through the app-server's own
 mechanism instead:
@@ -484,22 +484,22 @@ mechanism instead:
 - Manual compaction (`/compress`) asks the app-server to compact the thread
   (`thread/compact/start`) and waits for the compaction turn to complete.
 - Automatic compaction is controlled by `compression.codex_app_server_auto`:
-  the default `native` lets the app-server decide when to compact and Hermes
+  the default `native` lets the app-server decide when to compact and Zeus
   records the resulting compaction events (compression counters, session
-  events). Set `hermes` to let Hermes' compression threshold initiate
-  app-server compaction, or `off` to disable Hermes-initiated automatic
+  events). Set `zeus` to let Zeus' compression threshold initiate
+  app-server compaction, or `off` to disable Zeus-initiated automatic
   compaction entirely (codex may still compact natively).
 
-Hermes' local transcript is never rewritten on this runtime — state.db records
+Zeus' local transcript is never rewritten on this runtime — state.db records
 the compaction boundary while the visible transcript stays intact. All other
-routes (including Codex OAuth chat sessions) keep Hermes' summary compressor.
+routes (including Codex OAuth chat sessions) keep Zeus' summary compressor.
 
 ### Native Responses compaction (gpt-5.6 and Astra on supported routes)
 
 OpenAI's Responses API supports server-side compaction: when a request includes
 `context_management: [{type: "compaction", compact_threshold: N}]` and the
 rendered input crosses N tokens, the server prunes older context into an opaque
-encrypted `compaction` output item. Hermes captures that item into the
+encrypted `compaction` output item. Zeus captures that item into the
 assistant message's existing replay sidecar and sends it back on subsequent
 turns, standing in for the pruned history — long-horizon recall without a
 client-side summary pass, and ZDR-friendly (`store: false`, no
@@ -690,7 +690,7 @@ session or gateway agent rebuild), `agent/prepared_compaction.py` writes the nex
 the trigger fires. When the last provider-reported prompt count is within 12% of the trigger
 (`threshold_tokens`) below it, the turn loop starts one background pass, before a tool batch runs or
 at turn end. Turn-end passes are skipped for cron runs, delegated children and one-shot sessions
-(`hermes chat -q`, `-z`), whose agents end with the turn. The pass plans the same window `compress()` plans (`_plan_compaction_window`) and calls
+(`zeus chat -q`, `-z`), whose agents end with the turn. The pass plans the same window `compress()` plans (`_plan_compaction_window`) and calls
 the same `_generate_summary` on a copy of the compressor and of the window's messages, so the live
 transcript, the system prompt and the prompt cache are untouched until compaction. There is one pass
 per compaction: while a summary is held, no further pass starts, however much the prompt grows.
@@ -731,7 +731,7 @@ eviction, a rewind, `close()`) also cancels a running pass. A held summary there
 agent that lives across turns (interactive CLI, TUI/Desktop and messaging sessions); a `-q --resume`
 chain builds a new agent per run and gets no head start. Pass log lines carry `session=<id>`, and
 opt-in shared metrics count adoption and every pass and splice outcome
-(`hermes.prepared_compaction.count`, see the shared-metrics guide). Plugin context engines,
+(`zeus.prepared_compaction.count`, see the shared-metrics guide). Plugin context engines,
 Codex app-server sessions, native Responses compaction and micro-compaction are not prepared.
 
 
@@ -802,7 +802,7 @@ conversation prefix. Uses Anthropic's `cache_control` breakpoints.
 
 ### Strategy: system_and_3
 
-Anthropic allows a maximum of 4 `cache_control` breakpoints per request. Hermes
+Anthropic allows a maximum of 4 `cache_control` breakpoints per request. Zeus
 uses the "system_and_3" strategy:
 
 ```
@@ -856,7 +856,7 @@ The marker is applied differently based on content type:
    credential-pool rotation onto a different account — means the next request
    gets zero cache hits and re-reads the full conversation at undiscounted
    input price. This is inherent to how provider caches work, not something
-   Hermes can avoid; user-facing docs for `/model`, fallback providers, and
+   Zeus can avoid; user-facing docs for `/model`, fallback providers, and
    credential pools carry cost warnings for this reason. Don't add features
    that silently swap the model or credentials mid-session.
 
@@ -874,10 +874,10 @@ prompt_caching:
 
 `"auto"` resolves once per session in `agent/agent_init.py::_init_prompt_cache_config` via `agent/prompt_caching.py::auto_cache_ttl_for_source`: `1h` for human-paced sources, `5m` for `MACHINE_PACED_SOURCES` (subagent, cron, oneshot, webhook, kanban, api, api_server, tool, batch, curator); under `auto` a side agent (`side_agent=True`: `/background`, `/btw`, `/refine`) takes `5m`, and a background-review or `/btw` fork routed to a different model is clamped to `5m` like a delegated child. Auxiliary/stub calls (`configured_cache_ttl()`) treat `auto` as `5m`.
 
-The prompt-cache lifecycle (`agent/prompt_cache_lifecycle/`, no config key: `__init__` facade, `replay.py` replay shape and caps, `economics.py` `evaluate_economics`, `warmer.py` the controller, `edge.py` `EdgeDecision`, `human_paced` and the compaction/offload gates) is one controller per agent (`PromptCacheWarmer`, from `get_prompt_cache_warmer`) driven by the shared clock (`agent/prompt_cache_clock.py`, the only TTL source). The clock follows the API spec (`classify_route`, two rows): a request with `cache_control` markers is `anthropic_spec` on any wire or gateway (5m/1h declared as asked, clamped by `route_ttl_ceiling`); every other cached request is `openai_spec` (declared `30m`, a read refreshes to `max(existing, read + 30m)`), whatever the vendor or model generation. Only the expiry estimate departs from the tier (`_estimated_end`): a request sent with `prompt_cache_retention: 24h` keeps `guaranteed_until` at 30m (the warming deadline) but `estimated_until` at `read + 24h`, and an `is_local_endpoint` host has `estimated_until=None` with a known confidence, so neither is cold-pruned on the clock while `route_changed` and compaction still offload (chatgpt.com Codex strips the retention field: 30m stands). A provider profile with `prompt_cache_markers_from_catalog=True` (Nous) lets its `/models` catalog pick marker models (`prompt_caching.catalog_cache_markers`: a `cache_write` rate means markers); `agent/prompt_cache_routes.py` is the cross-session layer: `prompt_cache_clock._learn` feeds `observe` from every folded response (gap = send time minus the previous event's `sent_at`, against its tier), `PromptCacheWarmer.start`/`_refresh` apply `learned_window`, and `prompt_caching.learned_or_catalog_markers` lets a learned marker preference beat the catalog; rules need `MIN_SAMPLES` agreeing samples from `MIN_SAMPLES` distinct sessions (`observe(session_id=...)`), `_learn` skips a reply whose upstream differs from the cached one, a learned lifetime must exceed `longest_hit` (kept outside the trimmed `hit_gaps`), and facts expire after `EXPIRY_SECONDS`; the file lives under `get_hermes_home()` resolved per call. Pricing takes a catalog's `cache_write_1h` (else its single write rate) for 1h writes instead of the fixed 2x. At `cache_warming_delay_s` (5/6 of the TTL, at least 10 s before expiry) it decides once: **warm** (replay the last request with `replay_output_cap(model)`, 1 or 16 for OpenAI GPT-5/o-series, at most `WARM_BUDGET`=3 idle keep-alives per user message; while `agent._executing_tools` is set a keep-alive is booked on its run instead (`tool_warms`/`tool_spent_usd`), uncounted and bounded only by `evaluate_economics`' one-rewrite cap on that tool wait's spend; a miss counts in `_miss_streak` unless `prompt_cache_clock.response_upstream` (a gateway's upstream field, else the response id family: `chatcmpl` vs `gen` on Nous) differs from the reply that cached the prefix or it still read half the stable system+tools prefix; `REAL_MISSES_TO_STOP`=2 real misses (or `ANY_MISSES_TO_STOP`=3 of any kind) in a row set `_missed_route` (`_disable_warming`), so `start` refuses every later arm on that route for the session (`WARMING_DISABLED`, shown on `/context` as `warming_off`); a retried miss's rewrite is not charged to the money limit; `_MISSED_ROUTES` keeps it per session id across agent rebuilds and carries it to the compaction child; only a route switch or `/new` (`reset_session_state`, also dropping budget and latches) clears it. The idle budget is one `_Budget` object keyed on `_user_turn_count` that every run of the turn shares, each keep-alive reserved against it at admission (`_admit`) and reconciled with its billed cost in `_record`, so a run replaced mid-flight still counts; a miss, the third keep-alive or the money cap ends it (`_end_budget`; steps 2/3 decide either way), and a later tool-round reply carries the ended budget to the prompt the turn ends on (`_carry_ended_budget`). The replay is bounded per client: `replay_cap_honoured` admits the OpenAI/Anthropic SDKs as they are and any other client only through its `effective_output_cap` (native Gemini lifts thinking requests to 65,535, so they are not warmed); `bounded_chat_replay` drops `extra_body` output caps such as Gemini's long-decode `max_output_tokens`), then **compact** (budget over, proven/declared window of `MIN_COMPACT_WINDOW_SECONDS` or more, context at least `COMPACT_CONTEXT_FRACTION` of `threshold_tokens`, growth guard; no warmth check, the summary is a fresh aux request), else **expire + offload** (idle, cache certainly cold, once per stretch; the owner runs `turn_proactive_prune.offload_cold_history`). `PromptCacheWarmer.claim_edge(*, releasing=False, now=None) -> "compact" | "offload" | None` decides and latches steps 2/3 under the warmer lock (`edge_decision(...)` is the read-only `EdgeDecision(action, compact, offload)`); owners pass the action to their job as an argument. Nothing is sent after a compaction until the next user message. A budget ends at whichever comes first, `WARM_BUDGET` keep-alives, a miss, or the owner releasing the agent: `claim_edge(releasing=True)` runs the same gates at the release moment and cancels the live run; past the window the release offloads instead. Step 4 (cold return) is `agent/turn_proactive_prune.turn_start_cold_prune`; `prompt_cache_clock.prompt_cache_is_cold` (the one cold reading every prune and offload uses) also answers True on `route_changed`, so a `/model` or fallback switch offloads before the first request on the new route: `turn_proactive_prune.route_change_offload` runs before every request assembly, so a mid-turn fallback restart offloads too (the running turn is never shortened). Economics (`evaluate_economics`): read cost, plus the replay's real output cap (`replay_output_cap`, 16 on GPT-5/o-series) and any per-request fee, below the rewrite it prevents, a budget's total at most one rewrite, known prices, prefix at least `MIN_CACHEABLE_PREFIX_TOKENS`; no dollar floor. `write-on-hit` is learned only from keep-alive replays. `prompt_cache_lifecycle/tier.py` owns the `auto` tier for a person's chat: `adaptive_start_tier` starts a 1h choice on 5m (`_cache_ttl_adaptive`), `maybe_upgrade_cache_tier` (turn start, after `_user_turn_count += 1`) switches `_cache_ttl` to 1h only when the clock holds no guarantee and the last cache touch is over `UPGRADE_AFTER_SECONDS` old (so markers never change on a warm prefix), the upgrade is kept per session id (`carry_cache_tier` at the compaction boundary) and re-derived from a stored clock whose `requested_ttl` is 1h; `idle_warming_allowed` keeps idle keep-alives off until the upgrade.
+The prompt-cache lifecycle (`agent/prompt_cache_lifecycle/`, no config key: `__init__` facade, `replay.py` replay shape and caps, `economics.py` `evaluate_economics`, `warmer.py` the controller, `edge.py` `EdgeDecision`, `human_paced` and the compaction/offload gates) is one controller per agent (`PromptCacheWarmer`, from `get_prompt_cache_warmer`) driven by the shared clock (`agent/prompt_cache_clock.py`, the only TTL source). The clock follows the API spec (`classify_route`, two rows): a request with `cache_control` markers is `anthropic_spec` on any wire or gateway (5m/1h declared as asked, clamped by `route_ttl_ceiling`); every other cached request is `openai_spec` (declared `30m`, a read refreshes to `max(existing, read + 30m)`), whatever the vendor or model generation. Only the expiry estimate departs from the tier (`_estimated_end`): a request sent with `prompt_cache_retention: 24h` keeps `guaranteed_until` at 30m (the warming deadline) but `estimated_until` at `read + 24h`, and an `is_local_endpoint` host has `estimated_until=None` with a known confidence, so neither is cold-pruned on the clock while `route_changed` and compaction still offload (chatgpt.com Codex strips the retention field: 30m stands). A provider profile with `prompt_cache_markers_from_catalog=True` (Nous) lets its `/models` catalog pick marker models (`prompt_caching.catalog_cache_markers`: a `cache_write` rate means markers); `agent/prompt_cache_routes.py` is the cross-session layer: `prompt_cache_clock._learn` feeds `observe` from every folded response (gap = send time minus the previous event's `sent_at`, against its tier), `PromptCacheWarmer.start`/`_refresh` apply `learned_window`, and `prompt_caching.learned_or_catalog_markers` lets a learned marker preference beat the catalog; rules need `MIN_SAMPLES` agreeing samples from `MIN_SAMPLES` distinct sessions (`observe(session_id=...)`), `_learn` skips a reply whose upstream differs from the cached one, a learned lifetime must exceed `longest_hit` (kept outside the trimmed `hit_gaps`), and facts expire after `EXPIRY_SECONDS`; the file lives under `get_zeus_home()` resolved per call. Pricing takes a catalog's `cache_write_1h` (else its single write rate) for 1h writes instead of the fixed 2x. At `cache_warming_delay_s` (5/6 of the TTL, at least 10 s before expiry) it decides once: **warm** (replay the last request with `replay_output_cap(model)`, 1 or 16 for OpenAI GPT-5/o-series, at most `WARM_BUDGET`=3 idle keep-alives per user message; while `agent._executing_tools` is set a keep-alive is booked on its run instead (`tool_warms`/`tool_spent_usd`), uncounted and bounded only by `evaluate_economics`' one-rewrite cap on that tool wait's spend; a miss counts in `_miss_streak` unless `prompt_cache_clock.response_upstream` (a gateway's upstream field, else the response id family: `chatcmpl` vs `gen` on Nous) differs from the reply that cached the prefix or it still read half the stable system+tools prefix; `REAL_MISSES_TO_STOP`=2 real misses (or `ANY_MISSES_TO_STOP`=3 of any kind) in a row set `_missed_route` (`_disable_warming`), so `start` refuses every later arm on that route for the session (`WARMING_DISABLED`, shown on `/context` as `warming_off`); a retried miss's rewrite is not charged to the money limit; `_MISSED_ROUTES` keeps it per session id across agent rebuilds and carries it to the compaction child; only a route switch or `/new` (`reset_session_state`, also dropping budget and latches) clears it. The idle budget is one `_Budget` object keyed on `_user_turn_count` that every run of the turn shares, each keep-alive reserved against it at admission (`_admit`) and reconciled with its billed cost in `_record`, so a run replaced mid-flight still counts; a miss, the third keep-alive or the money cap ends it (`_end_budget`; steps 2/3 decide either way), and a later tool-round reply carries the ended budget to the prompt the turn ends on (`_carry_ended_budget`). The replay is bounded per client: `replay_cap_honoured` admits the OpenAI/Anthropic SDKs as they are and any other client only through its `effective_output_cap` (native Gemini lifts thinking requests to 65,535, so they are not warmed); `bounded_chat_replay` drops `extra_body` output caps such as Gemini's long-decode `max_output_tokens`), then **compact** (budget over, proven/declared window of `MIN_COMPACT_WINDOW_SECONDS` or more, context at least `COMPACT_CONTEXT_FRACTION` of `threshold_tokens`, growth guard; no warmth check, the summary is a fresh aux request), else **expire + offload** (idle, cache certainly cold, once per stretch; the owner runs `turn_proactive_prune.offload_cold_history`). `PromptCacheWarmer.claim_edge(*, releasing=False, now=None) -> "compact" | "offload" | None` decides and latches steps 2/3 under the warmer lock (`edge_decision(...)` is the read-only `EdgeDecision(action, compact, offload)`); owners pass the action to their job as an argument. Nothing is sent after a compaction until the next user message. A budget ends at whichever comes first, `WARM_BUDGET` keep-alives, a miss, or the owner releasing the agent: `claim_edge(releasing=True)` runs the same gates at the release moment and cancels the live run; past the window the release offloads instead. Step 4 (cold return) is `agent/turn_proactive_prune.turn_start_cold_prune`; `prompt_cache_clock.prompt_cache_is_cold` (the one cold reading every prune and offload uses) also answers True on `route_changed`, so a `/model` or fallback switch offloads before the first request on the new route: `turn_proactive_prune.route_change_offload` runs before every request assembly, so a mid-turn fallback restart offloads too (the running turn is never shortened). Economics (`evaluate_economics`): read cost, plus the replay's real output cap (`replay_output_cap`, 16 on GPT-5/o-series) and any per-request fee, below the rewrite it prevents, a budget's total at most one rewrite, known prices, prefix at least `MIN_CACHEABLE_PREFIX_TOKENS`; no dollar floor. `write-on-hit` is learned only from keep-alive replays. `prompt_cache_lifecycle/tier.py` owns the `auto` tier for a person's chat: `adaptive_start_tier` starts a 1h choice on 5m (`_cache_ttl_adaptive`), `maybe_upgrade_cache_tier` (turn start, after `_user_turn_count += 1`) switches `_cache_ttl` to 1h only when the clock holds no guarantee and the last cache touch is over `UPGRADE_AFTER_SECONDS` old (so markers never change on a warm prefix), the upgrade is kept per session id (`carry_cache_tier` at the compaction boundary) and re-derived from a stored clock whose `requested_ttl` is 1h; `idle_warming_allowed` keeps idle keep-alives off until the upgrade.
 
 - Arming: `turn_response_check.check_api_response` calls `start_prompt_cache_warming` after each response is folded into the clock; `turn_api_request.build_request_payload` cancels the run (the real request refreshes the entry). `conversation_loop.run_conversation` calls `end_turn_prompt_cache_warming` on every turn exit: `human_paced` agents keep their budget and warm while idle; subagents, side agents (`/bg`, `/btw`), cache-parity forks (`_skip_prompt_cache_warming`) and `MACHINE_PACED_SOURCES` stop.
-- Step 2/3 owners poll `claim_edge()` every `CHECK_INTERVAL_SECONDS` and run `compress_now(..., trigger="cache_expiry")` (normal compression model; a ready `prepare_ahead` summary is reused because the trigger is not `force`) or the cold offload: `tui_gateway/session_reaper.py` (ticker and reapers queue jobs on at most 3 daemon workers, `_cache_expiry_submit`; profile scope per session; the action picks compaction or `_offload_expired_cache`) and `GatewaySessionWatchersMixin._compact_idle_sessions_before_cache_expiry` (housekeeping; also serves `hermes chat --cli`, whose `GatewayAgent` turns run in the gateway; the due-scan runs in `asyncio.to_thread`; `claim_gate` held across load→commit, `_profile_scope_for_source`, detached Desktop chats via `route_entry`, per-session bounded jobs). No owner sends anything after a compaction. Release owners: `GatewayAgentCacheMixin._sweep_idle_cached_agents` and `_enforce_agent_cache_cap` hand each evicted agent to `GatewaySessionWatchersMixin._compact_then_release` (release claim in `asyncio.to_thread`; a due chat runs its compact or offload job, then the agent is released exactly once: task done-callback, plus `run_watchers.drain_pending_cache_releases` at shutdown), and the TUI reapers (`_reap_idle_sessions`, `_enforce_session_cap`) go through `_compact_then_close` (compact or offload, then close if still reapable). A queued TUI job whose chat closed meanwhile is refused at `_manual_compress_turn` (`_closing`).
+- Step 2/3 owners poll `claim_edge()` every `CHECK_INTERVAL_SECONDS` and run `compress_now(..., trigger="cache_expiry")` (normal compression model; a ready `prepare_ahead` summary is reused because the trigger is not `force`) or the cold offload: `tui_gateway/session_reaper.py` (ticker and reapers queue jobs on at most 3 daemon workers, `_cache_expiry_submit`; profile scope per session; the action picks compaction or `_offload_expired_cache`) and `GatewaySessionWatchersMixin._compact_idle_sessions_before_cache_expiry` (housekeeping; also serves `zeus chat --cli`, whose `GatewayAgent` turns run in the gateway; the due-scan runs in `asyncio.to_thread`; `claim_gate` held across load→commit, `_profile_scope_for_source`, detached Desktop chats via `route_entry`, per-session bounded jobs). No owner sends anything after a compaction. Release owners: `GatewayAgentCacheMixin._sweep_idle_cached_agents` and `_enforce_agent_cache_cap` hand each evicted agent to `GatewaySessionWatchersMixin._compact_then_release` (release claim in `asyncio.to_thread`; a due chat runs its compact or offload job, then the agent is released exactly once: task done-callback, plus `run_watchers.drain_pending_cache_releases` at shutdown), and the TUI reapers (`_reap_idle_sessions`, `_enforce_session_cap`) go through `_compact_then_close` (compact or offload, then close if still reapable). A queued TUI job whose chat closed meanwhile is refused at `_manual_compress_turn` (`_closing`).
 - Archives: `_plan_compaction_window` is write-free (the prepared pass and every tool batch plan through it); `compress()` archives once, after its summary exists (`_commit_window`). `_assemble_with_archive_list` appends an `ARCHIVE_LIST_HEADING` list of every `cache/pruned` file a replaced row named that the kept rows and summary text do not, so `referenced_archive_refs` (the retention sweep) still sees each one.
 - Pricing: a keep-alive reply is priced at the tier its own request declared (`prompt_cache_clock.request_write_tier` + `turn_usage.with_write_tier`), as `record_response_usage` prices loop responses, so an OpenRouter 1h write with no tier split bills at 2x input.
 - Guards: each keep-alive is bound to `context_witness` at arm time and rechecked before send and before its reply is folded into the clock; `_admit` is the single admission under the lock `cancel` takes; the reset epoch and `session_totals_lock` fence the running totals; every send is bracketed by `pre/post_auxiliary_call` (`aux_task="cache_warm"`); `evaluate_economics` requires the read to cost less than the rewrite it prevents and keeps an idle budget's (or one tool wait's) billed total under that rewrite; unknown cache prices refuse arming; budget-based thinking is never replayed; usage is booked to the session and route snapshotted at arm time and folded into session totals only, never the compressor or usage anchors.

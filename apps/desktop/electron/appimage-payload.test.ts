@@ -51,11 +51,11 @@ function stamp(overrides: Partial<InstallStamp> = {}): InstallStamp {
     distance: null,
     payload: 'bundled',
     runtime: {
-      repoDir: 'hermes-agent',
+      repoDir: 'zeus-agent',
       toolsDir: 'tools',
       storePython: 'tools/python/bin/python3',
       sitePackages: 'venv/lib/site-packages',
-      commands: { hermes: 'bin/hermes-7b0a2cd' }
+      commands: { zeus: 'bin/zeus-7b0a2cd' }
     },
     tag: null,
     ...overrides
@@ -69,10 +69,10 @@ function mountedResources(root: string): string {
   fs.mkdirSync(path.join(payload, 'bin'), { recursive: true })
   fs.mkdirSync(path.join(payload, 'tools', 'python', 'bin'), { recursive: true })
   fs.mkdirSync(path.join(payload, 'venv', 'bin'), { recursive: true })
-  fs.mkdirSync(path.join(payload, 'hermes-agent', 'empty'), { recursive: true })
-  fs.writeFileSync(path.join(payload, 'bin', 'hermes-7b0a2cd'), '#!/bin/sh\necho launcher\n', { mode: 0o755 })
+  fs.mkdirSync(path.join(payload, 'zeus-agent', 'empty'), { recursive: true })
+  fs.writeFileSync(path.join(payload, 'bin', 'zeus-7b0a2cd'), '#!/bin/sh\necho launcher\n', { mode: 0o755 })
   fs.writeFileSync(path.join(payload, 'tools', 'python', 'bin', 'python3'), 'interpreter bytes', { mode: 0o755 })
-  fs.writeFileSync(path.join(payload, 'hermes-agent', 'module.py'), 'print("hi")\n')
+  fs.writeFileSync(path.join(payload, 'zeus-agent', 'module.py'), 'print("hi")\n')
   fs.symlinkSync('../../tools/python/bin/python3', path.join(payload, 'venv', 'bin', 'python'))
 
   return resources
@@ -80,7 +80,7 @@ function mountedResources(root: string): string {
 
 /** An AppImage runtime stand-in: `--appimage-extract <pattern>` unpacks into ./squashfs-root, then runs `after`. */
 function fakeAppImage(root: string, resources: string, after = ''): string {
-  const appimage: string = path.join(root, `Hermes-${roots.length}-${Math.random().toString(36).slice(2)}.AppImage`)
+  const appimage: string = path.join(root, `Zeus-${roots.length}-${Math.random().toString(36).slice(2)}.AppImage`)
 
   fs.writeFileSync(
     appimage,
@@ -108,7 +108,7 @@ function copyHost(root: string, resources: string, overrides: Partial<PayloadCop
     plan: {
       appimage: fakeAppImage(root, resources),
       source: path.join(resources, 'agent-payload'),
-      root: path.join(root, 'data', 'hermes', 'bundles'),
+      root: path.join(root, 'data', 'zeus', 'bundles'),
       key: payloadCopyKey(stamp())!
     },
     binDir: path.join(root, 'home', '.local', 'bin'),
@@ -122,7 +122,7 @@ function copyHost(root: string, resources: string, overrides: Partial<PayloadCop
 function fuseMountinfo(mountPoint: string): string {
   return [
     '22 1 259:2 / / rw,relatime shared:1 - ext4 /dev/nvme0n1p2 rw',
-    `640 22 0:77 / ${mountPoint.replace(/ /g, '\\040')} ro,nosuid,nodev,relatime shared:350 - fuse.Hermes.AppImage Hermes.AppImage ro,user_id=1000`
+    `640 22 0:77 / ${mountPoint.replace(/ /g, '\\040')} ro,nosuid,nodev,relatime shared:350 - fuse.Zeus.AppImage Zeus.AppImage ro,user_id=1000`
   ].join('\n')
 }
 
@@ -139,7 +139,7 @@ test('each build gets its own copy key, and a stamp that cannot tell builds apar
   assert.equal(payloadCopyKey(stamp({ source: 'fallback' })), null)
 })
 
-test('cleanup looks for gateway units where `hermes gateway install` writes them', (): void => {
+test('cleanup looks for gateway units where `zeus gateway install` writes them', (): void => {
   assert.deepEqual(gatewayUnitDirs({}, '/home/u'), ['/home/u/.config/systemd/user', '/etc/systemd/system'])
   assert.deepEqual(gatewayUnitDirs({ XDG_CONFIG_HOME: '/cfg' }, '/home/u'), [
     '/cfg/systemd/user',
@@ -148,25 +148,25 @@ test('cleanup looks for gateway units where `hermes gateway install` writes them
 })
 
 posix('only a payload on the AppImage FUSE mount is copied, into the XDG data home', (): void => {
-  const resources = '/tmp/.mount_Hermes Ab12/resources'
+  const resources = '/tmp/.mount_Zeus Ab12/resources'
 
   const host = {
-    env: { APPIMAGE: '/home/u/Apps/Hermes.AppImage', XDG_DATA_HOME: '/data' },
+    env: { APPIMAGE: '/home/u/Apps/Zeus.AppImage', XDG_DATA_HOME: '/data' },
     home: '/home/u',
     resourcesPath: resources,
     stamp: stamp(),
     log: (): void => {}
   }
 
-  assert.deepEqual(payloadCopyPlan(host, fuseMountinfo('/tmp/.mount_Hermes Ab12')), {
-    appimage: '/home/u/Apps/Hermes.AppImage',
+  assert.deepEqual(payloadCopyPlan(host, fuseMountinfo('/tmp/.mount_Zeus Ab12')), {
+    appimage: '/home/u/Apps/Zeus.AppImage',
     source: path.join(resources, 'agent-payload'),
-    root: '/data/hermes/bundles',
+    root: '/data/zeus/bundles',
     key: payloadCopyKey(stamp())
   })
   assert.equal(
-    payloadCopyPlan({ ...host, env: { XDG_DATA_HOME: 'relative' } }, fuseMountinfo('/tmp/.mount_Hermes Ab12'))?.root,
-    '/home/u/.local/share/hermes/bundles'
+    payloadCopyPlan({ ...host, env: { XDG_DATA_HOME: 'relative' } }, fuseMountinfo('/tmp/.mount_Zeus Ab12'))?.root,
+    '/home/u/.local/share/zeus/bundles'
   )
   assert.equal(payloadCopyPlan(host, fuseMountinfo('/tmp/.mount_Other')), null)
 
@@ -181,15 +181,15 @@ test('installs that are not a mounted AppImage keep running the artifact payload
 
   const host = {
     platform: 'linux' as NodeJS.Platform,
-    execPath: '/tmp/.mount_Hermes/hermes',
-    env: { APPIMAGE: '/home/u/Hermes.AppImage' },
+    execPath: '/tmp/.mount_Zeus/zeus',
+    env: { APPIMAGE: '/home/u/Zeus.AppImage' },
     home: '/home/u',
-    resourcesPath: '/tmp/.mount_Hermes/resources',
+    resourcesPath: '/tmp/.mount_Zeus/resources',
     stamp: stamp(),
     readMountinfo: async (): Promise<string> => {
       mountinfoReads += 1
 
-      return fuseMountinfo('/tmp/.mount_Hermes')
+      return fuseMountinfo('/tmp/.mount_Zeus')
     },
     binDir: '/home/u/.local/bin',
     log: (): void => {}
@@ -198,8 +198,8 @@ test('installs that are not a mounted AppImage keep running the artifact payload
   for (const variant of [
     { ...host, platform: 'darwin' as NodeJS.Platform },
     { ...host, env: {} },
-    // A .deb Hermes started from a terminal AppImage inherits that image's APPIMAGE and APPDIR.
-    { ...host, execPath: '/opt/Hermes/hermes', env: { APPIMAGE: '/home/u/Term.AppImage', APPDIR: '/tmp/.mount_Term' } },
+    // A .deb Zeus started from a terminal AppImage inherits that image's APPIMAGE and APPDIR.
+    { ...host, execPath: '/opt/Zeus/zeus', env: { APPIMAGE: '/home/u/Term.AppImage', APPDIR: '/tmp/.mount_Term' } },
     { ...host, stamp: stamp({ payload: 'light' }) },
     { ...host, stamp: null }
   ]) {
@@ -223,7 +223,7 @@ posix(
     const copied: string = path.join(build, 'agent-payload')
     assert.deepEqual(await tallyTree(copied), await tallyTree(host.plan.source))
     assert.equal(fs.readlinkSync(path.join(copied, 'venv', 'bin', 'python')), '../../tools/python/bin/python3')
-    assert.equal(fs.statSync(path.join(copied, 'bin', 'hermes-7b0a2cd')).mode & 0o111, 0o111)
+    assert.equal(fs.statSync(path.join(copied, 'bin', 'zeus-7b0a2cd')).mode & 0o111, 0o111)
     assert.deepEqual(fs.readdirSync(build).sort(), ['agent-payload', 'complete.json'])
     assert.deepEqual(fs.readdirSync(host.plan.root), [host.plan.key])
 
@@ -282,8 +282,8 @@ posix('a short or altered copy is never used and leaves no build behind', async 
   const resources: string = mountedResources(root)
 
   for (const damage of [
-    'rm squashfs-root/resources/agent-payload/hermes-agent/module.py',
-    'printf truncated > squashfs-root/resources/agent-payload/hermes-agent/module.py',
+    'rm squashfs-root/resources/agent-payload/zeus-agent/module.py',
+    'printf truncated > squashfs-root/resources/agent-payload/zeus-agent/module.py',
     'rm squashfs-root/resources/agent-payload/venv/bin/python'
   ]) {
     const lines: string[] = []
@@ -377,15 +377,15 @@ posix(
       fs.utimesSync(path.join(builds[name], 'complete.json'), used, used)
     }
 
-    fs.symlinkSync(path.join(builds.old, 'agent-payload', 'bin', 'hermes-old'), path.join(binDir, 'hermes-old'))
+    fs.symlinkSync(path.join(builds.old, 'agent-payload', 'bin', 'zeus-old'), path.join(binDir, 'zeus-old'))
     fs.symlinkSync('/usr/bin/env', path.join(binDir, 'unrelated'))
     // A stopped gateway service generated from an older copy: nothing runs, but its unit names the copy.
     const units: string = path.join(root, 'config', 'systemd', 'user')
     fs.mkdirSync(units, { recursive: true })
     const python: string = path.join(builds['old-unit'], 'agent-payload', 'tools', 'python', 'bin', 'python3')
     fs.writeFileSync(
-      path.join(units, 'hermes-gateway-work.service'),
-      `[Service]\nExecStart=${python} -m hermes_cli.main gateway run\n`
+      path.join(units, 'zeus-gateway-work.service'),
+      `[Service]\nExecStart=${python} -m zeus_cli.main gateway run\n`
     )
     fs.writeFileSync(path.join(units, 'other.service'), `[Service]\nExecStart=${path.join(builds.old, 'x')}\n`)
     const deadWriter: string = path.join(host.plan.root, '.partial-999999999-crashed')
@@ -415,7 +415,7 @@ posix('cleanup reads a unit path the way systemd quoting spells it', async (): P
   const root: string = scratch()
   const host: PayloadCopyHost = copyHost(root, mountedResources(root))
   // XDG_DATA_HOME=<root>/data 100%$"q\b; _systemd_command writes it as data 100%%$$\"q\\b.
-  const plan = { ...host.plan, root: path.join(root, 'data 100%$"q\\b', 'hermes', 'bundles') }
+  const plan = { ...host.plan, root: path.join(root, 'data 100%$"q\\b', 'zeus', 'bundles') }
   const older: string = path.join(plan.root, 'older')
   fs.mkdirSync(path.join(older, 'agent-payload'), { recursive: true })
   fs.writeFileSync(path.join(older, 'complete.json'), JSON.stringify({ key: 'older' }))
@@ -425,7 +425,7 @@ posix('cleanup reads a unit path the way systemd quoting spells it', async (): P
   const python: string = path.join(
     root,
     'data 100%%$$\\"q\\\\b',
-    'hermes',
+    'zeus',
     'bundles',
     'older',
     'agent-payload',
@@ -433,8 +433,8 @@ posix('cleanup reads a unit path the way systemd quoting spells it', async (): P
   )
 
   fs.writeFileSync(
-    path.join(units, 'hermes-gateway.service'),
-    `[Service]\nExecStart="${python}" -m hermes_cli.main gateway run\n`
+    path.join(units, 'zeus-gateway.service'),
+    `[Service]\nExecStart="${python}" -m zeus_cli.main gateway run\n`
   )
 
   assert.deepEqual(await collectStalePayloadCopies({ ...host, plan, serviceUnitDirs: [units] }, false), [])
@@ -471,7 +471,7 @@ posix('a copy removed while the app runs is prepared again, not handed out', asy
 
   const stable = createStablePayloadResources(hostLog => ({
     platform: 'linux',
-    execPath: path.join(root, 'mount', 'hermes'),
+    execPath: path.join(root, 'mount', 'zeus'),
     env: { APPIMAGE: appimage, APPDIR: path.join(root, 'mount'), XDG_DATA_HOME: path.join(root, 'data') },
     home: path.join(root, 'home'),
     resourcesPath: resources,
@@ -484,7 +484,7 @@ posix('a copy removed while the app runs is prepared again, not handed out', asy
   }))
 
   const build: string = await stable(log)
-  assert.equal(build, path.join(root, 'data', 'hermes', 'bundles', payloadCopyKey(stamp())!))
+  assert.equal(build, path.join(root, 'data', 'zeus', 'bundles', payloadCopyKey(stamp())!))
   assert.equal(await stable(log), build)
   assert.equal(extractions(root).length, 1)
 

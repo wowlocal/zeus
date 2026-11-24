@@ -414,7 +414,7 @@ def _unfinished_desktop_head(env: dict, records: list[dict], read_archive, head:
     Docker promotion too; while a newer release owns the aliases, or their owner cannot be
     read, only the desktop advance repeats (``finish``).
     """
-    from hermes_cli.release_channels import ChannelError
+    from zeus_cli.release_channels import ChannelError
     from scripts.releases import channel_releases
 
     desktop = channel_releases.stable_head_version(env)

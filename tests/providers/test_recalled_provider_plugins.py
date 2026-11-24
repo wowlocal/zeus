@@ -1,4 +1,4 @@
-"""A provider plugin the Hermes plugin catalog recalled after it was installed stops loading.
+"""A provider plugin the Zeus plugin catalog recalled after it was installed stops loading.
 
 The general plugin loader refuses an installed plugin the catalog removal list names; provider
 discovery imports user provider plugins on its own path, so it applies the same offline check (the
@@ -14,7 +14,7 @@ import sys
 import textwrap
 from pathlib import Path
 
-import hermes_yaml as yaml
+import zeus_yaml as yaml
 import pytest
 
 _PROFILE_SOURCE = textwrap.dedent(
@@ -36,16 +36,16 @@ def _clear_provider_caches():
     _pkg._PROVIDER_LIST_CACHE = None
     _pkg._discovered = False
     for mod in list(sys.modules):
-        if mod.startswith(("plugins.model_providers", "_hermes_user_provider")):
+        if mod.startswith(("plugins.model_providers", "_zeus_user_provider")):
             del sys.modules[mod]
 
 
 @pytest.fixture
-def hermes_home(tmp_path, monkeypatch):
+def zeus_home(tmp_path, monkeypatch):
     home = tmp_path / "home"
     home.mkdir()
     monkeypatch.setenv("HOME", str(tmp_path / "os-home"))
-    monkeypatch.setenv("HERMES_HOME", str(home))
+    monkeypatch.setenv("ZEUS_HOME", str(home))
     _clear_provider_caches()
     yield home
     _clear_provider_caches()
@@ -73,37 +73,37 @@ def _layouts(home: Path, name: str) -> dict[str, Path]:
 
 
 @pytest.mark.parametrize("layout", ["flat", "nested"])
-def test_a_recalled_provider_plugin_is_not_imported(hermes_home, caplog, layout):
-    marker = _write_plugin(_layouts(hermes_home, "recalledprov")[layout], "recalledprov")
-    kept = _write_plugin(_layouts(hermes_home, "keptprov")[layout], "keptprov")
-    _recall(hermes_home, "recalledprov")
+def test_a_recalled_provider_plugin_is_not_imported(zeus_home, caplog, layout):
+    marker = _write_plugin(_layouts(zeus_home, "recalledprov")[layout], "recalledprov")
+    kept = _write_plugin(_layouts(zeus_home, "keptprov")[layout], "keptprov")
+    _recall(zeus_home, "recalledprov")
     import providers
 
     with caplog.at_level(logging.WARNING, logger="providers"):
         assert providers.get_provider_profile("recalledprov") is None
 
     assert not marker.exists()
-    assert providers.plugin_load_error("recalledprov") == "removed from the Hermes plugin catalog: withdrawn by its author"
+    assert providers.plugin_load_error("recalledprov") == "removed from the Zeus plugin catalog: withdrawn by its author"
     assert any("Refusing to load provider plugin 'recalledprov'" in r.getMessage() for r in caplog.records)
     # A plugin the list does not name still loads without a plugins.enabled entry.
     assert providers.get_provider_profile("keptprov") is not None and kept.exists()
     assert providers.plugin_load_error("keptprov") == ""
 
 
-def test_an_install_made_with_allow_removed_keeps_loading(hermes_home):
-    from hermes_cli import plugins_cmd
+def test_an_install_made_with_allow_removed_keeps_loading(zeus_home):
+    from zeus_cli import plugins_cmd
 
-    marker = _write_plugin(hermes_home / "plugins" / "exemptprov", "exemptprov")
+    marker = _write_plugin(zeus_home / "plugins" / "exemptprov", "exemptprov")
     plugins_cmd._write_install_metadata({"exemptprov": {"source": "file:///src/exemptprov", "allow_removed": True}})
-    _recall(hermes_home, "exemptprov")
+    _recall(zeus_home, "exemptprov")
     import providers
 
     assert providers.get_provider_profile("exemptprov") is not None
     assert marker.exists()
 
 
-def test_bundled_providers_are_not_checked(hermes_home):
-    _recall(hermes_home, "anthropic", "openrouter")
+def test_bundled_providers_are_not_checked(zeus_home):
+    _recall(zeus_home, "anthropic", "openrouter")
     import providers
 
     assert providers.get_provider_profile("anthropic") is not None
@@ -111,13 +111,13 @@ def test_bundled_providers_are_not_checked(hermes_home):
 
 
 @pytest.mark.platforms("any")  # the host is a child process: its env/home resolution is per-OS
-def test_a_recalled_provider_plugin_never_runs_in_the_plugin_host(hermes_home):
-    from hermes_cli import plugins as plugins_mod
+def test_a_recalled_provider_plugin_never_runs_in_the_plugin_host(zeus_home):
+    from zeus_cli import plugins as plugins_mod
 
-    marker = _write_plugin(hermes_home / "plugins" / "hostedrecalled", "hostedrecalled")
-    kept = _write_plugin(hermes_home / "plugins" / "hostedkept", "hostedkept")
-    (hermes_home / "config.yaml").write_text(yaml.safe_dump({"plugins": {"isolation": "host"}}), encoding="utf-8")
-    _recall(hermes_home, "hostedrecalled")
+    marker = _write_plugin(zeus_home / "plugins" / "hostedrecalled", "hostedrecalled")
+    kept = _write_plugin(zeus_home / "plugins" / "hostedkept", "hostedkept")
+    (zeus_home / "config.yaml").write_text(yaml.safe_dump({"plugins": {"isolation": "host"}}), encoding="utf-8")
+    _recall(zeus_home, "hostedrecalled")
     import providers
 
     try:
@@ -144,10 +144,10 @@ def _write_cache(home: Path, text: str) -> None:
 
 
 @pytest.mark.parametrize("value", sorted(_NOT_AN_OBJECT))
-def test_a_cached_catalog_that_is_not_an_object_does_not_stop_provider_lookup(hermes_home, value):
-    layouts = [_layouts(hermes_home, name)["nested"] for name in ("firstprov", "secondprov")]
+def test_a_cached_catalog_that_is_not_an_object_does_not_stop_provider_lookup(zeus_home, value):
+    layouts = [_layouts(zeus_home, name)["nested"] for name in ("firstprov", "secondprov")]
     markers = [_write_plugin(directory, directory.name) for directory in layouts]
-    _write_cache(hermes_home, _NOT_AN_OBJECT[value])
+    _write_cache(zeus_home, _NOT_AN_OBJECT[value])
     import providers
 
     assert providers.get_provider_profile("firstprov") is not None
@@ -157,18 +157,18 @@ def test_a_cached_catalog_that_is_not_an_object_does_not_stop_provider_lookup(he
 
 
 @pytest.mark.parametrize("value", sorted(_NOT_AN_OBJECT))
-def test_the_general_loader_loads_an_enabled_plugin_beside_such_a_cache(hermes_home, value):
-    from hermes_cli.plugins import PluginManager
+def test_the_general_loader_loads_an_enabled_plugin_beside_such_a_cache(zeus_home, value):
+    from zeus_cli.plugins import PluginManager
 
-    plugin_dir = hermes_home / "plugins" / "generalplug"
+    plugin_dir = zeus_home / "plugins" / "generalplug"
     plugin_dir.mkdir(parents=True)
-    marker = hermes_home / "ran-generalplug"
+    marker = zeus_home / "ran-generalplug"
     (plugin_dir / "plugin.yaml").write_text("name: generalplug\nversion: 0.1.0\n", encoding="utf-8")
     (plugin_dir / "__init__.py").write_text(f"def register(ctx):\n    open({str(marker)!r}, 'a').close()\n",
                                             encoding="utf-8")
-    (hermes_home / "config.yaml").write_text(yaml.safe_dump({"plugins": {"enabled": ["generalplug"]}}),
+    (zeus_home / "config.yaml").write_text(yaml.safe_dump({"plugins": {"enabled": ["generalplug"]}}),
                                              encoding="utf-8")
-    _write_cache(hermes_home, _NOT_AN_OBJECT[value])
+    _write_cache(zeus_home, _NOT_AN_OBJECT[value])
 
     manager = PluginManager()
     manager.discover_and_load()
@@ -184,27 +184,27 @@ def _malformed_repo_cache(home: Path, *recalled: str) -> None:
     _write_cache(home, json.dumps({"entries": [], "removed": removed + [{"name": n, "reason": "withdrawn"} for n in recalled]}))
 
 
-def test_a_removal_entry_with_a_malformed_repo_url_does_not_stop_provider_lookup(hermes_home):
-    kept = _write_plugin(_layouts(hermes_home, "keptprov")["nested"], "keptprov")
-    recalled = _write_plugin(_layouts(hermes_home, "recalledprov")["nested"], "recalledprov")
-    _malformed_repo_cache(hermes_home, "recalledprov")
+def test_a_removal_entry_with_a_malformed_repo_url_does_not_stop_provider_lookup(zeus_home):
+    kept = _write_plugin(_layouts(zeus_home, "keptprov")["nested"], "keptprov")
+    recalled = _write_plugin(_layouts(zeus_home, "recalledprov")["nested"], "recalledprov")
+    _malformed_repo_cache(zeus_home, "recalledprov")
     import providers
 
     assert providers.get_provider_profile("keptprov") is not None and kept.exists()
     assert providers.get_provider_profile("recalledprov") is None and not recalled.exists()
-    assert providers.plugin_load_error("recalledprov") == "removed from the Hermes plugin catalog: withdrawn"
+    assert providers.plugin_load_error("recalledprov") == "removed from the Zeus plugin catalog: withdrawn"
 
 
-def test_the_general_loader_loads_an_enabled_plugin_beside_a_malformed_repo_url(hermes_home):
-    from hermes_cli.plugins import PluginManager
+def test_the_general_loader_loads_an_enabled_plugin_beside_a_malformed_repo_url(zeus_home):
+    from zeus_cli.plugins import PluginManager
 
-    plugin_dir = hermes_home / "plugins" / "generalplug"
+    plugin_dir = zeus_home / "plugins" / "generalplug"
     plugin_dir.mkdir(parents=True)
     (plugin_dir / "plugin.yaml").write_text("name: generalplug\nversion: 0.1.0\n", encoding="utf-8")
     (plugin_dir / "__init__.py").write_text("def register(ctx):\n    pass\n", encoding="utf-8")
-    (hermes_home / "config.yaml").write_text(yaml.safe_dump({"plugins": {"enabled": ["generalplug"]}}),
+    (zeus_home / "config.yaml").write_text(yaml.safe_dump({"plugins": {"enabled": ["generalplug"]}}),
                                              encoding="utf-8")
-    _malformed_repo_cache(hermes_home)
+    _malformed_repo_cache(zeus_home)
 
     manager = PluginManager()
     manager.discover_and_load()

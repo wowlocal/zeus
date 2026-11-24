@@ -1,6 +1,6 @@
-import type { SharedControl } from '@hermes/shared/gateway-canonical'
-import type { ProjectInfo, SubagentStatus, ToolLabel } from '@hermes/shared/gateway-events'
-import type { SessionInfo, SlashCategory } from '@hermes/shared/gateway-types'
+import type { SharedControl } from '@zeus/shared/gateway-canonical'
+import type { ProjectInfo, SubagentStatus, ToolLabel } from '@zeus/shared/gateway-events'
+import type { SessionInfo, SlashCategory } from '@zeus/shared/gateway-types'
 
 export interface ActiveTool {
   context?: string

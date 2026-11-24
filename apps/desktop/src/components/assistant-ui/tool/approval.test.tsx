@@ -4,7 +4,7 @@ import type { ReactNode } from 'react'
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { RICH_INPUT_SLOT } from '@/app/chat/composer/rich-editor'
-import type { HermesGateway } from '@/hermes'
+import type { ZeusGateway } from '@/zeus'
 import { handleApprovalKey, releaseApprovalKey } from '@/lib/keybinds/approval-keys'
 import { $gateway } from '@/store/gateway'
 import {
@@ -56,7 +56,7 @@ function liveApproval(id = 'srq-approval') {
 
 function mockGateway() {
   const request = vi.fn().mockResolvedValue({ resolved: true })
-  $gateway.set({ request } as unknown as HermesGateway)
+  $gateway.set({ request } as unknown as ZeusGateway)
 
   return request
 }
@@ -577,7 +577,7 @@ describe('folder and site approval cards', () => {
     expect(respond).not.toHaveBeenCalled()
     const field = reasonField()
     expect(document.activeElement).toBe(field)
-    expect(field.placeholder).toBe('Tell Hermes why (optional)')
+    expect(field.placeholder).toBe('Tell Zeus why (optional)')
     expect(field.maxLength).toBe(500)
     // While the field is open the card offers Cancel and Deny only.
     expect(screen.getAllByRole('button').map(button => button.textContent?.replace('↵', '').trim())).toEqual([

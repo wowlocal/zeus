@@ -1,7 +1,7 @@
-import { Box, Text, useInput, useStdout } from '@hermes/ink'
-import type { SessionListResult, SessionListRow } from '@hermes/shared/gateway-events'
-import type { SessionActiveItem, SessionActiveListResponse, SessionCloseResponse } from '@hermes/shared/gateway-types'
-import { sessionScopedModelArg } from '@hermes/shared/slash-input'
+import { Box, Text, useInput, useStdout } from '@zeus/ink'
+import type { SessionListResult, SessionListRow } from '@zeus/shared/gateway-events'
+import type { SessionActiveItem, SessionActiveListResponse, SessionCloseResponse } from '@zeus/shared/gateway-types'
+import { sessionScopedModelArg } from '@zeus/shared/slash-input'
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { GatewayClient } from '../gatewayClient.js'

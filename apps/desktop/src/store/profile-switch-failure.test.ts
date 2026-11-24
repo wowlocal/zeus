@@ -16,9 +16,9 @@ const gatewayMocks = vi.hoisted(() => {
   }
 })
 
-vi.mock('@/hermes', async importOriginal => ({
+vi.mock('@/zeus', async importOriginal => ({
   ...(await importOriginal<Record<string, unknown>>()),
-  HermesGateway: class {
+  ZeusGateway: class {
     connectionState = 'closed'
     close = vi.fn(() => {
       this.connectionState = 'closed'
@@ -42,12 +42,12 @@ const { activeGatewayProfileKey, closeSecondaryGateways, setPrimaryGateway, setP
   await import('./gateway')
 
 const { $profileSwitchFailure, $profileSwitchPending } = await import('./profile-switch-state')
-const { HermesGateway } = await import('@/hermes')
+const { ZeusGateway } = await import('@/zeus')
 
 await import('./session-states')
 
 function installDesktop(stub: Record<string, unknown>): void {
-  ;(window as unknown as { hermesDesktop: unknown }).hermesDesktop = stub
+  ;(window as unknown as { zeusDesktop: unknown }).zeusDesktop = stub
 }
 
 function descriptorFor(profile: string) {
@@ -72,7 +72,7 @@ afterEach(() => {
   vi.resetAllMocks()
   gatewayMocks.connect.mockResolvedValue(undefined)
   vi.useRealTimers()
-  delete (window as unknown as { hermesDesktop?: unknown }).hermesDesktop
+  delete (window as unknown as { zeusDesktop?: unknown }).zeusDesktop
 })
 
 describe('ensureGatewayProfile — switch failure surfaces instead of silent fallback (#81094)', () => {
@@ -88,7 +88,7 @@ describe('ensureGatewayProfile — switch failure surfaces instead of silent fal
 })
 
 it('offers Retry after a registry rail switch fails to open its socket without replacing the draft', async () => {
-  const primary = new HermesGateway()
+  const primary = new ZeusGateway()
   await primary.connect('wss://default.invalid/ws')
   setPrimaryGateway(primary)
   setPrimaryGatewayConnectionId('remote-test', 'remote')

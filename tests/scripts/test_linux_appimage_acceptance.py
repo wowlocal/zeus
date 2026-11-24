@@ -23,7 +23,7 @@ pytestmark = pytest.mark.platforms("linux")
 
 
 def test_digest_and_format_bind_both_lanes_to_packaged_x64(tmp_path):
-    image = tmp_path / "Hermes.AppImage"
+    image = tmp_path / "Zeus.AppImage"
     header = bytearray(64)
     header[:6] = b"\x7fELF\x02\x01"
     header[8:11] = b"AI\x02"
@@ -201,7 +201,7 @@ def test_floor_refuses_attempt_even_if_app_swallows_error(tmp_path, attempt):
 
 
 def test_desktop_that_dropped_the_chromium_sandbox_is_refused(tmp_path):
-    app = "/tmp/appimage_extracted_1/Hermes Agent"
+    app = "/tmp/appimage_extracted_1/ZeusAgent"
     (tmp_path / "desktop.9").write_text(
         f'execve("{app}", ["{app}", "--disable-setuid-sandbox"], 0x10 /* 2 vars */) = 0\n'
         f'execve("{app}", ["{app}", "--no-sandbox"], 0x10 /* 2 vars */) = -1 ENOENT (No such file or directory)\n')

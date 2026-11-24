@@ -1,7 +1,7 @@
 """A managed ``allow_private_urls`` pin decides the private-URL toggle before anything the user controls.
 
 The managed-scope guide: a pinned key wins over the profile's ``config.yaml``, its ``.env`` and the shell
-environment. For this toggle the user-controlled inputs are ``HERMES_ALLOW_PRIVATE_URLS`` (shell or profile
+environment. For this toggle the user-controlled inputs are ``ZEUS_ALLOW_PRIVATE_URLS`` (shell or profile
 ``.env``) and the profile's two spellings of the key (``security.allow_private_urls`` and the legacy
 ``browser.allow_private_urls``). Without a pin the order stays environment variable, then config.
 """
@@ -10,8 +10,8 @@ from unittest.mock import patch
 
 import pytest
 
-from hermes_cli import managed_scope
-from hermes_constants import reset_hermes_home_override, set_hermes_home_override
+from zeus_cli import managed_scope
+from zeus_constants import reset_zeus_home_override, set_zeus_home_override
 from tools import url_safety
 
 
@@ -22,11 +22,11 @@ def _reset() -> None:
 
 @pytest.fixture
 def managed(tmp_path, monkeypatch):
-    """Write the managed config.yaml (HERMES_MANAGED_DIR) and drop the caches that hold the toggle."""
+    """Write the managed config.yaml (ZEUS_MANAGED_DIR) and drop the caches that hold the toggle."""
     md = tmp_path / "managed"
     md.mkdir()
-    monkeypatch.setenv("HERMES_MANAGED_DIR", str(md))
-    monkeypatch.delenv("HERMES_ALLOW_PRIVATE_URLS", raising=False)
+    monkeypatch.setenv("ZEUS_MANAGED_DIR", str(md))
+    monkeypatch.delenv("ZEUS_ALLOW_PRIVATE_URLS", raising=False)
 
     def write(text: str) -> None:
         (md / "config.yaml").write_text(text, encoding="utf-8")
@@ -37,7 +37,7 @@ def managed(tmp_path, monkeypatch):
 
 
 def _profile(config: dict):
-    return patch("hermes_cli.config.read_raw_config", return_value=config)
+    return patch("zeus_cli.config.read_raw_config", return_value=config)
 
 
 def _resolves_to(ip: str):
@@ -47,7 +47,7 @@ def _resolves_to(ip: str):
 @pytest.mark.parametrize("env_value", ["true", "1", "yes"])
 def test_a_managed_false_pin_beats_the_environment_variable(managed, monkeypatch, env_value):
     managed("security:\n  allow_private_urls: false\n")
-    monkeypatch.setenv("HERMES_ALLOW_PRIVATE_URLS", env_value)
+    monkeypatch.setenv("ZEUS_ALLOW_PRIVATE_URLS", env_value)
     with _profile({}):
         assert url_safety._global_allow_private_urls() is False
         with _resolves_to("10.0.0.5"):
@@ -57,7 +57,7 @@ def test_a_managed_false_pin_beats_the_environment_variable(managed, monkeypatch
 @pytest.mark.parametrize("env_value", ["false", "0", "no"])
 def test_a_managed_true_pin_beats_the_environment_variable(managed, monkeypatch, env_value):
     managed("security:\n  allow_private_urls: true\n")
-    monkeypatch.setenv("HERMES_ALLOW_PRIVATE_URLS", env_value)
+    monkeypatch.setenv("ZEUS_ALLOW_PRIVATE_URLS", env_value)
     with _profile({}):
         assert url_safety._global_allow_private_urls() is True
         with _resolves_to("10.0.0.5"):
@@ -77,11 +77,11 @@ def test_a_managed_false_pin_beats_a_routed_profiles_own_file(managed, tmp_path)
     home.mkdir()
     (home / "config.yaml").write_text(
         "security:\n  allow_private_urls: true\nbrowser:\n  allow_private_urls: true\n", encoding="utf-8")
-    token = set_hermes_home_override(home)
+    token = set_zeus_home_override(home)
     try:
         assert url_safety._global_allow_private_urls() is False
     finally:
-        reset_hermes_home_override(token)
+        reset_zeus_home_override(token)
 
 
 @pytest.mark.parametrize("pinned, env_value, profile", [
@@ -90,7 +90,7 @@ def test_a_managed_false_pin_beats_a_routed_profiles_own_file(managed, tmp_path)
 ])
 def test_a_managed_pin_on_the_legacy_key_decides_too(managed, monkeypatch, pinned, env_value, profile):
     managed(f"browser:\n  allow_private_urls: {str(pinned).lower()}\n")
-    monkeypatch.setenv("HERMES_ALLOW_PRIVATE_URLS", env_value)
+    monkeypatch.setenv("ZEUS_ALLOW_PRIVATE_URLS", env_value)
     with _profile(profile):
         assert url_safety._global_allow_private_urls() is pinned
 
@@ -112,7 +112,7 @@ def test_the_preferred_key_decides_when_the_managed_scope_pins_both(managed):
 def test_without_a_pin_the_environment_variable_still_decides(managed, monkeypatch, managed_text, env_value,
                                                              profile, expected):
     managed(managed_text)
-    monkeypatch.setenv("HERMES_ALLOW_PRIVATE_URLS", env_value)
+    monkeypatch.setenv("ZEUS_ALLOW_PRIVATE_URLS", env_value)
     with _profile(profile):
         assert url_safety._global_allow_private_urls() is expected
 
@@ -153,13 +153,13 @@ def test_a_managed_null_leaves_a_routed_profiles_own_file_deciding(managed, tmp_
     home = tmp_path / "home"
     home.mkdir()
     (home / "config.yaml").write_text(f"{spelling}:\n  allow_private_urls: true\n", encoding="utf-8")
-    token = set_hermes_home_override(home)
+    token = set_zeus_home_override(home)
     try:
         assert url_safety._global_allow_private_urls() is True
         with _resolves_to("10.0.0.5"):
             assert url_safety.is_safe_url("https://intranet.example/") is True
     finally:
-        reset_hermes_home_override(token)
+        reset_zeus_home_override(token)
 
 
 @pytest.mark.parametrize("managed_text, pinned", [

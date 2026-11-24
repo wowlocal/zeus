@@ -17,11 +17,11 @@
  * app session; a known "no" drops them.
  *
  * Every value is a code-defined id from the closed sets below (mirrored by
- * hermes_cli/observability/shared_metrics_contract.py, which collapses any
+ * zeus_cli/observability/shared_metrics_contract.py, which collapses any
  * stranger to `other`). Never a session id, path, message, bot name or setting
  * value.
  *
- * Local state (localStorage `hermes.desktop.metrics.v1:<hash of connection|profile>`,
+ * Local state (localStorage `zeus.desktop.metrics.v1:<hash of connection|profile>`,
  * written only while on): the UTC day, areas already reported today, per-day
  * caps, today's aggregated action counts and per-mode activity, finished days
  * awaiting the backend's ack, and the onboarding latch (steps sent / still open).
@@ -32,7 +32,7 @@
  * Off retains only a payload-free revocation token; no local owner id crosses the RPC boundary.
  */
 
-import { randomUuid } from '@hermes/shared'
+import { randomUuid } from '@zeus/shared'
 import { atom } from 'nanostores'
 
 import { $workspaceMode } from '@/components/pane-shell/workspace-scope'
@@ -327,7 +327,7 @@ export type DesktopMode = 'bots' | 'sessions'
 
 // ── limits ────────────────────────────────────────────────────────────────────
 
-const STATE_KEY = 'hermes.desktop.metrics.v1'
+const STATE_KEY = 'zeus.desktop.metrics.v1'
 /** Friction per (kind, detail) per day; slow frames per bucket per day. */
 const FRICTION_DAILY_CAP = 20
 const SLOW_FRAME_DAILY_CAP = 5
@@ -663,7 +663,7 @@ export function completeFlow(flow: DesktopFlowId): void {
 
 /** The primary gateway socket dropped after a healthy boot. Classified a few
  *  seconds later: a backend process exit around it makes it `backend_exit`, a
- *  gateway switch starting in the window (Restart Hermes recycles the backend
+ *  gateway switch starting in the window (Restart Zeus recycles the backend
  *  before the switch flag rises) cancels it. */
 export function noteBackendDrop(reason: 'timeout' | null, now = Date.now()): void {
   if (pendingDrop || $desktopMetricsGate.get() !== 'on') {
@@ -839,7 +839,7 @@ export function trackDesktopVisibleTime(maxSpanMs: number): () => void {
   }
 }
 
-/** Configured bots (Bot Mode roster = Hermes profiles) — a count, never names. */
+/** Configured bots (Bot Mode roster = Zeus profiles) — a count, never names. */
 export function setDesktopBotCount(count: number): void {
   const observed = Math.max(0, Math.floor(finite(count)))
 
@@ -1048,7 +1048,7 @@ async function sendDaily(requester: SharedMetricsRequester, day: DayAggregate): 
 
 /** Renderer crashes main persisted while this renderer (or its predecessor) was gone. */
 async function drainRendererCrashes(): Promise<void> {
-  const bridge = window.hermesDesktop?.desktopMetrics
+  const bridge = window.zeusDesktop?.desktopMetrics
 
   try {
     const pending = await bridge?.takeRendererCrashes?.()
@@ -1095,7 +1095,7 @@ export function flushDesktopMetrics(): void {
 /** Main records this window's renderer crashes only while its profile is on; off drops that profile's. */
 function tellMain(on: boolean): void {
   try {
-    Promise.resolve(window.hermesDesktop?.desktopMetrics?.setEnabled?.(on, scope)).catch(() => undefined)
+    Promise.resolve(window.zeusDesktop?.desktopMetrics?.setEnabled?.(on, scope)).catch(() => undefined)
   } catch {
     // An older shell without the bridge.
   }

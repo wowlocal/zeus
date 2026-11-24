@@ -1,6 +1,6 @@
 """Second-round review invariants (alt-glitch on 893b54f9), one each:
 
-- Hermes' own managed llama-server unloads an idle model (and its prompt cache): its cache is certainly
+- Zeus' own managed llama-server unloads an idle model (and its prompt cache): its cache is certainly
   cold once the unload has run, while a user's own local server never expires on the clock.
 - A malformed entry in ``cache/prompt_cache_routes.json`` is dropped, never raised into agent build or
   usage accounting.
@@ -38,7 +38,7 @@ def _record_write(agent, at):
 @pytest.mark.parametrize("managed", [True, False])
 def test_a_managed_local_model_goes_cold_after_its_unload_and_a_users_own_server_never(monkeypatch, managed):
     from agent.prompt_cache_clock import cache_certainly_cold, cache_certainly_warm, cache_window
-    from hermes_cli.local_runtime import growth
+    from zeus_cli.local_runtime import growth
 
     monkeypatch.setattr(growth, "is_managed_endpoint", lambda base_url: managed and base_url == _LOCAL)
     agent = SimpleNamespace(provider="custom", base_url=_LOCAL, model="qwen3.8-27b", api_mode="chat_completions",
@@ -60,7 +60,7 @@ def test_a_managed_local_models_unload_is_counted_from_when_its_reply_finished(m
     """The managed server's 15 min idle wait starts when the model goes idle: a reply that took ten
     minutes is still warm nine minutes after it finished, and cold once the unload (+ two sweeps) ran."""
     import agent.prompt_cache_clock as clock
-    from hermes_cli.local_runtime import growth
+    from zeus_cli.local_runtime import growth
 
     monkeypatch.setattr(growth, "is_managed_endpoint", lambda base_url: base_url == _LOCAL)
     agent = SimpleNamespace(provider="custom", base_url=_LOCAL, model="qwen3.8-27b", api_mode="chat_completions",
@@ -75,7 +75,7 @@ def test_a_managed_local_models_unload_is_counted_from_when_its_reply_finished(m
 
 
 def test_a_malformed_route_store_entry_is_dropped_never_raised(tmp_path, monkeypatch):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     path = tmp_path / "cache" / "prompt_cache_routes.json"
     path.parent.mkdir(parents=True)
     path.write_text(json.dumps({
@@ -98,7 +98,7 @@ def test_a_malformed_route_store_entry_is_dropped_never_raised(tmp_path, monkeyp
 
 
 def test_two_local_servers_on_one_host_learn_separately(tmp_path, monkeypatch):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     for session in ("a", "b"):  # llama.cpp on :8080 never reads back, twice
         routes.observe(provider="custom", base_url="http://127.0.0.1:8080/v1", model="qwen", explicit=False,
                        read=0, write=0, gap_s=10, tier_s=1800, now=1e6, session_id=session)

@@ -22,7 +22,7 @@ from contextvars import Context, copy_context
 from typing import Any, Callable, Dict, List, Optional
 
 from agent.memory_provider import ctx_bound
-from hermes_constants import hermes_home_key
+from zeus_constants import zeus_home_key
 from tools import tts_command_provider
 from tools.tts_command_provider import (
     BUILTIN_TTS_PROVIDERS, _get_command_tts_timeout, _get_named_provider_config,
@@ -179,7 +179,7 @@ def _run_as_owner(owner: Context, fn: Callable[[], Any], fallback: Any, what: st
     never stops the other profiles' windows or releases. Logs the exception type only: the message
     can quote that profile's config. A config-backend outage is a ``SystemExit`` by design, so it is
     named here too."""
-    from hermes_cli.config_backend import ConfigBackendUnavailable
+    from zeus_cli.config_backend import ConfigBackendUnavailable
     try:
         return owner.copy().run(fn)
     except (Exception, ConfigBackendUnavailable) as exc:  # health: allow BLE001 -- one profile never blocks the others
@@ -258,7 +258,7 @@ def acquire_tts_lease(lease: str, tts_config: Optional[dict[str, Any]] = None) -
     idempotent but still re-warms (cheap on a cache hit; heals a cache cleared elsewhere). An
     acquire inside the keep-warm window cancels the pending unload. The calling profile owns what
     this warms until the unload after the last release."""
-    home, owner = hermes_home_key(), copy_context()
+    home, owner = zeus_home_key(), copy_context()
     with _tts_lease_lock:
         _cancel_keep_warm_locked()
         _tts_leases.add(lease)

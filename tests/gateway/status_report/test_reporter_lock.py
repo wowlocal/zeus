@@ -21,7 +21,7 @@ from gateway import status as gateway_status
 from gateway.status_scoped_locks import release_scoped_lock
 from gateway.status_report.reporter import StatusReporter
 from gateway.status_report.target import STATUS_REPORT_URL_ENV, report_target_from_env
-from hermes_constants import get_process_hermes_home
+from zeus_constants import get_process_zeus_home
 from tests.gateway.status_report.support import (
     AFTER_INTERVAL_S,
     FAULT_PATH,
@@ -49,14 +49,14 @@ _FIRST_SENDER = textwrap.dedent("""
     sys.path.insert(0, sys.argv[1])
     from gateway.status_report.reporter import StatusReporter
     from gateway.status_report.target import report_target_from_env
-    from hermes_constants import get_process_hermes_home
+    from zeus_constants import get_process_zeus_home
 
     class Stored:
         status, headers = 204, {}
         def __enter__(self): return self
         def __exit__(self, *exc_info): return False
 
-    reporter = StatusReporter(report_target_from_env(), launch_home=get_process_hermes_home(),
+    reporter = StatusReporter(report_target_from_env(), launch_home=get_process_zeus_home(),
                               read_source=dict, opener=lambda request, timeout=None: Stored())
     asyncio.run(reporter.poll())
     print("reported", flush=True)
@@ -69,7 +69,7 @@ def _start_other_sender(tmp_path):
     other_root = tmp_path / "other-root"
     other_root.mkdir(exist_ok=True)
     process = subprocess.Popen(
-        [sys.executable, "-c", _FIRST_SENDER, str(ROOT)], env={**os.environ, "HERMES_HOME": str(other_root)},
+        [sys.executable, "-c", _FIRST_SENDER, str(ROOT)], env={**os.environ, "ZEUS_HOME": str(other_root)},
         stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     assert process.stdout.readline().strip() == "reported", process.stderr.read()
     return process
@@ -96,7 +96,7 @@ def _end(process) -> None:
 async def test_a_second_sender_cannot_take_the_lock(clock, first_sender, monkeypatch):
     """Two gateways of one machine inherit the same stamp; only one of them may report."""
     receiver = Receiver()
-    reporter = StatusReporter(report_target_from_env(), launch_home=get_process_hermes_home(),
+    reporter = StatusReporter(report_target_from_env(), launch_home=get_process_zeus_home(),
                               read_source=a_status_source, opener=receiver)
     # The first sender is a bare interpreter here; a real one is a gateway process.
     monkeypatch.setattr(gateway_status, "_looks_like_gateway_process", lambda pid: True)
@@ -117,12 +117,12 @@ async def test_a_sender_whose_lock_was_taken_over_stands_by(clock, tmp_path, mon
     report, and the lock is taken back once the other gateway is gone."""
     lock_dir = tmp_path / "gateway-locks"
     lock_dir.mkdir()
-    monkeypatch.setenv("HERMES_GATEWAY_LOCK_DIR", str(lock_dir))
+    monkeypatch.setenv("ZEUS_GATEWAY_LOCK_DIR", str(lock_dir))
     monkeypatch.setenv(STATUS_REPORT_URL_ENV, stamped_url(new_credential()))
     # The other sender is a bare interpreter here; a real one is a gateway process.
     monkeypatch.setattr(gateway_status, "_looks_like_gateway_process", lambda pid: True)
     receiver = Receiver()
-    reporter = StatusReporter(report_target_from_env(), launch_home=get_process_hermes_home(),
+    reporter = StatusReporter(report_target_from_env(), launch_home=get_process_zeus_home(),
                               read_source=a_status_source, opener=receiver)
     await reporter.poll()
     assert receiver.kinds == ["beat"]
@@ -151,11 +151,11 @@ async def test_a_sender_whose_lock_was_taken_over_says_no_goodbye_before_its_nex
     goodbye before its next beat has checked the lock: the goodbye checks it first, and stays unsaid."""
     lock_dir = tmp_path / "gateway-locks"
     lock_dir.mkdir()
-    monkeypatch.setenv("HERMES_GATEWAY_LOCK_DIR", str(lock_dir))
+    monkeypatch.setenv("ZEUS_GATEWAY_LOCK_DIR", str(lock_dir))
     monkeypatch.setenv(STATUS_REPORT_URL_ENV, stamped_url(new_credential()))
     monkeypatch.setattr(gateway_status, "_looks_like_gateway_process", lambda pid: True)
     receiver = Receiver()
-    reporter = StatusReporter(report_target_from_env(), launch_home=get_process_hermes_home(),
+    reporter = StatusReporter(report_target_from_env(), launch_home=get_process_zeus_home(),
                               read_source=a_status_source, opener=receiver)
     await reporter.poll()
     assert receiver.kinds == ["beat"]
@@ -177,7 +177,7 @@ def unusable_lock_dir(tmp_path, monkeypatch):
     lock_dir = tmp_path / "gateway-locks"
     lock_dir.mkdir()
     lock_dir.chmod(stat.S_IRUSR | stat.S_IXUSR)
-    monkeypatch.setenv("HERMES_GATEWAY_LOCK_DIR", str(lock_dir))
+    monkeypatch.setenv("ZEUS_GATEWAY_LOCK_DIR", str(lock_dir))
     yield lock_dir
     lock_dir.chmod(stat.S_IRWXU)
 

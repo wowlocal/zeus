@@ -5,7 +5,7 @@ import threading
 
 import pytest
 
-import hermes_cli.skills_hub as cli_hub
+import zeus_cli.skills_hub as cli_hub
 import tools.skills_hub as hub
 from tools.skills_hub_install import (
     discard_quarantine, hub_install_lock, install_from_quarantine, quarantine_bundle,

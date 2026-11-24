@@ -5,7 +5,7 @@ description: "Surface the per-turn iteration budget to the model so it wraps up 
 maintainer: Naverene
 tier: community
 category: general
-requires_hermes: ">=0.23.2"
+requires_zeus: ">=0.23.2"
 version: "1.0.2"
 title: "Iteration Budget"
 readme: true

@@ -194,8 +194,8 @@ def test_a_refresh_from_before_a_reset_stays_out_of_the_new_sessions_totals(tmp_
 def test_every_keep_alive_is_bracketed_by_the_auxiliary_call_events(tmp_path, monkeypatch):
     """Plugins that meter auxiliary spend see each refresh: ``pre_auxiliary_call`` carries the one-token
     request actually posted, ``post_auxiliary_call`` its cache read, both ``aux_task="cache_warm"``."""
-    from hermes_cli import plugins as plugins_mod
-    from hermes_cli.plugins import PluginContext, PluginManager, PluginManifest
+    from zeus_cli import plugins as plugins_mod
+    from zeus_cli.plugins import PluginContext, PluginManager, PluginManifest
 
     mgr = PluginManager()
     monkeypatch.setattr(plugins_mod, "_plugin_manager", mgr)

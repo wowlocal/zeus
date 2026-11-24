@@ -156,7 +156,7 @@ export function registerProfileBackendIpc(ipcMain: IpcMain, deps: ProfileBackend
   const sendApplied = (profile: string) => {
     for (const win of BrowserWindow.getAllWindows()) {
       if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
-        win.webContents.send('hermes:connection:applied', { profile })
+        win.webContents.send('zeus:connection:applied', { profile })
       }
     }
   }
@@ -201,7 +201,7 @@ export function registerProfileBackendIpc(ipcMain: IpcMain, deps: ProfileBackend
     sendApplied(profile)
   }
 
-  ipcMain.handle('hermes:profile-backend:confirm-set', async (event, payload) => {
+  ipcMain.handle('zeus:profile-backend:confirm-set', async (event, payload) => {
     deps.assertCanMutateRouting()
     const { plugin, profile } = target(payload)
     assertSettable({ plugin, profile })
@@ -213,7 +213,7 @@ export function registerProfileBackendIpc(ipcMain: IpcMain, deps: ProfileBackend
     return { confirmed: true, grant: grants.mint('set', plugin, profile) }
   })
 
-  ipcMain.handle('hermes:profile-backend:set', async (event, payload) => {
+  ipcMain.handle('zeus:profile-backend:set', async (event, payload) => {
     deps.assertCanMutateRouting()
     const { plugin, profile } = target(payload)
     const url = normalizeLauncherUrl(payload?.url)
@@ -253,7 +253,7 @@ export function registerProfileBackendIpc(ipcMain: IpcMain, deps: ProfileBackend
     return { applied: true }
   })
 
-  ipcMain.handle('hermes:profile-backend:confirm-clear', async (event, payload) => {
+  ipcMain.handle('zeus:profile-backend:confirm-clear', async (event, payload) => {
     deps.assertCanMutateRouting()
     const current = clearable(payload)
 
@@ -264,7 +264,7 @@ export function registerProfileBackendIpc(ipcMain: IpcMain, deps: ProfileBackend
     return { confirmed: true, grant: grants.mint('clear', current.plugin, current.profile) }
   })
 
-  ipcMain.handle('hermes:profile-backend:clear', async (event, payload) => {
+  ipcMain.handle('zeus:profile-backend:clear', async (event, payload) => {
     deps.assertCanMutateRouting()
     let current = clearable(payload)
 

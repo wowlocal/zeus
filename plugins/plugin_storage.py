@@ -1,6 +1,6 @@
-"""Per-plugin persistent storage: ``<hermes home>/plugin-data/<name>/``.
+"""Per-plugin persistent storage: ``<zeus home>/plugin-data/<name>/``.
 
-Plugins must NOT park state in ``<hermes home>/plugins/<name>/`` (the install dir, deleted by
+Plugins must NOT park state in ``<zeus home>/plugins/<name>/`` (the install dir, deleted by
 ``remove`` and git-pulled by ``update``). Secrets are deliberately NOT part of this convention —
 credential reads go through ``agent.secret_scope`` / ``.env``.
 Usage: ``plugin_data_dir("my-plugin") / "state.json"``; ``plugin_db("my-plugin")`` → ``data.db``.
@@ -14,7 +14,7 @@ from pathlib import Path
 
 __all__ = ["plugin_data_dir", "plugin_db"]
 
-# Mirrors the plugin-name shape `hermes plugins install` accepts (no separators/traversal).
+# Mirrors the plugin-name shape `zeus plugins install` accepts (no separators/traversal).
 _NAME_RE = re.compile(r"^[a-zA-Z0-9][a-zA-Z0-9._-]{0,63}$")
 
 
@@ -25,13 +25,13 @@ def _validate_name(name: str) -> str:
 
 
 def plugin_data_dir(name: str) -> Path:
-    """Return (and create) ``<hermes home>/plugin-data/<name>/``; resolves ``get_hermes_home()`` on
+    """Return (and create) ``<zeus home>/plugin-data/<name>/``; resolves ``get_zeus_home()`` on
     every call so it follows the active profile — don't cache across profile switches.
 
     Raises ``FileNotFoundError`` when the active named profile was deleted or renamed (a session
     still bound to it) instead of recreating that profile's home."""
-    from hermes_constants import get_hermes_home, mkdir_under_hermes_home
-    return mkdir_under_hermes_home(get_hermes_home() / "plugin-data" / _validate_name(name))
+    from zeus_constants import get_zeus_home, mkdir_under_zeus_home
+    return mkdir_under_zeus_home(get_zeus_home() / "plugin-data" / _validate_name(name))
 
 
 def plugin_db(name: str, filename: str = "data.db") -> sqlite3.Connection:
@@ -39,7 +39,7 @@ def plugin_db(name: str, filename: str = "data.db") -> sqlite3.Connection:
     ``check_same_thread=False`` for the threaded FastAPI/tool env — caller owns transactions."""
     if Path(filename).name != filename or not filename:
         raise ValueError(f"invalid plugin db filename: {filename!r}")
-    from hermes_cli.sqlite_util import open_db
+    from zeus_cli.sqlite_util import open_db
 
     # WAL via the shared fallback helper: network filesystems degrade to DELETE and WAL-reset-bug
     # builds never enable it, instead of every plugin DB bypassing those rules with a raw PRAGMA.

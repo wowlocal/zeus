@@ -6,7 +6,7 @@ import {
   reconcileDurableHistory
 } from '@/app/session/hooks/use-session-actions/utils'
 import { type ChatMessage, chatMessageText, toChatMessages } from '@/lib/chat-messages'
-import type { SessionMessage } from '@/types/hermes'
+import type { SessionMessage } from '@/types/zeus'
 
 /**
  * A running turn stores its prompt and each finished tool round as it goes, before any completion

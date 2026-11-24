@@ -34,7 +34,7 @@ def _full_status_body() -> dict:
         "nous_session_valid": "valid",
         "install_id": "install-0001", "profiles": ["default", "work"], "parked_profiles": ["old"],
         "active_sessions": 3, "active_agents": 1, "auth_required": True, "auth_providers": ["password"],
-        "memory": {"pressure": "ok"}, "disk": {"pressure": "ok"}, "hermes_home": "/srv/hermes",
+        "memory": {"pressure": "ok"}, "disk": {"pressure": "ok"}, "zeus_home": "/srv/zeus",
         "multiplex_standalone_reason": "profiles default and work share " + ERROR_TEXT,
     }
 

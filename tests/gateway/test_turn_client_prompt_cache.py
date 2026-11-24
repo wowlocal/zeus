@@ -19,7 +19,7 @@ import threading
 from tests.gateway.fixtures.local_recovery_probe import Model, child_env, daemon, rpc, websocket
 from tests.waiting import wait_until
 
-DESKTOP = {'name': 'hermes-desktop', 'version': '2.1.0', 'kind': 'desktop'}
+DESKTOP = {'name': 'zeus-desktop', 'version': '2.1.0', 'kind': 'desktop'}
 TURNS = ('FIRST_TURN', 'SECOND_TURN')
 
 
@@ -52,7 +52,7 @@ def test_provider_requests_are_byte_identical_with_and_without_an_announced_clie
         'auxiliary': {'title_generation': {'enabled': False}},
         'platform_toolsets': {'gui': []}, 'terminal': {'cwd': str(home)},
     }))
-    env = child_env() | dict(HOME=str(user), USERPROFILE=str(user), HERMES_HOME=str(home),
+    env = child_env() | dict(HOME=str(user), USERPROFILE=str(user), ZEUS_HOME=str(home),
         PYTHONPATH=str(root), OPENAI_API_KEY='loopback-only', OPENAI_BASE_URL=base, PYTHONUNBUFFERED='1')
     bodies = {}
 

@@ -41,10 +41,10 @@ from tests.fixtures.storage_seed import seed_messages, seed_session
 
 @pytest.fixture
 def home(tmp_path, monkeypatch):
-    """Temp HERMES_HOME with the default profile plus one named profile."""
-    h = tmp_path / ".hermes"
+    """Temp ZEUS_HOME with the default profile plus one named profile."""
+    h = tmp_path / ".zeus"
     (h / "profiles" / "ops").mkdir(parents=True)
-    monkeypatch.setenv("HERMES_HOME", str(h))
+    monkeypatch.setenv("ZEUS_HOME", str(h))
     return h
 
 

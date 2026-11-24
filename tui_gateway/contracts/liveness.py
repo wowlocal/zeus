@@ -80,7 +80,7 @@ class ClientActivityParams(Params):
     sessions: list[Annotated[str, Field(min_length=1, max_length=256)]] = Field(max_length=16)
     #: How long ago the user's last input was, by the client's clock source.
     idle_seconds: float = Field(ge=0)
-    #: ``system``: the OS idle clock (input in any app counts). ``page``: input inside the Hermes window only.
+    #: ``system``: the OS idle clock (input in any app counts). ``page``: input inside the Zeus window only.
     basis: Literal["system", "page"]
     #: This client can get the user's attention for these sessions itself (on screen in a focused
     #: window, or its own turn-done notification is on).

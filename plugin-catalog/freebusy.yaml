@@ -6,7 +6,7 @@ description: "Books meetings over email or chat from free or busy time only, wit
 maintainer: davidtsailabs
 tier: community
 category: automation
-requires_hermes: ">=0.22.5"
+requires_zeus: ">=0.22.5"
 docs_url: https://github.com/davidtsailabs/freebusy/blob/9436f9e683a55169df8e6233be18c64ba0e632c2/README.md
 version: "0.3.0"
 readme: true
@@ -14,7 +14,7 @@ platforms: [linux, macos]
 known_issues:
   - "CalDAV and IMAP/SMTP are tested against local Radicale and GreenMail servers and recorded provider replies, not yet against iCloud, Fastmail, Zoho or Nextcloud themselves."
   - "Travel buffers read locations only on fixture data; the CalDAV adapter does not read locations yet."
-  - "No background mail watcher: /freebusy check runs one pass, and the owner can schedule it with Hermes cron."
+  - "No background mail watcher: /freebusy check runs one pass, and the owner can schedule it with Zeus cron."
 capabilities:
   provides_tools: [schedule_parse, schedule_offer, schedule_check, schedule_book, schedule_holds, schedule_resume]
   provides_hooks: [pre_tool_call, post_tool_call, pre_llm_call, post_approval_response, post_gateway_admission]

@@ -227,12 +227,12 @@ def select_checkout_fills(classified: list[ClassifiedLoginControl], secret: dict
 # JS expression evaluated in the page to inspect candidate input controls.
 # Ported from OpenInstinct's nativeLoginControlInspectionExpression.
 # Inspection stamps every input with its index under an attribute named for the inspection's nonce
-# (``data-hermes-vault-slot-<nonce>``); the fill script resolves targets by the stamp of ITS OWN
+# (``data-zeus-vault-slot-<nonce>``); the fill script resolves targets by the stamp of ITS OWN
 # inspection instead of re-querying by position, so neither a DOM reflow nor a second inspection in
 # between can redirect the password into another field. One attribute per operation: two operations
 # overlapping on one tab (a user fill beside an agent fill) neither overwrite nor remove each
 # other's stamps.
-INSPECTION_STAMP_ATTR = "data-hermes-vault-slot"
+INSPECTION_STAMP_ATTR = "data-zeus-vault-slot"
 
 
 def build_otp_fills(otp_controls: list[ClassifiedLoginControl], code: str) -> list[dict[str, Any]]:
@@ -271,7 +271,7 @@ _LOGIN_CONTROL_INSPECTION_JS_TEMPLATE = """(() => {
       if (e.shadowRoot) walk(e.shadowRoot);
     }
   })(document);
-  elements.forEach((element, index) => element.setAttribute("data-hermes-vault-slot-" + nonce, String(index)));
+  elements.forEach((element, index) => element.setAttribute("data-zeus-vault-slot-" + nonce, String(index)));
   const out = elements.flatMap((element, index) => {
     if (element.disabled || element.readOnly) return [];
     if (["hidden", "submit", "button", "reset", "file", "image", "checkbox", "radio"].includes(element.type)) return [];
@@ -313,7 +313,7 @@ def build_fill_js(fills: list[dict[str, Any]], expected_origin: str, nonce: str 
     evaluated script, immediately before any write. If the page navigated between inspection and fill
     (TOCTOU), the script writes nothing and returns ``{"refused": "origin_changed", "found": <actual>}``:
     proof scope equals mutation scope (#88706). Targets resolve by the stamp of THIS inspection
-    (``data-hermes-vault-slot-<nonce>="<index>"``); a ``current-password`` fill additionally
+    (``data-zeus-vault-slot-<nonce>="<index>"``); a ``current-password`` fill additionally
     requires ``type=password``; ``<select>`` controls (country, state, expiry month) match an option by value or visible text. The stamps stay
     for the read-back; every caller removes them afterwards (``build_unstamp_js``) so later
     model-driven DOM reads cannot address the filled controls deterministically.
@@ -365,7 +365,7 @@ _FILL_JS_TEMPLATE = """(() => {
 __ORIGIN_GUARD__
   const fills = __FILLS__;
   const nonce = __NONCE__;
-  const slot = "data-hermes-vault-slot-" + nonce;
+  const slot = "data-zeus-vault-slot-" + nonce;
   // Stamped controls may live inside a shadow root (see the inspection script's walk): collect the
   // document and every open shadow root once, then look each stamp up in those roots.
   const roots = [];
@@ -441,7 +441,7 @@ def build_focus_js(fills: list[dict[str, Any]], nonce: str = "", *, expected_ori
 
     ``Input.insertText`` types into whatever element currently has focus, so the caller MUST
     know which element that is before typing a secret into it. This script focuses the element
-    stamped ``data-hermes-vault-slot-<nonce>="<index>"`` and only reports success when
+    stamped ``data-zeus-vault-slot-<nonce>="<index>"`` and only reports success when
     ``document.activeElement`` IS that element — a page that moves focus (a re-render, a modal,
     an autofocus elsewhere) is refused instead of receiving the secret.
 
@@ -469,7 +469,7 @@ _FOCUS_JS_TEMPLATE = """(() => {
 __ORIGIN_GUARD__
   const fills = __FILLS__;
   const nonce = __NONCE__;
-  const slot = "data-hermes-vault-slot-" + nonce;
+  const slot = "data-zeus-vault-slot-" + nonce;
   const f = fills[0];
   if (!f) return { __proto__: null, refused: "not_found" };
   const roots = [];
@@ -524,7 +524,7 @@ _CLEAR_JS_TEMPLATE = """(() => {
 __ORIGIN_GUARD__
   const fills = __FILLS__;
   const nonce = __NONCE__;
-  const slot = "data-hermes-vault-slot-" + nonce;
+  const slot = "data-zeus-vault-slot-" + nonce;
   const roots = [];
   (function walk(root) {
     roots.push(root);
@@ -566,7 +566,7 @@ _VERIFY_JS_TEMPLATE = r"""(() => {
 __ORIGIN_GUARD__
   const fills = __FILLS__;
   const nonce = __NONCE__;
-  const slot = "data-hermes-vault-slot-" + nonce;
+  const slot = "data-zeus-vault-slot-" + nonce;
   const roots = [];
   (function walk(root) {
     roots.push(root);

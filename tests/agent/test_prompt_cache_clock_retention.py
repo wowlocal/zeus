@@ -52,7 +52,7 @@ def _retention(base_url, model):
     ("http://[::1]:8000/v1", "qwen3", 2 * 3600, False),
     ("http://gpu-box.local:8000/v1", "qwen3", 2 * 3600, False),
     # Controls: a public OpenAI-spec route without retention is cold at 31 min; chatgpt.com Codex gets no
-    # retention from Hermes, so its 30m stands.
+    # retention from Zeus, so its 30m stands.
     ("https://api.deepseek.com/v1", "deepseek-chat", 31 * 60, True),
     ("https://chatgpt.com/backend-api/codex", "gpt-5.5", 31 * 60, True),
 ])

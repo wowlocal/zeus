@@ -57,18 +57,18 @@ afterEach(() => {
 
 // The machine's saved-gateways list as main and the Webapp each open it: one file and one lock, separate caches.
 function savedGateways() {
-  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'hermes-profile-backend-'))
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'zeus-profile-backend-'))
   dirs.push(dir)
 
   const open = () =>
     createGatewayConnectionsStore({
-      root: path.join(dir, 'hermes'),
+      root: path.join(dir, 'zeus'),
       userData: path.join(dir, 'userData'),
       legacyRegistry: () => normalizeRegistry(null),
       decrypt: secret => String((secret as { value?: string } | null)?.value || '')
     })
 
-  return { file: path.join(dir, 'hermes', GATEWAY_CONNECTIONS_FILE), main: open(), webapp: open() }
+  return { file: path.join(dir, 'zeus', GATEWAY_CONNECTIONS_FILE), main: open(), webapp: open() }
 }
 
 function saveGateway(store: GatewayConnectionsStore, label: string, url: string) {
@@ -106,7 +106,7 @@ function profileBackendIpc(overrides: Partial<ProfileBackendIpcDeps> = {}, profi
   })
 
   const invoke = (channel: string, payload: Record<string, unknown> = {}) =>
-    handlers.get(`hermes:profile-backend:${channel}`)!({ sender: {} }, { ...LAUNCHER, ...payload })
+    handlers.get(`zeus:profile-backend:${channel}`)!({ sender: {} }, { ...LAUNCHER, ...payload })
 
   return {
     config: () => config,
@@ -142,7 +142,7 @@ function openConfirm() {
   return { answer: () => answer(), shown: () => vi.waitFor(() => expect(electron.showMessageBox).toHaveBeenCalled()) }
 }
 
-// Main's two caches of a profile's backend, as the `hermes:connection` handler and ensureBackend use them: a dial in
+// Main's two caches of a profile's backend, as the `zeus:connection` handler and ensureBackend use them: a dial in
 // flight answers every caller of its claim key, and a pool entry answers every later dial of its profile.
 function backendDials() {
   const claims = new BackendDialClaims()
@@ -182,8 +182,8 @@ describe('profile backend switch and the saved-gateways list', () => {
     expect(ipc.config().profiles).toEqual({})
 
     expect(win.sent()).toEqual([
-      ['hermes:connection:applied', { profile: 'work' }],
-      ['hermes:connection:applied', { profile: 'work' }]
+      ['zeus:connection:applied', { profile: 'work' }],
+      ['zeus:connection:applied', { profile: 'work' }]
     ])
     expect(fs.readFileSync(stores.file, 'utf8')).toBe(before)
   })
@@ -332,7 +332,7 @@ describe('profile backend switch and the windows', () => {
     await ipc.switchOn()
     await ipc.switchOff()
 
-    const moved = ['hermes:connection:applied', { profile: 'work' }]
+    const moved = ['zeus:connection:applied', { profile: 'work' }]
 
     expect(main.sent()).toEqual([moved, moved])
     expect(peer.sent()).toEqual([moved, moved])

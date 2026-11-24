@@ -5,7 +5,7 @@ description: "A memory that stays bounded: core rules always in mind, facts reca
 maintainer: 404BugX
 tier: community
 category: memory
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 version: "0.9.5"
 title: Carnet
 readme: true

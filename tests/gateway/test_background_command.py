@@ -125,7 +125,7 @@ class TestRunBackgroundTask:
         mock_result = {"final_response": "Hello from background!", "messages": []}
 
         from agent.agent_init import _init_prompt_cache_config
-        import hermes_cli.config
+        import zeus_cli.config
 
         cache_ttls = []
 
@@ -148,9 +148,9 @@ class TestRunBackgroundTask:
              patch("gateway.run._resolve_runtime_agent_kwargs", return_value={"api_key": "test-key"}), \
              patch("gateway.run._load_gateway_config", return_value=checkpoint_config), \
              patch("run_agent.AIAgent") as MockAgent:
-            mp.setattr(hermes_cli.config, "load_config_readonly", dict)
-            mp.delenv("HERMES_SESSION_SOURCE", raising=False)
-            mp.delenv("HERMES_SINGLE_QUERY_SESSION", raising=False)
+            mp.setattr(zeus_cli.config, "load_config_readonly", dict)
+            mp.delenv("ZEUS_SESSION_SOURCE", raising=False)
+            mp.delenv("ZEUS_SINGLE_QUERY_SESSION", raising=False)
             mock_agent_instance = MagicMock()
             mock_agent_instance.shutdown_memory_provider = MagicMock()
             mock_agent_instance.close = MagicMock()

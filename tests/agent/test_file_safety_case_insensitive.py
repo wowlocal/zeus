@@ -18,9 +18,9 @@ from gateway.platforms import base as gateway_base
 
 
 @pytest.fixture()
-def hermes_layout(tmp_path, monkeypatch):
-    """Profile HERMES_HOME under a distinct global root, plus a throwaway user home."""
-    root = tmp_path.resolve() / "hermes_root"
+def zeus_layout(tmp_path, monkeypatch):
+    """Profile ZEUS_HOME under a distinct global root, plus a throwaway user home."""
+    root = tmp_path.resolve() / "zeus_root"
     profile = root / "profiles" / "coder"
     user_home = tmp_path.resolve() / "user"
     for d in (profile / "mcp-tokens", root / "auth", user_home / ".ssh"):
@@ -28,11 +28,11 @@ def hermes_layout(tmp_path, monkeypatch):
     (profile / "mcp-tokens" / "github.json").write_text("dummy", encoding="utf-8")
     (root / "auth.json").write_text("dummy", encoding="utf-8")
     (user_home / ".ssh" / "id_ed25519").write_text("dummy", encoding="utf-8")
-    monkeypatch.setattr(fs, "_hermes_home_path", lambda: profile)
-    monkeypatch.setattr(fs, "_hermes_root_path", lambda: root)
+    monkeypatch.setattr(fs, "_zeus_home_path", lambda: profile)
+    monkeypatch.setattr(fs, "_zeus_root_path", lambda: root)
     monkeypatch.setenv("HOME", str(user_home))
     monkeypatch.setenv("USERPROFILE", str(user_home))
-    monkeypatch.delenv("HERMES_WRITE_SAFE_ROOT", raising=False)
+    monkeypatch.delenv("ZEUS_WRITE_SAFE_ROOT", raising=False)
     return root, profile, user_home
 
 
@@ -47,8 +47,8 @@ def _variants(root: Path, profile: Path, user_home: Path) -> dict[str, str]:
 
 
 @pytest.mark.platforms("macos", "windows")
-def test_case_variants_of_credential_paths_are_denied(hermes_layout):
-    paths = _variants(*hermes_layout)
+def test_case_variants_of_credential_paths_are_denied(zeus_layout):
+    paths = _variants(*zeus_layout)
     for label, path in paths.items():
         if label.startswith("read"):
             assert fs.get_read_block_error(path), f"{label} readable: {path}"
@@ -57,8 +57,8 @@ def test_case_variants_of_credential_paths_are_denied(hermes_layout):
 
 
 @pytest.mark.platforms("macos", "windows")
-def test_case_variant_of_home_credential_is_not_media_deliverable(hermes_layout):
-    *_, user_home = hermes_layout
+def test_case_variant_of_home_credential_is_not_media_deliverable(zeus_layout):
+    *_, user_home = zeus_layout
     variant = (user_home / ".SSH" / "id_ed25519").resolve()
     assert gateway_base._path_under_denied_prefix(variant) is True
     assert gateway_base._path_under_denied_prefix((user_home / "report.pdf").resolve()) is False
@@ -72,8 +72,8 @@ def test_case_fold_spellings_of_project_env_are_denied(tmp_path, name):
 
 
 @pytest.mark.platforms("linux")
-def test_case_variants_are_distinct_files_on_linux(hermes_layout):
-    root, profile, user_home = hermes_layout
+def test_case_variants_are_distinct_files_on_linux(zeus_layout):
+    root, profile, user_home = zeus_layout
     assert fs.get_read_block_error(str(root / "AUTH.JSON")) is None
     assert fs.is_write_denied(str(profile / "MCP-TOKENS" / "new.json")) is False
     assert fs.is_write_denied(str(user_home / ".SSH" / "authorized_keys")) is False
@@ -81,10 +81,10 @@ def test_case_variants_are_distinct_files_on_linux(hermes_layout):
 
 
 @pytest.mark.platforms("macos", "windows")
-def test_case_variant_of_home_credential_is_not_attachable_as_context_reference(hermes_layout, monkeypatch):
+def test_case_variant_of_home_credential_is_not_attachable_as_context_reference(zeus_layout, monkeypatch):
     """@file:/@folder: refs arrive in untrusted gateway text; a case variant must not inline the key."""
-    _root, profile, user_home = hermes_layout
-    monkeypatch.setenv("HERMES_HOME", str(profile))
+    _root, profile, user_home = zeus_layout
+    monkeypatch.setenv("ZEUS_HOME", str(profile))
     (user_home / "docs").mkdir()
     for variant in (user_home / ".SSH" / "id_ed25519", user_home / ".SSH" / "ID_RSA",
                     user_home / ".Aws" / "credentials", user_home / ".NETRC"):
@@ -94,10 +94,10 @@ def test_case_variant_of_home_credential_is_not_attachable_as_context_reference(
 
 
 @pytest.mark.platforms("macos", "windows")
-def test_case_variant_of_project_hermes_config_still_needs_approval(tmp_path, hermes_layout, monkeypatch):
-    _root, profile, _home = hermes_layout
-    monkeypatch.setenv("HERMES_HOME", str(profile))
+def test_case_variant_of_project_zeus_config_still_needs_approval(tmp_path, zeus_layout, monkeypatch):
+    _root, profile, _home = zeus_layout
+    monkeypatch.setenv("ZEUS_HOME", str(profile))
     repo = tmp_path.resolve() / "repo"
-    (repo / ".hermes").mkdir(parents=True)
-    target = str(repo / ".HERMES" / "config.yaml")
+    (repo / ".zeus").mkdir(parents=True)
+    target = str(repo / ".ZEUS" / "config.yaml")
     assert write_guards._protected_instruction_reason(target, enabled=True, extra_patterns=[])

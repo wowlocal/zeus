@@ -14,7 +14,7 @@
  * but never count as input. Nothing here renders: the reporter lives in timers and listeners.
  */
 
-import type { ClientActivityParams } from '@hermes/shared'
+import type { ClientActivityParams } from '@zeus/shared'
 
 import type { PresenceSnapshot } from '../../electron/presence'
 
@@ -431,7 +431,7 @@ export function startPresenceReporter(): () => void {
       (documentVisible() && documentFocused() && mainChatShowing()) || turnDoneNotificationWouldFire(sessionId),
     focused: documentFocused,
     inputTarget: document,
-    system: window.hermesDesktop?.presence,
+    system: window.zeusDesktop?.presence,
     view: presenceView,
     visible: documentVisible
   })

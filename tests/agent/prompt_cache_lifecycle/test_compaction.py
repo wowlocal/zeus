@@ -19,7 +19,7 @@ _ONE_HOUR_WRITE = {"input_tokens": 5, "output_tokens": 1, "cache_creation_input_
 
 @pytest.fixture(autouse=True)
 def _interactive(monkeypatch):
-    for key in ("HERMES_SESSION_SOURCE", "HERMES_SESSION_SOURCE_EXPLICIT", "HERMES_SINGLE_QUERY_SESSION"):
+    for key in ("ZEUS_SESSION_SOURCE", "ZEUS_SESSION_SOURCE_EXPLICIT", "ZEUS_SINGLE_QUERY_SESSION"):
         monkeypatch.delenv(key, raising=False)
 
 
@@ -89,7 +89,7 @@ def test_never_fires_on_short_windows_small_contexts_or_machine_paced_sessions(m
 def test_nous_portal_compacts_on_its_1h_window_unless_a_ceiling_caps_it(tmp_path, monkeypatch):
     """Nous Portal keeps 1h like Anthropic, so it compacts at the budget's end; a configured
     ``{nous: 5m}`` ceiling makes it a short window again."""
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     nous = {"provider": "nous", "base_url": "https://inference-api.nousresearch.com/v1"}
     agent = _spend_budget(_idle_chat(monkeypatch, **nous))
     assert cache_expiry_compaction_due(agent, now=_SENT + 54 * 60) == (True, "due")

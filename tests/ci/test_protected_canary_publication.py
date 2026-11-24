@@ -17,10 +17,10 @@ import subprocess
 import sys
 import zipfile
 
-import hermes_yaml
+import zeus_yaml
 import pytest
 
-from hermes_cli.release_channels import ChannelReader
+from zeus_cli.release_channels import ChannelReader
 from scripts.releases import channel_releases, handoff
 from tests.ci.desktop_release_roles import native_builds, stage_step
 from tests.ci.test_desktop_release_tag_admission import _git, _seed_repo
@@ -31,13 +31,13 @@ pytestmark = pytest.mark.platforms("posix")
 
 
 def workflow_jobs():
-    return hermes_yaml.safe_load((ROOT / ".github/workflows/desktop-bundled-release.yml").read_text())["jobs"]
+    return zeus_yaml.safe_load((ROOT / ".github/workflows/desktop-bundled-release.yml").read_text())["jobs"]
 
 
 
 def _version(tag: str) -> str:
     """The version a fixture tag's packages carry (empty for a tagless commit build)."""
-    from hermes_cli.update_channel import release_version
+    from zeus_cli.update_channel import release_version
 
     return release_version(tag) or ""
 def stage_script(target, mode):
@@ -96,16 +96,16 @@ def canary(tmp_path, r2_server, monkeypatch):
     codesign = tools / "codesign"
     codesign.write_text('#!/bin/sh\nprintf "TeamIdentifier=ABCDEFGHIJ\\n" >&2\n')
     codesign.chmod(0o755)
-    base = f"http://127.0.0.1:{r2_server.server_port}/hermes-releases"
+    base = f"http://127.0.0.1:{r2_server.server_port}/zeus-releases"
     env = {**os.environ, "PATH": str(tools) + os.pathsep + os.environ["PATH"],
            "FIXTURE_RELEASE": str(release_state), "FIXTURE_WINDOWS_VERSION": windows_version, "GITHUB_ACTIONS": "true",
            "GITHUB_WORKSPACE": str(clone),
            "GITHUB_EVENT_NAME": "workflow_dispatch", "GITHUB_REPOSITORY": "NousResearch/hermes-agent",
            "GITHUB_WORKFLOW_REF": "NousResearch/hermes-agent/.github/workflows/desktop-bundled-release.yml@refs/heads/main",
-           "RELEASE_TAG": tag, "TAG": tag, "HERMES_PAYLOAD_TAG": tag,
+           "RELEASE_TAG": tag, "TAG": tag, "ZEUS_PAYLOAD_TAG": tag,
            "RELEASE_TAG_OBJECT": tag_object,
-           "RELEASE_COMMIT": commit, "RELEASE_PHASE": "", "HERMES_DESKTOP_VARIANT": "bundled",
-           "HERMES_BUILD_COMMIT": "", "CHANNEL_BUILD": "", "R2_DISPOSABLE_RUN": "",
+           "RELEASE_COMMIT": commit, "RELEASE_PHASE": "", "ZEUS_DESKTOP_VARIANT": "bundled",
+           "ZEUS_BUILD_COMMIT": "", "CHANNEL_BUILD": "", "R2_DISPOSABLE_RUN": "",
            "CLOUDFLARE_R2_PUBLIC_URL": base,
            "RELEASE_NEEDS": "{}"}
 
@@ -149,13 +149,13 @@ def native_leg(root, identity, env, platform, arch):
 ])
 def test_canary_metadata_is_recorded_and_receipt_bound(canary, r2_server, platform, variant, phase, commit_build):
     clone, identity, original_env, run = canary
-    env = {**original_env, "HERMES_DESKTOP_VARIANT": variant, "RELEASE_PHASE": phase}
+    env = {**original_env, "ZEUS_DESKTOP_VARIANT": variant, "RELEASE_PHASE": phase}
     if phase == "candidate":
-        env["RELEASE_TAG"] = env["HERMES_PAYLOAD_TAG"] = "v0.1.2"
+        env["RELEASE_TAG"] = env["ZEUS_PAYLOAD_TAG"] = "v0.1.2"
         env["FIXTURE_WINDOWS_VERSION"] = "0.1.2.0"
     if commit_build:
-        env["RELEASE_TAG"] = env["HERMES_PAYLOAD_TAG"] = ""
-        env["HERMES_BUILD_COMMIT"] = env["RELEASE_COMMIT"]
+        env["RELEASE_TAG"] = env["ZEUS_PAYLOAD_TAG"] = ""
+        env["ZEUS_BUILD_COMMIT"] = env["RELEASE_COMMIT"]
     root = clone / "apps/desktop/release"
     arch = "x64" if platform == "win32" else "arm64"
     native_leg(root, identity, env, platform, arch)

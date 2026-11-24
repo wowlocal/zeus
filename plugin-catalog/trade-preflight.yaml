@@ -7,7 +7,7 @@ description: "Deterministic, fail-closed execution firewall for AI-initiated equ
 maintainer: Mohamedhazeem
 tier: community
 category: tools
-requires_hermes: ">=0.23.1"
+requires_zeus: ">=0.23.1"
 docs_url: https://github.com/Mohamedhazeem/TradePreflight#readme
 readme: true
 platforms: [linux, macos, windows]

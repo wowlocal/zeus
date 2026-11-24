@@ -117,7 +117,7 @@ function Harness({
     handleServerRequest: () => false,
     onConnectionReady: () => undefined,
     onGatewayReady: () => undefined,
-    refreshHermesConfig: async () => undefined,
+    refreshZeusConfig: async () => undefined,
     refreshSessions
   })
 
@@ -150,7 +150,7 @@ beforeEach(() => {
   connectionApplied = null
   clearNotifications()
   ;(globalThis as { WebSocket: unknown }).WebSocket = FakeWebSocket
-  ;(window as { hermesDesktop?: unknown }).hermesDesktop = fakeDesktop()
+  ;(window as { zeusDesktop?: unknown }).zeusDesktop = fakeDesktop()
   $gatewayState.set('idle')
   $desktopBoot.set({
     error: null,
@@ -178,7 +178,7 @@ afterEach(() => {
   endGatewaySwitch()
   vi.useRealTimers()
   ;(globalThis as { WebSocket: unknown }).WebSocket = originalWebSocket
-  delete (window as { hermesDesktop?: unknown }).hermesDesktop
+  delete (window as { zeusDesktop?: unknown }).zeusDesktop
 })
 
 // Let pending microtasks (awaits) AND the queued 0ms socket open/error fire.
@@ -194,7 +194,7 @@ describe('a plugin re-routes one profile', () => {
 
     const desktop = fakeDesktop()
 
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
 
     render(<Harness beforeConnectionSwitch={beforeConnectionSwitch} />)
     await flushAsync()
@@ -252,7 +252,7 @@ describe('a plugin re-routes one profile', () => {
       return sandboxed ? launcherWork : sharedWork
     })
     desktop.getGatewayWsUrl.mockImplementation(async () => primaryConn.wsUrl)
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
 
     render(<Harness beforeConnectionSwitch={beforeConnectionSwitch} />)
     await flushAsync()
@@ -314,7 +314,7 @@ describe('a plugin re-routes one profile', () => {
     desktop.getGatewayWsUrl.mockImplementation(async (profile?: unknown) =>
       profile === 'work' && world.sandboxed ? launcherWork.wsUrl : primaryConn.wsUrl
     )
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
 
     const workLookups = () => desktop.getConnection.mock.calls.filter(([profile]) => profile === 'work').length
 
@@ -459,7 +459,7 @@ describe('a plugin re-routes one profile', () => {
     desktop.getGatewayWsUrl.mockImplementation(async (profile?: unknown) =>
       profile === 'work' && sandboxed ? launcherWork.wsUrl : primaryConn.wsUrl
     )
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
 
     render(<Harness beforeConnectionSwitch={beforeConnectionSwitch} />)
     await flushAsync()
@@ -528,7 +528,7 @@ describe('a plugin re-routes one profile', () => {
     desktop.getGatewayWsUrl.mockImplementation(async (profile?: unknown) =>
       profile === 'work' && sandboxed ? launcherWork.wsUrl : primaryConn.wsUrl
     )
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
 
     render(<Harness />)
     await flushAsync()
@@ -587,7 +587,7 @@ describe('a plugin re-routes one profile', () => {
 
     const desktop = fakeDesktop()
 
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
 
     render(<Harness beforeConnectionSwitch={beforeConnectionSwitch} refreshSessions={refreshSessions} />)
     await flushAsync()
@@ -679,7 +679,7 @@ describe('a plugin re-routes one profile', () => {
     desktop.getGatewayWsUrl.mockImplementation(
       async profile => routeOf(typeof profile === 'string' ? profile : null).wsUrl
     )
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
 
     render(<Harness />)
     await flushAsync()
@@ -762,7 +762,7 @@ describe('a plugin re-routes one profile', () => {
     desktop.getGatewayWsUrl.mockImplementation(async (profile?: unknown) =>
       profile === 'work' && sandboxed ? launcherWork.wsUrl : primaryConn.wsUrl
     )
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
 
     render(<Harness />)
     await flushAsync()
@@ -837,7 +837,7 @@ describe('a plugin re-routes one profile', () => {
     desktop.getGatewayWsUrl.mockImplementation(async (profile?: unknown) =>
       profile === 'work' && sandboxed ? launcherWork.wsUrl : primaryConn.wsUrl
     )
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
 
     render(<Harness />)
     await flushAsync()
@@ -905,7 +905,7 @@ describe('a plugin re-routes one profile', () => {
         ? (primaryLaunched ? pooledWork : sharedWork).wsUrl
         : (primaryLaunched ? launcherConn : primaryConn).wsUrl
     })
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
 
     render(<Harness />)
     await flushAsync()
@@ -959,7 +959,7 @@ describe('a plugin re-routes one profile', () => {
 
     const route = () => (world.sandboxed ? launcherWork : hostWork)
 
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = {
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = {
       ...fakeDesktop(),
       getConnectionFor: vi.fn(async () => route()),
       getGatewayWsUrlFor: vi.fn(async () => route().wsUrl)
@@ -1071,7 +1071,7 @@ describe('a plugin re-routes one profile', () => {
     desktop.getGatewayWsUrl.mockImplementation(async (profile?: unknown) =>
       profile === 'work' ? route().wsUrl : hostDefault.wsUrl
     )
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = {
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = {
       ...desktop,
       getConnectionFor: vi.fn(async () => route()),
       getGatewayWsUrlFor: vi.fn(async () => route().wsUrl)
@@ -1119,7 +1119,7 @@ describe('a local profile moves while the window is on another gateway', () => {
 
   const teamDefault = { ...teamWork, profile: 'default' }
 
-  // This computer's `work`: Hermes's own backend, then the plugin's launcher.
+  // This computer's `work`: Zeus's own backend, then the plugin's launcher.
   const hostWork = {
     ...launcherConn,
     baseUrl: 'http://127.0.0.1:9120',
@@ -1186,7 +1186,7 @@ describe('a local profile moves while the window is on another gateway', () => {
 
       const desktop = teamDesktop({ ...teamWork, profile: name })
 
-      ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+      ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
       $activeGatewayProfile.set(name)
       render(<Harness beforeConnectionSwitch={beforeConnectionSwitch} refreshSessions={refreshSessions} />)
       await flushAsync()
@@ -1235,7 +1235,7 @@ describe('a local profile moves while the window is on another gateway', () => {
       profile,
       sharedRemote: profile !== 'default'
     }))
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
     render(<Harness beforeConnectionSwitch={beforeConnectionSwitch} />)
     await flushAsync()
     vi.useRealTimers()
@@ -1273,7 +1273,7 @@ describe('a local profile moves while the window is on another gateway', () => {
 
     // Main answered what the window connects to; its socket address is still being minted.
     desktop.getGatewayWsUrlFor.mockImplementation(() => new Promise<string>(resolve => void (mint = resolve)))
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
     $activeGatewayProfile.set('work')
     render(<Harness beforeConnectionSwitch={beforeConnectionSwitch} />)
     await flushAsync()
@@ -1309,7 +1309,7 @@ describe('a local profile moves while the window is on another gateway', () => {
 
     const desktop = teamDesktop(teamDefault, local)
 
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
     render(<Harness beforeConnectionSwitch={beforeConnectionSwitch} />)
     await flushAsync()
     // This computer's `work`, picked in the window: its own (legacy) socket.
@@ -1343,7 +1343,7 @@ describe('a local profile moves while the window is on another gateway', () => {
     const desktop = teamDesktop(localScoped)
 
     desktop.getGatewayWsUrlFor.mockImplementation(async () => hostWork.wsUrl)
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
     $activeGatewayProfile.set('work')
     render(<Harness />)
     await flushAsync()
@@ -1370,7 +1370,7 @@ describe('a local profile moves while the window is on another gateway', () => {
       desktop.getConnectionFor.mockImplementation(async () => teamWork)
       desktop.getGatewayWsUrlFor.mockImplementation(async () => teamWork.wsUrl)
       desktop.profile.get.mockImplementation(async () => ({ profile: own }))
-      ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+      ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
       $activeGatewayProfile.set(own)
       render(<Harness beforeConnectionSwitch={beforeConnectionSwitch} />)
       await flushAsync()
@@ -1402,7 +1402,7 @@ describe('a local profile moves while the window is on another gateway', () => {
     let answer: (connection: Record<string, unknown>) => void = () => undefined
 
     desktop.getConnection.mockImplementationOnce(() => new Promise(resolve => void (answer = resolve)))
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
     $activeGatewayProfile.set('work')
     render(<Harness />)
     await flushAsync()
@@ -1428,7 +1428,7 @@ describe('a local profile moves while the window is on another gateway', () => {
 
     const desktop = fakeDesktop()
 
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = desktop
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = desktop
     render(<Harness beforeConnectionSwitch={beforeConnectionSwitch} />)
     await flushAsync()
     expect($activeGatewayProfile.get()).toBe('default')
@@ -1454,7 +1454,7 @@ describe('a local profile moves while the window is on another gateway', () => {
 
     const thisDevice = () => ({ ...(local.sandboxed ? launcherWork : hostWork), connectionId: 'local' })
 
-    ;(window as { hermesDesktop?: unknown }).hermesDesktop = {
+    ;(window as { zeusDesktop?: unknown }).zeusDesktop = {
       ...teamDesktop(teamDefault, local),
       getConnectionFor: vi.fn(async ({ connectionId, profile }: { connectionId: string; profile: string }) =>
         connectionId === 'local' ? thisDevice() : { ...teamDefault, profile }

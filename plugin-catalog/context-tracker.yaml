@@ -7,7 +7,7 @@ description: "A small titlebar ring for context headroom, with cumulative sessio
 maintainer: mu1ze
 tier: community
 category: desktop
-requires_hermes: ">=0.23.2"
+requires_zeus: ">=0.23.2"
 docs_url: https://github.com/mu1ze/hermes-context-tracker#readme
 readme: true
 screenshots:

@@ -8,4 +8,4 @@ capabilities:
   provides_hooks:
     - pre_tool_call
     - post_tool_call
-requires_hermes: ">=0.22.6"
+requires_zeus: ">=0.22.6"

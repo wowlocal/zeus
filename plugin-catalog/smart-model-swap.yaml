@@ -6,7 +6,7 @@ description: "Run a big and a small local LLM on one GPU rig and let the agent s
 maintainer: CarmaOS-Dev
 tier: community
 category: models
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 docs_url: https://github.com/CarmaOS-Dev/SmartModelSwap-plugin#readme
 version: "0.4.0"
 screenshots:
@@ -16,7 +16,7 @@ platforms: [linux]
 known_issues:
   - "Needs an NVIDIA GPU with nvidia-smi and a built llama.cpp llama-server; only llama.cpp is managed (Ollama, vLLM and LM Studio are detection-only)."
   - "On WSL2, GGUFs on a Windows drive (/mnt/<drive>, 9p) load ~10x slower than from the Linux filesystem."
-  - "Keep the same -c on every model: Hermes caches one context length per model id (the editor enforces it)."
+  - "Keep the same -c on every model: Zeus caches one context length per model id (the editor enforces it)."
 capabilities:
   provides_tools:
     - sms_status

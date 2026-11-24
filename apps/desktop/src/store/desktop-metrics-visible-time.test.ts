@@ -497,7 +497,7 @@ describe('visible time ownership', () => {
         const held = Promise.withResolvers<void>()
         const acquired = Promise.withResolvers<void>()
 
-        const ownership = navigator.locks.request('hermes-desktop-metrics-coordination', () => {
+        const ownership = navigator.locks.request('zeus-desktop-metrics-coordination', () => {
           acquired.resolve()
 
           return held.promise

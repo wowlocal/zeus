@@ -34,4 +34,4 @@ capabilities:
     - on_session_finalize
   provides_middleware: []
   requires_env: []
-requires_hermes: ">=0.22.5"
+requires_zeus: ">=0.22.5"

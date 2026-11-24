@@ -80,7 +80,7 @@ def admit(env: dict[str, str], *, run=output, repo: Path | None = None) -> dict[
 
 def receipt_tag(kind: str, version: str, created_at: str, run_id: str) -> str:
     """Return the canonical post-build receipt identity."""
-    from hermes_cli.update_channel import STABLE_TAG_RE
+    from zeus_cli.update_channel import STABLE_TAG_RE
 
     if kind not in {"channel", "commit"} or not STABLE_TAG_RE.fullmatch("v" + version):
         raise ValueError("Build receipt kind or version is invalid")
@@ -158,7 +158,7 @@ def publish_receipt(kind: str, env: dict[str, str], *, version: str, commit: str
     else:
         message = json.dumps(record, sort_keys=True, separators=(",", ":"))
         run([
-            "git", "-c", "user.name=Hermes Build Receipt",
+            "git", "-c", "user.name=Zeus Build Receipt",
             "-c", "user.email=actions@users.noreply.github.com",
             "tag", "-a", tag, commit, "-m", message,
         ], repo)
@@ -202,7 +202,7 @@ def claim_message(*, version: str, commit: str, lanes, require_green: bool,
 
 def dispatch_command(tag: str, repository: str, branch: str) -> list[str]:
     """Run Stable Release on the commit claim, from the default branch like every release."""
-    from hermes_cli.update_channel import is_commit_tag
+    from zeus_cli.update_channel import is_commit_tag
     from scripts.releases.stable import CONTROLLER_WORKFLOW
 
     if not is_commit_tag(tag):
@@ -255,7 +255,7 @@ def _unused_claim_tag(release, version: str) -> str:
     push rather than being replaced."""
     from datetime import timedelta
 
-    from hermes_cli.update_channel import commit_tag_for_date
+    from zeus_cli.update_channel import commit_tag_for_date
 
     moment = datetime.now(UTC).replace(microsecond=0)
     for _ in range(60):

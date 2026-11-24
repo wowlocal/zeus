@@ -10,12 +10,12 @@ description: >-
   validate-idea skill. No API key needed. Disclosure — each check sends the idea text and its
   phrasings as search queries to api.stackexchange.com, hn.algolia.com and api.github.com;
   check history and HTML reports stay in the plugin's own data folder; an optional read-only
-  GitHub token is read through Hermes's secret route; no shell commands, background processes,
+  GitHub token is read through Zeus's secret route; no shell commands, background processes,
   telemetry or Python dependencies.
 maintainer: LeonardIrimia
 tier: community
 category: tools
-requires_hermes: ">=0.21.6"
+requires_zeus: ">=0.21.6"
 docs_url: https://github.com/LeonardIrimia/hermes-demand-radar#readme
 version: "1.0.0"
 platforms: []

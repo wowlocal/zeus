@@ -30,7 +30,7 @@ class _TestableEnv(BaseEnvironment):
 
 def test_prepare_command_uses_selected_environment_for_nopasswd(monkeypatch):
     monkeypatch.delenv("SUDO_PASSWORD", raising=False)
-    monkeypatch.setenv("HERMES_INTERACTIVE", "1")
+    monkeypatch.setenv("ZEUS_INTERACTIVE", "1")
     env = _TestableEnv()
     monkeypatch.setattr(env, "_sudo_nopasswd_works", lambda: True)
 
@@ -107,7 +107,7 @@ class TestAtomicSnapshotWrite:
         env._snapshot_ready = True
         wrapped = env._wrap_command("echo hi", "/tmp")
         # Env dump goes to a temp file (``>|``: noclobber must not refuse mktemp's file), not the live snapshot.
-        assert "export -p" in wrapped and '>| "$__hermes_snap_tmp"' in wrapped
+        assert "export -p" in wrapped and '>| "$__zeus_snap_tmp"' in wrapped
         assert ".tmp." in wrapped
         # Then an atomic rename onto the real snapshot path.
         assert "mv -f " in wrapped

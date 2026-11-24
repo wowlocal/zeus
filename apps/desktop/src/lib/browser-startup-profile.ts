@@ -1,4 +1,4 @@
-import { PROFILE_ID_ARG_RE } from '@hermes/shared/profile-id'
+import { PROFILE_ID_ARG_RE } from '@zeus/shared/profile-id'
 
 import type { DesktopProfileRoute } from '@/global'
 
@@ -6,7 +6,7 @@ import { requireBrowserConnection } from './browser-connection'
 import { readJson, writeJson } from './storage'
 
 export function browserStartupProfileKey(basePath: string): string {
-  return `hermes:webapp:default-profile:${basePath || '/'}`
+  return `zeus:webapp:default-profile:${basePath || '/'}`
 }
 
 /** A profile route this tab can apply: a valid profile name on its one connection. The profile

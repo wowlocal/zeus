@@ -14,7 +14,7 @@ import pytest
 
 from tests.fixtures.storage_holder import policy_key, raw_holder
 from persistence_assembly import open_persistence, profile_scope
-from tests.fakes.fake_llm_provider import FakeLLMServer, Text, write_hermes_home
+from tests.fakes.fake_llm_provider import FakeLLMServer, Text, write_zeus_home
 from tests.waiting import async_wait_until
 
 
@@ -44,15 +44,15 @@ def owner(tmp_path, monkeypatch):
     from cron import jobs
     import cron.scheduler as sched
     from cron import executions
-    from hermes_cli import runtime_provider
+    from zeus_cli import runtime_provider
 
     home = tmp_path / 'home'
     for sub in ('cron', 'scripts', 'sessions'):
         (home / sub).mkdir(parents=True)
-    monkeypatch.setenv('HERMES_HOME', str(home))
+    monkeypatch.setenv('ZEUS_HOME', str(home))
     monkeypatch.delenv('INVOCATION_ID', raising=False)
     monkeypatch.setattr(executions, 'EXECUTIONS_FILE', home / 'cron' / 'executions.db')
-    monkeypatch.setattr(sched, '_hermes_home', home)
+    monkeypatch.setattr(sched, '_zeus_home', home)
     monkeypatch.setattr(sched, '_sweep_mcp_orphans', lambda: None)
     monkeypatch.setattr(sched, '_resolve_cron_enabled_toolsets', lambda *a: [])
     sched._running_job_ids.clear()
@@ -62,7 +62,7 @@ def owner(tmp_path, monkeypatch):
         monkeypatch.setattr(sched, name, spy)
         effects[name] = spy
     with FakeLLMServer(lambda _: Text('agent done'), aux=lambda _: Text('agent done')) as server:
-        write_hermes_home(home, server.base_url, extra_config='cron:\n  preflight: false\n')
+        write_zeus_home(home, server.base_url, extra_config='cron:\n  preflight: false\n')
         monkeypatch.setattr(runtime_provider, 'resolve_runtime_provider', lambda **kw: {
             'provider': 'custom', 'api_key': 'sk-fake-e2e', 'base_url': server.base_url,
             'api_mode': 'chat_completions'})
@@ -75,7 +75,7 @@ def _make_due(job_id):
     from cron import jobs
     stored = jobs.load_jobs()
     # Preserve subsecond precision: truncation aliases two fast test fires to the same occurrence.
-    slot = (jobs._hermes_now() - timedelta(minutes=1)).isoformat()
+    slot = (jobs._zeus_now() - timedelta(minutes=1)).isoformat()
     next(row for row in stored if row['id'] == job_id)['next_run_at'] = slot
     jobs.save_jobs(stored)
 

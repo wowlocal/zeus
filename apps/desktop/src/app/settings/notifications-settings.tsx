@@ -109,7 +109,7 @@ function presenceDescription(readout: PresenceReadout, copy: NotificationSetting
   return (readout.basis === 'system' ? copy.watchingComputer : copy.watchingWindow)(formatElapsed(readout.idleSeconds, locale))
 }
 
-/** Read-only: what this window tells Hermes while a conversation is open in it, with the evidence it
+/** Read-only: what this window tells Zeus while a conversation is open in it, with the evidence it
  *  has now. What a phone does with it is the plugin's decision. */
 function PhonePresenceRow() {
   const { locale, t } = useI18n()

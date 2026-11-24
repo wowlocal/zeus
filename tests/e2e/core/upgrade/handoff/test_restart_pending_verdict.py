@@ -1,4 +1,4 @@
-"""The handoff cell's restart-pending property judges ``hermes update``'s own output (#155532): it passes
+"""The handoff cell's restart-pending property judges ``zeus update``'s own output (#155532): it passes
 only when the update left the busy gateway running, reported its restart as pending, named the held
 kanban worker's managed session, and listed the gateway as restart pending in the fleet check."""
 
@@ -8,8 +8,8 @@ from tests.e2e.core.upgrade.handoff import _handoff as X
 
 SESSION = "local-9eec26b610ab80ce87c935fc27922cf0c530af240b9aa560dccf3fad701f0dc0"
 LEFT = (f"  ↻ gateway PID 6: still running live work (managed run {SESSION} pid 440, running 2m00s) — left running; "
-        "it exits once idle (start it again with `hermes gateway run` if nothing relaunches it). "
-        "`hermes update --force` stops it now.")
+        "it exits once idle (start it again with `zeus gateway run` if nothing relaunches it). "
+        "`zeus update --force` stops it now.")
 FLEET = ("  ↻ default (pid 6) @ 611f0ab7 — restart pending (it restarts itself once its live work is done, "
          "or once this update exits when the update runs inside it)")
 

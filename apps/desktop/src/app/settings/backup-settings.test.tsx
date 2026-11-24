@@ -22,7 +22,7 @@ const mocks = vi.hoisted(() => ({
   undoTransfer: vi.fn(async () => undefined)
 }))
 
-vi.mock('@/lib/hermes-cloud-agents', () => ({
+vi.mock('@/lib/zeus-cloud-agents', () => ({
   backup: vi.fn(),
   cloudLogin: vi.fn(),
   cloudStatus: async () => ({ portalBaseUrl: '', signedIn: mocks.signedIn }),
@@ -44,7 +44,7 @@ afterEach(() => {
   mocks.transferAgent.mockReset()
   mocks.undoTransfer.mockClear()
   mocks.signedIn = true
-  window.document.documentElement.removeAttribute('data-hermes-desktop-host')
+  window.document.documentElement.removeAttribute('data-zeus-desktop-host')
 })
 
 const renderPage = () =>
@@ -60,7 +60,7 @@ async function startTransfer() {
   fireEvent.click(screen.getByRole('button', { name: 'Replace Agent One' }))
 }
 
-describe('Transfer to Hermes Cloud', () => {
+describe('Transfer to Zeus Cloud', () => {
   it('Undo after a retried failed restore puts back the FIRST undo point, not the half-restored one', async () => {
     const { TransferRestoreError } = await vi.importActual<typeof AgentTransfer>('@/lib/agent-transfer')
 
@@ -107,7 +107,7 @@ describe('Transfer to Hermes Cloud', () => {
   })
 
   it('sends a signed-out Webapp to Settings ▸ Providers instead of a portal window', async () => {
-    window.document.documentElement.dataset.hermesDesktopHost = 'browser'
+    window.document.documentElement.dataset.zeusDesktopHost = 'browser'
     mocks.signedIn = false
 
     renderPage()

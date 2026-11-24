@@ -41,7 +41,7 @@ def _receipt(home: Path, key: str, *, sender: str, status: str, age: float = 0.0
 
 
 def test_lists_only_this_senders_unsettled_deliveries_and_never_writes(tmp_path):
-    root = tmp_path / "hermes"
+    root = tmp_path / "zeus"
     _profile(root, "default")
     scribe = _profile(root, "scribe")
     _receipt(scribe, "a" * 32, sender="alice", status="queued")
@@ -69,7 +69,7 @@ def test_lists_only_this_senders_unsettled_deliveries_and_never_writes(tmp_path)
 def test_a_poll_reparses_only_receipts_written_since_the_last_one(tmp_path, monkeypatch):
     import tools.bot_delivery_status as status
 
-    root = tmp_path / "hermes"
+    root = tmp_path / "zeus"
     _profile(root, "default")
     scribe = _profile(root, "scribe")
     for i in range(5):
@@ -105,7 +105,7 @@ class _Events:
 
 
 def test_owner_join_reports_working_and_waiting_on_you(tmp_path, monkeypatch):
-    root = tmp_path / "hermes"
+    root = tmp_path / "zeus"
     alice, scribe, critic = _profile(root, "default"), _profile(root, "scribe"), _profile(root, "critic")
     _receipt(scribe, "1" * 32, sender="default", status="queued")
     _receipt(critic, "2" * 32, sender="default", status="queued")
@@ -147,7 +147,7 @@ def test_owner_join_reports_working_and_waiting_on_you(tmp_path, monkeypatch):
 @pytest.mark.platforms("posix")
 @pytest.mark.skipif(hasattr(os, "geteuid") and os.geteuid() == 0, reason="root reads a 0o000 file")
 def test_a_receipt_that_cannot_be_read_fails_the_poll_instead_of_vanishing(tmp_path):
-    root = tmp_path / "hermes"
+    root = tmp_path / "zeus"
     _profile(root, "default")
     scribe = _profile(root, "scribe")
     live = _receipt(scribe, "a" * 32, sender="alice", status="queued")

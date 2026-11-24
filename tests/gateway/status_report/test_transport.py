@@ -26,7 +26,7 @@ def test_the_credential_travels_in_the_authorization_header_not_the_url():
     assert seen.url == f"{REPORT_URL}?zone=eu" and credential not in seen.url
     assert seen.headers["Authorization"] == f"Bearer {credential}"
     assert seen.headers["Content-type"] == "application/json"
-    assert seen.headers["User-agent"] == "hermes-gateway-status-report/1"
+    assert seen.headers["User-agent"] == "zeus-gateway-status-report/1"
     assert (seen.method, seen.raw, seen.timeout) == ("POST", BODY, 7.0)
 
 

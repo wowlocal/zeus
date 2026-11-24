@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
-"""Derive a Debian package version (or channel) from a hermes-agent release tag.
+"""Derive a Debian package version (or channel) from a zeus-agent release tag.
 
 Pure function; imported by scripts/termux/build_deb.sh and unit-tested by
-tests/scripts/test_termux_deb_version.py (Task 4 of .hermes/plans/2026-08-31_termux-deb.md).
+tests/scripts/test_termux_deb_version.py (Task 4 of .zeus/plans/2026-08-31_termux-deb.md).
 
 Mapping:
     v1.2.3                              -> 1.2.3-1
@@ -51,7 +51,7 @@ def deb_version_for_tag(tag: str) -> str:
 def release_version_for_tag(tag: str) -> str:
     """The version a release tag carries: ``X.Y.Z``, ``X.Y.Z+canary.<stamp>`` or ``X.Y.Z+commit.<stamp>``.
 
-    The same value as hermes_cli.update_channel.release_version; build_deb.sh stamps it as the
+    The same value as zeus_cli.update_channel.release_version; build_deb.sh stamps it as the
     package's base version and cannot import the application package.
     """
     m = _match_tag(tag)

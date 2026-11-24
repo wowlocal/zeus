@@ -5,7 +5,7 @@ description: "Sealed messages for later — seal a note so it cannot be read unt
 maintainer: brayedan
 tier: community
 category: tools
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 version: "0.1.1"
 capabilities:
   provides_tools:

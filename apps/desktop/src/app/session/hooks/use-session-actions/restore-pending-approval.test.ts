@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { $gateway } from '@/store/gateway'
 import { clearAllPrompts, sessionApprovalRequests } from '@/store/prompts'
-import type { SessionResumeResult } from '@/types/hermes'
+import type { SessionResumeResult } from '@/types/zeus'
 
 import { restorePendingApproval } from './restore-pending-approval'
 

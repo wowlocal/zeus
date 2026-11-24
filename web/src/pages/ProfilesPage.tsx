@@ -7,7 +7,7 @@ import {
   useState,
 } from "react";
 import { useNavigate } from "react-router";
-import { PROFILE_ID_ARG_RE } from "@hermes/shared/profile-id";
+import { PROFILE_ID_ARG_RE } from "@zeus/shared/profile-id";
 import { useProfileScope } from "@/contexts/useProfileScope";
 import {
   AlignLeft,

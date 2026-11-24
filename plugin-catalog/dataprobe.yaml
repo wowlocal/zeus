@@ -14,11 +14,11 @@ description: >-
   parsed preview that handles quoted CSV and JSON correctly. Streamed, standard
   library only: no network, no credentials, no third-party dependencies, no
   self-update. Disclosure: reads the local data path you pass it (read-only) and
-  honours Hermes' core read denylist.
+  honours Zeus' core read denylist.
 maintainer: rodricksz4h5
 tier: community
 category: tools
-requires_hermes: ">=0.22.0"
+requires_zeus: ">=0.22.0"
 docs_url: https://github.com/rodricksz4h5/dataprobe/tree/20d5190ec8e22e0ae7cc92086355d0d722b9d290
 capabilities:
   provides_tools:

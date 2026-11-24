@@ -7,13 +7,13 @@ description: >-
   every file it writes in a session is fingerprinted and judged by the next test
   or build run, or by the user saying "still broken". An edit that would recreate
   a failed version is stopped once, naming when it failed and why; a second try
-  goes through. Catches the same code reached by different edits, which Hermes'
+  goes through. Catches the same code reached by different edits, which Zeus'
   identical-call guard can't. /deja shows what is tracked. No model calls.
 
 maintainer: salch-cred
 tier: community
 category: tools
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 docs_url: https://github.com/salch-cred/deja-fix
 version: "0.1.0"
 image: https://raw.githubusercontent.com/salch-cred/deja-fix/1e89debbb94218c70ff652b79b69aa3766ebbf93/docs/assets/catalog.jpg

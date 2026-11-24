@@ -4,7 +4,7 @@ export const zhNotifications = {
   intro: '原生桌面通知，区别于应用内提示。设置按设备保存，每台电脑各自独立。',
   enableAll: '启用通知',
   enableAllDesc: '关闭后静音下方所有通知。',
-  focusedHint: '完成提醒仅在 Hermes 处于后台时触发。',
+  focusedHint: '完成提醒仅在 Zeus 处于后台时触发。',
   kinds: {
     approval: {
       label: '需要批准',
@@ -12,11 +12,11 @@ export const zhNotifications = {
     },
     input: {
       label: '需要输入',
-      description: 'Hermes 提出了问题，或需要密码或密钥。'
+      description: 'Zeus 提出了问题，或需要密码或密钥。'
     },
     turnDone: {
       label: '回复就绪',
-      description: 'Hermes 在后台时完成了一轮对话。'
+      description: 'Zeus 在后台时完成了一轮对话。'
     },
     turnError: {
       label: '本轮失败',
@@ -32,7 +32,7 @@ export const zhNotifications = {
     },
     plugin: {
       label: '插件通知',
-      description: 'Hermes 在后台时，桌面插件发送了通知。'
+      description: 'Zeus 在后台时，桌面插件发送了通知。'
     }
   },
   browserPermission: {
@@ -48,15 +48,15 @@ export const zhNotifications = {
   },
   phonePresence: {
     title: '此电脑（手机通知）',
-    description: '此窗口告诉 Hermes 你是否在这里。如何处理由手机通知插件决定。',
+    description: '此窗口告诉 Zeus 你是否在这里。如何处理由手机通知插件决定。',
     unsupported: '在此后端上，手机通知不受你的活动影响。',
     disconnected: '未连接。',
-    watchingComputer: (time: string) => `当此窗口中打开对话时，Hermes 会得知你上次使用这台电脑的时间。上次输入在 ${time} 前。`,
-    watchingWindow: (time: string) => `当此窗口中打开对话时，Hermes 会得知你上次使用此窗口的时间。上次输入在 ${time} 前。`,
-    watchingWindowNoInput: '当此窗口中打开对话时，Hermes 会得知你上次使用此窗口的时间。尚未检测到任何输入。'
+    watchingComputer: (time: string) => `当此窗口中打开对话时，Zeus 会得知你上次使用这台电脑的时间。上次输入在 ${time} 前。`,
+    watchingWindow: (time: string) => `当此窗口中打开对话时，Zeus 会得知你上次使用此窗口的时间。上次输入在 ${time} 前。`,
+    watchingWindowNoInput: '当此窗口中打开对话时，Zeus 会得知你上次使用此窗口的时间。尚未检测到任何输入。'
   },
   test: '发送测试通知',
-  testTitle: 'Hermes',
+  testTitle: 'Zeus',
   testBody: '通知工作正常。',
   testSent: '测试已发送。如果没有出现，请检查系统通知权限和专注模式／勿扰模式。',
   testUnsupported: '此系统不支持原生通知。',

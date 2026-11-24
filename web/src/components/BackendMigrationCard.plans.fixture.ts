@@ -10,7 +10,7 @@ export const containerPlans = {
       "dry_run": true,
       "exit_code": 3,
       "plan": {
-        "home": "/var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_1_0/hermes-home",
+        "home": "/var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_1_0/zeus-home",
         "old_backend": null,
         "old_address": null,
         "new_address": null,
@@ -29,9 +29,9 @@ export const containerPlans = {
         "unsupported": [
           {
             "supervisor": "container",
-            "unit": "hermes-dashboard.service",
+            "unit": "zeus-dashboard.service",
             "pid": 4242,
-            "instructions": "The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Hermes home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Hermes version could not be checked from outside its container, and a Hermes older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
+            "instructions": "The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Zeus home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Zeus version could not be checked from outside its container, and a Zeus older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
             "steps": []
           }
         ],
@@ -40,9 +40,9 @@ export const containerPlans = {
         "steps": [],
         "text": [
           "Backend migration plan (dry run — nothing changed)",
-          "  home:          /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_1_0/hermes-home",
-          "  ✗ container hermes-dashboard.service cannot be migrated automatically. Nothing changed.",
-          "    The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Hermes home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Hermes version could not be checked from outside its container, and a Hermes older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
+          "  home:          /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_1_0/zeus-home",
+          "  ✗ container zeus-dashboard.service cannot be migrated automatically. Nothing changed.",
+          "    The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Zeus home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Zeus version could not be checked from outside its container, and a Zeus older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
           "    Steps, in this order (one command per line):",
           "",
           "  ✗ Blockers (nothing will be changed):",
@@ -56,7 +56,7 @@ export const containerPlans = {
           "supervisor": "container",
           "running": true,
           "pid": 4242,
-          "unit": "hermes-dashboard.service",
+          "unit": "zeus-dashboard.service",
           "scope": "user",
           "state": "enabled",
           "this_home": true,
@@ -78,8 +78,8 @@ export const containerPlans = {
       },
       "profile": "default",
       "commands": {
-        "status": "hermes -p default gateway migrate --backends --status",
-        "restore": "hermes -p default gateway migrate --backends --restore"
+        "status": "zeus -p default gateway migrate --backends --status",
+        "restore": "zeus -p default gateway migrate --backends --restore"
       }
     },
     "forced": {
@@ -87,7 +87,7 @@ export const containerPlans = {
       "dry_run": true,
       "exit_code": 6,
       "plan": {
-        "home": "/var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_1_0/hermes-home",
+        "home": "/var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_1_0/zeus-home",
         "old_backend": null,
         "old_address": null,
         "new_address": null,
@@ -104,13 +104,13 @@ export const containerPlans = {
         "unsupported": [
           {
             "supervisor": "container",
-            "unit": "hermes-dashboard.service",
+            "unit": "zeus-dashboard.service",
             "pid": 4242,
-            "instructions": "The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Hermes home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Hermes version could not be checked from outside its container, and a Hermes older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
+            "instructions": "The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Zeus home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Zeus version could not be checked from outside its container, and a Zeus older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
             "steps": [
-              "# in the mounted Hermes home's config.yaml set webapp.enabled: true, webapp.host: 0.0.0.0, webapp.port: 9119",
-              "# copy every HERMES_DASHBOARD_* line from the old launcher's environment, if any, into /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_1_0/hermes-home/.env (chmod 600)",
-              "# remove the dashboard: recreate the container without HERMES_DASHBOARD=1, or drop the Compose `dashboard` service and run: docker compose up -d --remove-orphans",
+              "# in the mounted Zeus home's config.yaml set webapp.enabled: true, webapp.host: 0.0.0.0, webapp.port: 9119",
+              "# copy every ZEUS_DASHBOARD_* line from the old launcher's environment, if any, into /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_1_0/zeus-home/.env (chmod 600)",
+              "# remove the dashboard: recreate the container without ZEUS_DASHBOARD=1, or drop the Compose `dashboard` service and run: docker compose up -d --remove-orphans",
               "# publish 9119 on the gateway's container and restart it, so its gateway serves the address"
             ]
           }
@@ -120,13 +120,13 @@ export const containerPlans = {
         "steps": [],
         "text": [
           "Backend migration plan (dry run — nothing changed)",
-          "  home:          /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_1_0/hermes-home",
-          "  ✗ container hermes-dashboard.service cannot be migrated automatically. Nothing changed.",
-          "    The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Hermes home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Hermes version could not be checked from outside its container, and a Hermes older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
+          "  home:          /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_1_0/zeus-home",
+          "  ✗ container zeus-dashboard.service cannot be migrated automatically. Nothing changed.",
+          "    The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Zeus home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Zeus version could not be checked from outside its container, and a Zeus older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
           "    Steps, in this order (one command per line):",
-          "      # in the mounted Hermes home's config.yaml set webapp.enabled: true, webapp.host: 0.0.0.0, webapp.port: 9119",
-          "      # copy every HERMES_DASHBOARD_* line from the old launcher's environment, if any, into /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_1_0/hermes-home/.env (chmod 600)",
-          "      # remove the dashboard: recreate the container without HERMES_DASHBOARD=1, or drop the Compose `dashboard` service and run: docker compose up -d --remove-orphans",
+          "      # in the mounted Zeus home's config.yaml set webapp.enabled: true, webapp.host: 0.0.0.0, webapp.port: 9119",
+          "      # copy every ZEUS_DASHBOARD_* line from the old launcher's environment, if any, into /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_1_0/zeus-home/.env (chmod 600)",
+          "      # remove the dashboard: recreate the container without ZEUS_DASHBOARD=1, or drop the Compose `dashboard` service and run: docker compose up -d --remove-orphans",
           "      # publish 9119 on the gateway's container and restart it, so its gateway serves the address"
         ],
         "expect_token": null,
@@ -137,7 +137,7 @@ export const containerPlans = {
           "supervisor": "container",
           "running": true,
           "pid": 4242,
-          "unit": "hermes-dashboard.service",
+          "unit": "zeus-dashboard.service",
           "scope": "user",
           "state": "enabled",
           "this_home": true,
@@ -159,8 +159,8 @@ export const containerPlans = {
       },
       "profile": "default",
       "commands": {
-        "status": "hermes -p default gateway migrate --backends --status",
-        "restore": "hermes -p default gateway migrate --backends --restore"
+        "status": "zeus -p default gateway migrate --backends --status",
+        "restore": "zeus -p default gateway migrate --backends --restore"
       }
     }
   },
@@ -170,7 +170,7 @@ export const containerPlans = {
       "dry_run": true,
       "exit_code": 3,
       "plan": {
-        "home": "/var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_None_0/hermes-home",
+        "home": "/var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_None_0/zeus-home",
         "old_backend": null,
         "old_address": null,
         "new_address": null,
@@ -189,9 +189,9 @@ export const containerPlans = {
         "unsupported": [
           {
             "supervisor": "container",
-            "unit": "hermes-dashboard.service",
+            "unit": "zeus-dashboard.service",
             "pid": 4242,
-            "instructions": "The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Hermes home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Hermes version could not be checked from outside its container, and a Hermes older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it.",
+            "instructions": "The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Zeus home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Zeus version could not be checked from outside its container, and a Zeus older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it.",
             "steps": []
           }
         ],
@@ -200,9 +200,9 @@ export const containerPlans = {
         "steps": [],
         "text": [
           "Backend migration plan (dry run — nothing changed)",
-          "  home:          /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_None_0/hermes-home",
-          "  ✗ container hermes-dashboard.service cannot be migrated automatically. Nothing changed.",
-          "    The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Hermes home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Hermes version could not be checked from outside its container, and a Hermes older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it.",
+          "  home:          /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_None_0/zeus-home",
+          "  ✗ container zeus-dashboard.service cannot be migrated automatically. Nothing changed.",
+          "    The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Zeus home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Zeus version could not be checked from outside its container, and a Zeus older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it.",
           "    Steps, in this order (one command per line):",
           "",
           "  ✗ Blockers (nothing will be changed):",
@@ -216,7 +216,7 @@ export const containerPlans = {
           "supervisor": "container",
           "running": true,
           "pid": 4242,
-          "unit": "hermes-dashboard.service",
+          "unit": "zeus-dashboard.service",
           "scope": "user",
           "state": "enabled",
           "this_home": true,
@@ -238,8 +238,8 @@ export const containerPlans = {
       },
       "profile": "default",
       "commands": {
-        "status": "hermes -p default gateway migrate --backends --status",
-        "restore": "hermes -p default gateway migrate --backends --restore"
+        "status": "zeus -p default gateway migrate --backends --status",
+        "restore": "zeus -p default gateway migrate --backends --restore"
       }
     },
     "forced": {
@@ -247,7 +247,7 @@ export const containerPlans = {
       "dry_run": true,
       "exit_code": 6,
       "plan": {
-        "home": "/var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_None_0/hermes-home",
+        "home": "/var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_None_0/zeus-home",
         "old_backend": null,
         "old_address": null,
         "new_address": null,
@@ -264,13 +264,13 @@ export const containerPlans = {
         "unsupported": [
           {
             "supervisor": "container",
-            "unit": "hermes-dashboard.service",
+            "unit": "zeus-dashboard.service",
             "pid": 4242,
-            "instructions": "The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Hermes home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Hermes version could not be checked from outside its container, and a Hermes older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it. Its turn activity could not be read, so turns may be running on it now: stopping it interrupts them.",
+            "instructions": "The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Zeus home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Zeus version could not be checked from outside its container, and a Zeus older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it. Its turn activity could not be read, so turns may be running on it now: stopping it interrupts them.",
             "steps": [
-              "# in the mounted Hermes home's config.yaml set webapp.enabled: true, webapp.host: 0.0.0.0, webapp.port: 9119",
-              "# copy every HERMES_DASHBOARD_* line from the old launcher's environment, if any, into /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_None_0/hermes-home/.env (chmod 600)",
-              "# remove the dashboard: recreate the container without HERMES_DASHBOARD=1, or drop the Compose `dashboard` service and run: docker compose up -d --remove-orphans",
+              "# in the mounted Zeus home's config.yaml set webapp.enabled: true, webapp.host: 0.0.0.0, webapp.port: 9119",
+              "# copy every ZEUS_DASHBOARD_* line from the old launcher's environment, if any, into /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_None_0/zeus-home/.env (chmod 600)",
+              "# remove the dashboard: recreate the container without ZEUS_DASHBOARD=1, or drop the Compose `dashboard` service and run: docker compose up -d --remove-orphans",
               "# publish 9119 on the gateway's container and restart it, so its gateway serves the address"
             ]
           }
@@ -280,13 +280,13 @@ export const containerPlans = {
         "steps": [],
         "text": [
           "Backend migration plan (dry run — nothing changed)",
-          "  home:          /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_None_0/hermes-home",
-          "  ✗ container hermes-dashboard.service cannot be migrated automatically. Nothing changed.",
-          "    The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Hermes home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Hermes version could not be checked from outside its container, and a Hermes older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it. Its turn activity could not be read, so turns may be running on it now: stopping it interrupts them.",
+          "  home:          /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_None_0/zeus-home",
+          "  ✗ container zeus-dashboard.service cannot be migrated automatically. Nothing changed.",
+          "    The backend runs in a container (Compose sidecar or docker run). Set webapp.enabled/host/port (below) in the mounted Zeus home, drop the dashboard service from the Compose file, publish the same port on the gateway container, then `docker compose up -d`. Its Zeus version could not be checked from outside its container, and a Zeus older than v2026.7.30 does not record running chats: check inside the container that no reply is being written before you stop it. Its turn activity could not be read, so turns may be running on it now: stopping it interrupts them.",
           "    Steps, in this order (one command per line):",
-          "      # in the mounted Hermes home's config.yaml set webapp.enabled: true, webapp.host: 0.0.0.0, webapp.port: 9119",
-          "      # copy every HERMES_DASHBOARD_* line from the old launcher's environment, if any, into /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_None_0/hermes-home/.env (chmod 600)",
-          "      # remove the dashboard: recreate the container without HERMES_DASHBOARD=1, or drop the Compose `dashboard` service and run: docker compose up -d --remove-orphans",
+          "      # in the mounted Zeus home's config.yaml set webapp.enabled: true, webapp.host: 0.0.0.0, webapp.port: 9119",
+          "      # copy every ZEUS_DASHBOARD_* line from the old launcher's environment, if any, into /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_container_None_0/zeus-home/.env (chmod 600)",
+          "      # remove the dashboard: recreate the container without ZEUS_DASHBOARD=1, or drop the Compose `dashboard` service and run: docker compose up -d --remove-orphans",
           "      # publish 9119 on the gateway's container and restart it, so its gateway serves the address"
         ],
         "expect_token": null,
@@ -297,7 +297,7 @@ export const containerPlans = {
           "supervisor": "container",
           "running": true,
           "pid": 4242,
-          "unit": "hermes-dashboard.service",
+          "unit": "zeus-dashboard.service",
           "scope": "user",
           "state": "enabled",
           "this_home": true,
@@ -319,8 +319,8 @@ export const containerPlans = {
       },
       "profile": "default",
       "commands": {
-        "status": "hermes -p default gateway migrate --backends --status",
-        "restore": "hermes -p default gateway migrate --backends --restore"
+        "status": "zeus -p default gateway migrate --backends --status",
+        "restore": "zeus -p default gateway migrate --backends --restore"
       }
     }
   }
@@ -333,7 +333,7 @@ export const systemSystemdPlans = {
       "dry_run": true,
       "exit_code": 3,
       "plan": {
-        "home": "/var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/hermes-home",
+        "home": "/var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/zeus-home",
         "old_backend": null,
         "old_address": null,
         "new_address": null,
@@ -352,9 +352,9 @@ export const systemSystemdPlans = {
         "unsupported": [
           {
             "supervisor": "systemd",
-            "unit": "hermes-dashboard.service",
+            "unit": "zeus-dashboard.service",
             "pid": 4242,
-            "instructions": "The backend is a systemd SYSTEM unit: this command changes no system unit, and hermes -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
+            "instructions": "The backend is a systemd SYSTEM unit: this command changes no system unit, and zeus -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
             "steps": []
           }
         ],
@@ -363,9 +363,9 @@ export const systemSystemdPlans = {
         "steps": [],
         "text": [
           "Backend migration plan (dry run — nothing changed)",
-          "  home:          /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/hermes-home",
-          "  ✗ systemd hermes-dashboard.service cannot be migrated automatically. Nothing changed.",
-          "    The backend is a systemd SYSTEM unit: this command changes no system unit, and hermes -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
+          "  home:          /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/zeus-home",
+          "  ✗ systemd zeus-dashboard.service cannot be migrated automatically. Nothing changed.",
+          "    The backend is a systemd SYSTEM unit: this command changes no system unit, and zeus -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
           "    Steps, in this order (one command per line):",
           "",
           "  ✗ Blockers (nothing will be changed):",
@@ -379,7 +379,7 @@ export const systemSystemdPlans = {
           "supervisor": "systemd",
           "running": true,
           "pid": 4242,
-          "unit": "hermes-dashboard.service",
+          "unit": "zeus-dashboard.service",
           "scope": "system",
           "state": "enabled",
           "this_home": true,
@@ -401,8 +401,8 @@ export const systemSystemdPlans = {
       },
       "profile": "default",
       "commands": {
-        "status": "hermes -p default gateway migrate --backends --status",
-        "restore": "hermes -p default gateway migrate --backends --restore"
+        "status": "zeus -p default gateway migrate --backends --status",
+        "restore": "zeus -p default gateway migrate --backends --restore"
       }
     },
     "forced": {
@@ -410,7 +410,7 @@ export const systemSystemdPlans = {
       "dry_run": true,
       "exit_code": 6,
       "plan": {
-        "home": "/var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/hermes-home",
+        "home": "/var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/zeus-home",
         "old_backend": null,
         "old_address": null,
         "new_address": null,
@@ -427,21 +427,21 @@ export const systemSystemdPlans = {
         "unsupported": [
           {
             "supervisor": "systemd",
-            "unit": "hermes-dashboard.service",
+            "unit": "zeus-dashboard.service",
             "pid": 4242,
-            "instructions": "The backend is a systemd SYSTEM unit: this command changes no system unit, and hermes -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
+            "instructions": "The backend is a systemd SYSTEM unit: this command changes no system unit, and zeus -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
             "steps": [
-              "hermes -p default webapp --build-only",
-              "hermes -p default config set webapp.enabled true",
-              "hermes -p default config set webapp.host 0.0.0.0",
-              "hermes -p default config set webapp.port 9119",
-              "# copy HERMES_DASHBOARD_BASIC_AUTH_PASSWORD, HERMES_DASHBOARD_BASIC_AUTH_SECRET, HERMES_DASHBOARD_BASIC_AUTH_USERNAME from the old launcher's environment into /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/hermes-home/.env, then: chmod 600 /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/hermes-home/.env  (values are never printed here)",
-              "sudo systemctl disable --now hermes-dashboard.service",
-              "systemctl is-active hermes-dashboard.service  # must print inactive (or failed) before the next line",
-              "hermes -p default gateway status",
-              "# then by what it prints: 'Gateway is not running' (no service installed) -> hermes -p default gateway install; 'service is stopped', 'service is not loaded' or 'registered with launchd' -> hermes -p default gateway start; 'service is running', 'supervised by launchd' or 'Running manually' -> hermes -p default gateway restart",
+              "zeus -p default webapp --build-only",
+              "zeus -p default config set webapp.enabled true",
+              "zeus -p default config set webapp.host 0.0.0.0",
+              "zeus -p default config set webapp.port 9119",
+              "# copy ZEUS_DASHBOARD_BASIC_AUTH_PASSWORD, ZEUS_DASHBOARD_BASIC_AUTH_SECRET, ZEUS_DASHBOARD_BASIC_AUTH_USERNAME from the old launcher's environment into /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/zeus-home/.env, then: chmod 600 /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/zeus-home/.env  (values are never printed here)",
+              "sudo systemctl disable --now zeus-dashboard.service",
+              "systemctl is-active zeus-dashboard.service  # must print inactive (or failed) before the next line",
+              "zeus -p default gateway status",
+              "# then by what it prints: 'Gateway is not running' (no service installed) -> zeus -p default gateway install; 'service is stopped', 'service is not loaded' or 'registered with launchd' -> zeus -p default gateway start; 'service is running', 'supervised by launchd' or 'Running manually' -> zeus -p default gateway restart",
               "# the gateway takes a few seconds to serve the address: if the next line prints 'The gateway is not running', wait 5 seconds and run it again",
-              "hermes -p default webapp --status"
+              "zeus -p default webapp --status"
             ]
           }
         ],
@@ -450,21 +450,21 @@ export const systemSystemdPlans = {
         "steps": [],
         "text": [
           "Backend migration plan (dry run — nothing changed)",
-          "  home:          /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/hermes-home",
-          "  ✗ systemd hermes-dashboard.service cannot be migrated automatically. Nothing changed.",
-          "    The backend is a systemd SYSTEM unit: this command changes no system unit, and hermes -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
+          "  home:          /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/zeus-home",
+          "  ✗ systemd zeus-dashboard.service cannot be migrated automatically. Nothing changed.",
+          "    The backend is a systemd SYSTEM unit: this command changes no system unit, and zeus -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root. 1 turn(s) are running on it now: stopping it interrupts them, so let them finish first.",
           "    Steps, in this order (one command per line):",
-          "      hermes -p default webapp --build-only",
-          "      hermes -p default config set webapp.enabled true",
-          "      hermes -p default config set webapp.host 0.0.0.0",
-          "      hermes -p default config set webapp.port 9119",
-          "      # copy HERMES_DASHBOARD_BASIC_AUTH_PASSWORD, HERMES_DASHBOARD_BASIC_AUTH_SECRET, HERMES_DASHBOARD_BASIC_AUTH_USERNAME from the old launcher's environment into /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/hermes-home/.env, then: chmod 600 /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/hermes-home/.env  (values are never printed here)",
-          "      sudo systemctl disable --now hermes-dashboard.service",
-          "      systemctl is-active hermes-dashboard.service  # must print inactive (or failed) before the next line",
-          "      hermes -p default gateway status",
-          "      # then by what it prints: 'Gateway is not running' (no service installed) -> hermes -p default gateway install; 'service is stopped', 'service is not loaded' or 'registered with launchd' -> hermes -p default gateway start; 'service is running', 'supervised by launchd' or 'Running manually' -> hermes -p default gateway restart",
+          "      zeus -p default webapp --build-only",
+          "      zeus -p default config set webapp.enabled true",
+          "      zeus -p default config set webapp.host 0.0.0.0",
+          "      zeus -p default config set webapp.port 9119",
+          "      # copy ZEUS_DASHBOARD_BASIC_AUTH_PASSWORD, ZEUS_DASHBOARD_BASIC_AUTH_SECRET, ZEUS_DASHBOARD_BASIC_AUTH_USERNAME from the old launcher's environment into /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/zeus-home/.env, then: chmod 600 /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_1_0/zeus-home/.env  (values are never printed here)",
+          "      sudo systemctl disable --now zeus-dashboard.service",
+          "      systemctl is-active zeus-dashboard.service  # must print inactive (or failed) before the next line",
+          "      zeus -p default gateway status",
+          "      # then by what it prints: 'Gateway is not running' (no service installed) -> zeus -p default gateway install; 'service is stopped', 'service is not loaded' or 'registered with launchd' -> zeus -p default gateway start; 'service is running', 'supervised by launchd' or 'Running manually' -> zeus -p default gateway restart",
           "      # the gateway takes a few seconds to serve the address: if the next line prints 'The gateway is not running', wait 5 seconds and run it again",
-          "      hermes -p default webapp --status"
+          "      zeus -p default webapp --status"
         ],
         "expect_token": null,
         "found": true
@@ -474,7 +474,7 @@ export const systemSystemdPlans = {
           "supervisor": "systemd",
           "running": true,
           "pid": 4242,
-          "unit": "hermes-dashboard.service",
+          "unit": "zeus-dashboard.service",
           "scope": "system",
           "state": "enabled",
           "this_home": true,
@@ -496,8 +496,8 @@ export const systemSystemdPlans = {
       },
       "profile": "default",
       "commands": {
-        "status": "hermes -p default gateway migrate --backends --status",
-        "restore": "hermes -p default gateway migrate --backends --restore"
+        "status": "zeus -p default gateway migrate --backends --status",
+        "restore": "zeus -p default gateway migrate --backends --restore"
       }
     }
   },
@@ -507,7 +507,7 @@ export const systemSystemdPlans = {
       "dry_run": true,
       "exit_code": 3,
       "plan": {
-        "home": "/var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/hermes-home",
+        "home": "/var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/zeus-home",
         "old_backend": null,
         "old_address": null,
         "new_address": null,
@@ -526,9 +526,9 @@ export const systemSystemdPlans = {
         "unsupported": [
           {
             "supervisor": "systemd",
-            "unit": "hermes-dashboard.service",
+            "unit": "zeus-dashboard.service",
             "pid": 4242,
-            "instructions": "The backend is a systemd SYSTEM unit: this command changes no system unit, and hermes -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root.",
+            "instructions": "The backend is a systemd SYSTEM unit: this command changes no system unit, and zeus -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root.",
             "steps": []
           }
         ],
@@ -537,9 +537,9 @@ export const systemSystemdPlans = {
         "steps": [],
         "text": [
           "Backend migration plan (dry run — nothing changed)",
-          "  home:          /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/hermes-home",
-          "  ✗ systemd hermes-dashboard.service cannot be migrated automatically. Nothing changed.",
-          "    The backend is a systemd SYSTEM unit: this command changes no system unit, and hermes -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root.",
+          "  home:          /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/zeus-home",
+          "  ✗ systemd zeus-dashboard.service cannot be migrated automatically. Nothing changed.",
+          "    The backend is a systemd SYSTEM unit: this command changes no system unit, and zeus -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root.",
           "    Steps, in this order (one command per line):",
           "",
           "  ✗ Blockers (nothing will be changed):",
@@ -553,7 +553,7 @@ export const systemSystemdPlans = {
           "supervisor": "systemd",
           "running": true,
           "pid": 4242,
-          "unit": "hermes-dashboard.service",
+          "unit": "zeus-dashboard.service",
           "scope": "system",
           "state": "enabled",
           "this_home": true,
@@ -575,8 +575,8 @@ export const systemSystemdPlans = {
       },
       "profile": "default",
       "commands": {
-        "status": "hermes -p default gateway migrate --backends --status",
-        "restore": "hermes -p default gateway migrate --backends --restore"
+        "status": "zeus -p default gateway migrate --backends --status",
+        "restore": "zeus -p default gateway migrate --backends --restore"
       }
     },
     "forced": {
@@ -584,7 +584,7 @@ export const systemSystemdPlans = {
       "dry_run": true,
       "exit_code": 6,
       "plan": {
-        "home": "/var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/hermes-home",
+        "home": "/var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/zeus-home",
         "old_backend": null,
         "old_address": null,
         "new_address": null,
@@ -601,21 +601,21 @@ export const systemSystemdPlans = {
         "unsupported": [
           {
             "supervisor": "systemd",
-            "unit": "hermes-dashboard.service",
+            "unit": "zeus-dashboard.service",
             "pid": 4242,
-            "instructions": "The backend is a systemd SYSTEM unit: this command changes no system unit, and hermes -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root. Its turn activity could not be read, so turns may be running on it now: stopping it interrupts them.",
+            "instructions": "The backend is a systemd SYSTEM unit: this command changes no system unit, and zeus -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root. Its turn activity could not be read, so turns may be running on it now: stopping it interrupts them.",
             "steps": [
-              "hermes -p default webapp --build-only",
-              "hermes -p default config set webapp.enabled true",
-              "hermes -p default config set webapp.host 0.0.0.0",
-              "hermes -p default config set webapp.port 9119",
-              "# copy HERMES_DASHBOARD_BASIC_AUTH_PASSWORD, HERMES_DASHBOARD_BASIC_AUTH_SECRET, HERMES_DASHBOARD_BASIC_AUTH_USERNAME from the old launcher's environment into /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/hermes-home/.env, then: chmod 600 /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/hermes-home/.env  (values are never printed here)",
-              "sudo systemctl disable --now hermes-dashboard.service",
-              "systemctl is-active hermes-dashboard.service  # must print inactive (or failed) before the next line",
-              "hermes -p default gateway status",
-              "# then by what it prints: 'Gateway is not running' (no service installed) -> hermes -p default gateway install; 'service is stopped', 'service is not loaded' or 'registered with launchd' -> hermes -p default gateway start; 'service is running', 'supervised by launchd' or 'Running manually' -> hermes -p default gateway restart",
+              "zeus -p default webapp --build-only",
+              "zeus -p default config set webapp.enabled true",
+              "zeus -p default config set webapp.host 0.0.0.0",
+              "zeus -p default config set webapp.port 9119",
+              "# copy ZEUS_DASHBOARD_BASIC_AUTH_PASSWORD, ZEUS_DASHBOARD_BASIC_AUTH_SECRET, ZEUS_DASHBOARD_BASIC_AUTH_USERNAME from the old launcher's environment into /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/zeus-home/.env, then: chmod 600 /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/zeus-home/.env  (values are never printed here)",
+              "sudo systemctl disable --now zeus-dashboard.service",
+              "systemctl is-active zeus-dashboard.service  # must print inactive (or failed) before the next line",
+              "zeus -p default gateway status",
+              "# then by what it prints: 'Gateway is not running' (no service installed) -> zeus -p default gateway install; 'service is stopped', 'service is not loaded' or 'registered with launchd' -> zeus -p default gateway start; 'service is running', 'supervised by launchd' or 'Running manually' -> zeus -p default gateway restart",
               "# the gateway takes a few seconds to serve the address: if the next line prints 'The gateway is not running', wait 5 seconds and run it again",
-              "hermes -p default webapp --status"
+              "zeus -p default webapp --status"
             ]
           }
         ],
@@ -624,21 +624,21 @@ export const systemSystemdPlans = {
         "steps": [],
         "text": [
           "Backend migration plan (dry run — nothing changed)",
-          "  home:          /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/hermes-home",
-          "  ✗ systemd hermes-dashboard.service cannot be migrated automatically. Nothing changed.",
-          "    The backend is a systemd SYSTEM unit: this command changes no system unit, and hermes -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root. Its turn activity could not be read, so turns may be running on it now: stopping it interrupts them.",
+          "  home:          /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/zeus-home",
+          "  ✗ systemd zeus-dashboard.service cannot be migrated automatically. Nothing changed.",
+          "    The backend is a systemd SYSTEM unit: this command changes no system unit, and zeus -p default cannot run as root on a per-user install. Run the steps below as yourself; only the one `sudo systemctl` line needs root. Its turn activity could not be read, so turns may be running on it now: stopping it interrupts them.",
           "    Steps, in this order (one command per line):",
-          "      hermes -p default webapp --build-only",
-          "      hermes -p default config set webapp.enabled true",
-          "      hermes -p default config set webapp.host 0.0.0.0",
-          "      hermes -p default config set webapp.port 9119",
-          "      # copy HERMES_DASHBOARD_BASIC_AUTH_PASSWORD, HERMES_DASHBOARD_BASIC_AUTH_SECRET, HERMES_DASHBOARD_BASIC_AUTH_USERNAME from the old launcher's environment into /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/hermes-home/.env, then: chmod 600 /var/tmp/hermes-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/hermes-home/.env  (values are never printed here)",
-          "      sudo systemctl disable --now hermes-dashboard.service",
-          "      systemctl is-active hermes-dashboard.service  # must print inactive (or failed) before the next line",
-          "      hermes -p default gateway status",
-          "      # then by what it prints: 'Gateway is not running' (no service installed) -> hermes -p default gateway install; 'service is stopped', 'service is not loaded' or 'registered with launchd' -> hermes -p default gateway start; 'service is running', 'supervised by launchd' or 'Running manually' -> hermes -p default gateway restart",
+          "      zeus -p default webapp --build-only",
+          "      zeus -p default config set webapp.enabled true",
+          "      zeus -p default config set webapp.host 0.0.0.0",
+          "      zeus -p default config set webapp.port 9119",
+          "      # copy ZEUS_DASHBOARD_BASIC_AUTH_PASSWORD, ZEUS_DASHBOARD_BASIC_AUTH_SECRET, ZEUS_DASHBOARD_BASIC_AUTH_USERNAME from the old launcher's environment into /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/zeus-home/.env, then: chmod 600 /var/tmp/zeus-pytest-1000/r-deb5velf/pytest-of-mark/pytest-0/test_plan_systemd_system_None_0/zeus-home/.env  (values are never printed here)",
+          "      sudo systemctl disable --now zeus-dashboard.service",
+          "      systemctl is-active zeus-dashboard.service  # must print inactive (or failed) before the next line",
+          "      zeus -p default gateway status",
+          "      # then by what it prints: 'Gateway is not running' (no service installed) -> zeus -p default gateway install; 'service is stopped', 'service is not loaded' or 'registered with launchd' -> zeus -p default gateway start; 'service is running', 'supervised by launchd' or 'Running manually' -> zeus -p default gateway restart",
           "      # the gateway takes a few seconds to serve the address: if the next line prints 'The gateway is not running', wait 5 seconds and run it again",
-          "      hermes -p default webapp --status"
+          "      zeus -p default webapp --status"
         ],
         "expect_token": null,
         "found": true
@@ -648,7 +648,7 @@ export const systemSystemdPlans = {
           "supervisor": "systemd",
           "running": true,
           "pid": 4242,
-          "unit": "hermes-dashboard.service",
+          "unit": "zeus-dashboard.service",
           "scope": "system",
           "state": "enabled",
           "this_home": true,
@@ -670,8 +670,8 @@ export const systemSystemdPlans = {
       },
       "profile": "default",
       "commands": {
-        "status": "hermes -p default gateway migrate --backends --status",
-        "restore": "hermes -p default gateway migrate --backends --restore"
+        "status": "zeus -p default gateway migrate --backends --status",
+        "restore": "zeus -p default gateway migrate --backends --restore"
       }
     }
   }

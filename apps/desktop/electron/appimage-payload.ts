@@ -1,7 +1,7 @@
 /**
  * An AppImage mounts itself at a new /tmp/.mount_* on every launch and unmounts on quit, so CLI
  * links, the gateway and service units must not run the agent payload from there. The first launch
- * of each build unpacks the payload to <XDG data>/hermes/bundles/<build>/agent-payload; every launch
+ * of each build unpacks the payload to <XDG data>/zeus/bundles/<build>/agent-payload; every launch
  * of that build runs the copy. Other installs, and AppImages run extracted, keep their own payload.
  */
 import { spawn } from 'node:child_process'
@@ -30,7 +30,7 @@ export interface PayloadCopyPlan {
   appimage: string
   /** The mounted artifact's agent-payload. */
   source: string
-  /** <XDG data>/hermes/bundles, one directory per build. */
+  /** <XDG data>/zeus/bundles, one directory per build. */
   root: string
   key: string
 }
@@ -43,7 +43,7 @@ export interface PayloadCopyHost {
   freeBytes?: (dir: string) => Promise<number>
   /** Paths live processes run from or hold open (/proc/<pid>/exe and /proc/<pid>/fd). */
   livePaths?: () => Promise<string[]>
-  /** Where `hermes gateway install` writes systemd units (see gatewayUnitDirs). */
+  /** Where `zeus gateway install` writes systemd units (see gatewayUnitDirs). */
   serviceUnitDirs?: string[]
   isAlive?: (pid: number) => boolean
   pid?: number
@@ -65,7 +65,7 @@ const PARTIAL_PREFIX = '.partial-'
 const BLOCK_SLACK_BYTES = 4096
 const RESERVE_BYTES = 1024 ** 3
 
-/** hermes_cli/gateway.py user_systemd_unit_dir() and _SYSTEM_UNIT_DIR. */
+/** zeus_cli/gateway.py user_systemd_unit_dir() and _SYSTEM_UNIT_DIR. */
 export function gatewayUnitDirs(env: NodeJS.ProcessEnv, home: string): string[] {
   const xdg: string | undefined = env.XDG_CONFIG_HOME?.trim()
 
@@ -75,7 +75,7 @@ export function gatewayUnitDirs(env: NodeJS.ProcessEnv, home: string): string[] 
 export function payloadCopiesRoot(env: NodeJS.ProcessEnv, home: string): string {
   const xdg: string | undefined = env.XDG_DATA_HOME
 
-  return path.join(xdg && path.isAbsolute(xdg) ? xdg : path.join(home, '.local', 'share'), 'hermes', 'bundles')
+  return path.join(xdg && path.isAbsolute(xdg) ? xdg : path.join(home, '.local', 'share'), 'zeus', 'bundles')
 }
 
 /** One directory per build, so a rebuild at the same commit never runs an older copy. */
@@ -255,7 +255,7 @@ async function gatewayUnits(dirs: string[]): Promise<string[]> {
 
       return Promise.all(
         names
-          .filter(name => name.startsWith('hermes-gateway') && name.endsWith('.service'))
+          .filter(name => name.startsWith('zeus-gateway') && name.endsWith('.service'))
           .map(name => fs.promises.readFile(path.join(dir, name), 'utf8').catch(() => ''))
       )
     })
@@ -264,7 +264,7 @@ async function gatewayUnits(dirs: string[]): Promise<string[]> {
   return units.flat()
 }
 
-/** A path as hermes_cli/gateway.py _systemd_command quotes it into a unit's argv. */
+/** A path as zeus_cli/gateway.py _systemd_command quotes it into a unit's argv. */
 function systemdQuoted(value: string): string {
   return value
     .replace(/\\/g, '\\\\')
@@ -398,7 +398,7 @@ async function copyBuild(host: PayloadCopyHost, build: string, partial: string):
     throw new Error(`the copy needs ${gib(needed)} GiB free in ${root}, which has ${gib(free)} GiB`)
   }
 
-  await host.progress?.('backend.payload', 'Preparing this Hermes version (first launch only)…', 28)
+  await host.progress?.('backend.payload', 'Preparing this Zeus version (first launch only)…', 28)
   host.log(`[payload] unpacking the AppImage payload (${gib(expected.bytes)} GiB) to ${build}`)
   const started: number = Date.now()
   const target: string = path.join(partial, PAYLOAD_DIR)
@@ -447,7 +447,7 @@ export async function preparePayloadCopy(host: PayloadCopyHost): Promise<string 
 
   try {
     if (fs.existsSync(build)) {
-      throw new Error(`${build} exists without a completion marker; remove it to let Hermes copy the payload again`)
+      throw new Error(`${build} exists without a completion marker; remove it to let Zeus copy the payload again`)
     }
 
     await fs.promises.mkdir(partial, { recursive: true })

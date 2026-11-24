@@ -16,7 +16,7 @@ from agent.context_compressor import ContextCompressor
 
 @pytest.fixture
 def home(tmp_path, monkeypatch):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     monkeypatch.setenv("TERMINAL_ENV", "local")
     return tmp_path
 

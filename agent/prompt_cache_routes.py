@@ -1,9 +1,9 @@
-"""What Hermes has learned about how each route really caches, across sessions.
+"""What Zeus has learned about how each route really caches, across sessions.
 
 The prompt-cache clock assumes a route keeps what its API spec promises (the tier a marked request asks
 for, 30 minutes for an automatic cache). Some routes do not: a model that writes every call and never
 reads back, one that re-writes the whole prefix on every hit, an automatic cache that is gone in minutes.
-This store learns that from the usage Hermes already receives (normal responses and keep-alives; it
+This store learns that from the usage Zeus already receives (normal responses and keep-alives; it
 never sends a probe) and the warmer and marker policy consult it at decision time.
 
 Key: ``(provider, normalized base_url, model, explicit|implicit)``, implicit = no ``cache_control`` markers.
@@ -26,7 +26,7 @@ prefix is never a sample, see ``prompt_cache_clock.response_upstream``):
   markers for the model.
 
 Facts expire 7 days after their last update and are learned again. One small JSON file per profile
-(``<HERMES_HOME>/cache/prompt_cache_routes.json``), resolved at call time, written atomically, at most
+(``<ZEUS_HOME>/cache/prompt_cache_routes.json``), resolved at call time, written atomically, at most
 :data:`MAX_ENTRIES` keys (least recently updated dropped first).
 """
 
@@ -56,15 +56,15 @@ _lock = threading.Lock()
 
 
 def _path() -> Path:
-    from hermes_constants import get_hermes_home
+    from zeus_constants import get_zeus_home
 
-    return get_hermes_home() / "cache" / "prompt_cache_routes.json"
+    return get_zeus_home() / "cache" / "prompt_cache_routes.json"
 
 
 def route_key(provider: str, base_url: str, model: str, explicit: bool) -> str:
     """The endpoint is the normalized base URL (scheme, host, port, path): two local servers on one host
     (llama.cpp on :8080, Ollama on :11434) serving the same model name are different caches."""
-    from hermes_cli.route_identity import normalize_route_base_url
+    from zeus_cli.route_identity import normalize_route_base_url
 
     endpoint = normalize_route_base_url(base_url or "")
     return "|".join((str(provider or ""), endpoint, str(model or ""), "explicit" if explicit else "implicit"))

@@ -9,10 +9,10 @@ from gateway.session_finite import finite_turn_scope
 
 @pytest.fixture
 def init_cache(monkeypatch):
-    import hermes_cli.config
+    import zeus_cli.config
 
-    monkeypatch.setattr(hermes_cli.config, "load_config_readonly", dict)
-    for key in ("HERMES_SESSION_SOURCE", "HERMES_SESSION_SOURCE_EXPLICIT", "HERMES_SINGLE_QUERY_SESSION"):
+    monkeypatch.setattr(zeus_cli.config, "load_config_readonly", dict)
+    for key in ("ZEUS_SESSION_SOURCE", "ZEUS_SESSION_SOURCE_EXPLICIT", "ZEUS_SINGLE_QUERY_SESSION"):
         monkeypatch.delenv(key, raising=False)
 
     def build(**kwargs):
@@ -36,7 +36,7 @@ def test_gateway_finite_admission_keeps_5m_without_launch_env(init_cache, unatte
 
 
 def test_direct_z_launch_marker_keeps_5m(init_cache, monkeypatch):
-    monkeypatch.setenv("HERMES_SINGLE_QUERY_SESSION", "1")
+    monkeypatch.setenv("ZEUS_SINGLE_QUERY_SESSION", "1")
     assert init_cache(platform="cli")._cache_ttl == "5m"
 
 
@@ -47,11 +47,11 @@ def test_automation_sources_keep_5m(init_cache, platform):
 
 @pytest.mark.parametrize("ttl, expected", [("auto", "5m"), ("1h", "1h")])
 def test_bedrock_auto_is_short_but_explicit_pin_survives(init_cache, monkeypatch, ttl, expected):
-    import hermes_cli.config
+    import zeus_cli.config
 
     from agent.prompt_caching import effective_cache_ttl
 
-    monkeypatch.setattr(hermes_cli.config, "load_config_readonly", lambda: {"prompt_caching": {"cache_ttl": ttl}})
+    monkeypatch.setattr(zeus_cli.config, "load_config_readonly", lambda: {"prompt_caching": {"cache_ttl": ttl}})
     agent = init_cache(platform="cli", provider="bedrock", model="anthropic.claude-sonnet-4", base_url="")
     assert effective_cache_ttl(agent._cache_ttl, provider="bedrock", model=agent.model,
                                auto=agent._cache_ttl_auto) == expected
@@ -74,15 +74,15 @@ def test_missing_auxiliary_ttl_uses_auto_without_changing_short_tier(init_cache)
 def test_bedrock_switch_at_request_time_preserves_only_explicit_pin(monkeypatch, ttl, expected, request_path):
     import copy
     import logging
-    import hermes_cli.config
+    import zeus_cli.config
     from agent.conversation_loop import _redecorate_prompt_cache_for_provider
     from agent.turn_request_assembly import assemble_api_request
     from run_agent import AIAgent
 
     cfg = {"prompt_caching": {"cache_ttl": ttl}}
-    monkeypatch.setattr(hermes_cli.config, "load_config_readonly", lambda: cfg)
-    monkeypatch.setattr(hermes_cli.config, "load_config", lambda: cfg)
-    for key in ("HERMES_SESSION_SOURCE", "HERMES_SESSION_SOURCE_EXPLICIT", "HERMES_SINGLE_QUERY_SESSION"):
+    monkeypatch.setattr(zeus_cli.config, "load_config_readonly", lambda: cfg)
+    monkeypatch.setattr(zeus_cli.config, "load_config", lambda: cfg)
+    for key in ("ZEUS_SESSION_SOURCE", "ZEUS_SESSION_SOURCE_EXPLICIT", "ZEUS_SINGLE_QUERY_SESSION"):
         monkeypatch.delenv(key, raising=False)
     agent = AIAgent(
         platform="cli", provider="openrouter", api_key="fixture-key",
@@ -120,13 +120,13 @@ def test_bedrock_switch_at_request_time_preserves_only_explicit_pin(monkeypatch,
 
 def test_unreadable_config_still_builds_an_agent_on_auto(monkeypatch):
     """A reader that fails for EVERY caller (not only the guarded one) must not break agent creation."""
-    import hermes_cli.config
+    import zeus_cli.config
 
     def broken():
         raise RuntimeError("config imports are broken")
 
-    monkeypatch.setattr(hermes_cli.config, "load_config_readonly", broken)
-    for key in ("HERMES_SESSION_SOURCE", "HERMES_SESSION_SOURCE_EXPLICIT", "HERMES_SINGLE_QUERY_SESSION"):
+    monkeypatch.setattr(zeus_cli.config, "load_config_readonly", broken)
+    for key in ("ZEUS_SESSION_SOURCE", "ZEUS_SESSION_SOURCE_EXPLICIT", "ZEUS_SINGLE_QUERY_SESSION"):
         monkeypatch.delenv(key, raising=False)
     agent = SimpleNamespace(_anthropic_prompt_cache_policy=lambda: (True, True), platform="cli",
                             provider="nous", base_url="https://inference-api.nousresearch.com/v1", model="claude")
@@ -139,8 +139,8 @@ def test_malformed_prompt_caching_yaml_builds_an_agent_and_sends(tmp_path, monke
     """``prompt_caching:`` as a YAML list (a real hand-edit typo) is treated as absent on init and send."""
     from agent.prompt_caching import effective_cache_ttl
 
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
-    for key in ("HERMES_SESSION_SOURCE", "HERMES_SESSION_SOURCE_EXPLICIT", "HERMES_SINGLE_QUERY_SESSION"):
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
+    for key in ("ZEUS_SESSION_SOURCE", "ZEUS_SESSION_SOURCE_EXPLICIT", "ZEUS_SINGLE_QUERY_SESSION"):
         monkeypatch.delenv(key, raising=False)
     (tmp_path / "config.yaml").write_text("prompt_caching:\n  - malformed\n", encoding="utf-8")
     agent = SimpleNamespace(_anthropic_prompt_cache_policy=lambda: (True, False), platform="cli",
@@ -156,14 +156,14 @@ def test_auto_chat_started_on_a_5m_route_sends_1h_after_switching_to_openrouter(
     """Auto stores the source's choice; a route's 5m ceiling is a send-time clamp, so it must not
     stick to the session once the chat moves to a route that keeps 1h."""
     import logging
-    import hermes_cli.config
+    import zeus_cli.config
     from agent.turn_request_assembly import assemble_api_request
     from run_agent import AIAgent
 
     cfg = {"prompt_caching": {"cache_ttl": "auto", "route_ttl_ceilings": {"nous": "5m"}}}
-    monkeypatch.setattr(hermes_cli.config, "load_config_readonly", lambda: cfg)
-    monkeypatch.setattr(hermes_cli.config, "load_config", lambda: cfg)
-    for key in ("HERMES_SESSION_SOURCE", "HERMES_SESSION_SOURCE_EXPLICIT", "HERMES_SINGLE_QUERY_SESSION"):
+    monkeypatch.setattr(zeus_cli.config, "load_config_readonly", lambda: cfg)
+    monkeypatch.setattr(zeus_cli.config, "load_config", lambda: cfg)
+    for key in ("ZEUS_SESSION_SOURCE", "ZEUS_SESSION_SOURCE_EXPLICIT", "ZEUS_SINGLE_QUERY_SESSION"):
         monkeypatch.delenv(key, raising=False)
     agent = AIAgent(
         platform="cli", provider="nous", api_key="fixture-key",

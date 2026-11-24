@@ -25,20 +25,20 @@ test('a commit build claim is versioned from its stamp exactly like a canary', (
 test('a commit claim packages as its commit identity and never as a release', () => {
   const root = path.resolve(import.meta.dirname, '../../..')
   const probe = `import{appIdentity}from'./scripts/msix-shared.mjs';const v=appIdentity(process.cwd()+'/apps/desktop');console.log(JSON.stringify({version:v.version,fileVersion:v.fileVersion,app:v.identity.msixAppIdWithOrg}))`
-  const base = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('HERMES_')))
+  const base = Object.fromEntries(Object.entries(process.env).filter(([key]) => !key.startsWith('ZEUS_')))
   const run = env => spawnSync(process.execPath, ['--input-type=module', '-e', probe],
-    { cwd: root, encoding: 'utf8', env: { ...base, HERMES_DESKTOP_VARIANT: 'bundled', ...env }, timeout: 30000 })
-  const claim = { HERMES_PAYLOAD_TAG: 'commit.20260922T001403Z-v0.21.4', HERMES_BUILD_COMMIT: 'a'.repeat(40) }
+    { cwd: root, encoding: 'utf8', env: { ...base, ZEUS_DESKTOP_VARIANT: 'bundled', ...env }, timeout: 30000 })
+  const claim = { ZEUS_PAYLOAD_TAG: 'commit.20260922T001403Z-v0.21.4', ZEUS_BUILD_COMMIT: 'a'.repeat(40) }
   const result = run(claim)
   assert.equal(result.status, 0, result.stderr)
   const identity = JSON.parse(result.stdout)
   assert.equal(identity.version, '26.922.0.1403')
   assert.equal(identity.fileVersion, '0.21.4+commit.20260922T001403Z')
-  assert.equal(identity.app, 'NousResearch.HermesBundledCommitaaaaaaa')
+  assert.equal(identity.app, 'NousResearch.ZeusBundledCommitaaaaaaa')
   // Without the commit identity a commit claim would build an updatable release: refused.
-  assert.notEqual(run({ HERMES_PAYLOAD_TAG: claim.HERMES_PAYLOAD_TAG }).status, 0)
+  assert.notEqual(run({ ZEUS_PAYLOAD_TAG: claim.ZEUS_PAYLOAD_TAG }).status, 0)
   // Nor does a commit identity take any other release tag.
-  assert.notEqual(run({ ...claim, HERMES_PAYLOAD_TAG: 'canary.20260922T001403Z-v0.21.4' }).status, 0)
+  assert.notEqual(run({ ...claim, ZEUS_PAYLOAD_TAG: 'canary.20260922T001403Z-v0.21.4' }).status, 0)
 })
 
 test('historical release identities are rejected', () => {

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-// The System page's "move to a single Hermes" card and the poll reading behind it.
+// The System page's "move to a single Zeus" card and the poll reading behind it.
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { act } from "react";
@@ -61,7 +61,7 @@ function planWith(
     profile,
     plan: {
       old_address: "0.0.0.0:9119", new_address: "0.0.0.0:9119",
-      old_backend: { supervisor: "systemd", unit: "hermes-dashboard.service", scope: "user", pid: 1, was_active: true },
+      old_backend: { supervisor: "systemd", unit: "zeus-dashboard.service", scope: "user", pid: 1, was_active: true },
       keep_webapp_address: false, copy_env_keys: [], generate_secret: true, public_url: null,
       auth_before: { auth_required: true, providers: ["basic"] }, gateway: { installed: false, active: false },
       linger: false, webapp_bundle_missing: "missing", running_turns: 0, blockers: [], unsupported: [], notices: [],
@@ -130,14 +130,14 @@ describe("BackendMigrationCard", () => {
 
     await render(planWith(blockerOnly, { ...none, state: "rolled_back", started_at: 10, message: "verify failed; rolled back" }));
     expect(container.querySelector('[data-slot="backend-migration-rolled-back"]')).not.toBeNull();
-    expect(container.textContent).not.toContain("An older Hermes server is running");
+    expect(container.textContent).not.toContain("An older Zeus server is running");
     expect(moveButton()).toBeUndefined();
   });
 
   it("says what was found in plain words and offers the move", async () => {
     await render(planWith({}));
     expect(container.textContent).toContain(
-      "An older Hermes server is running on port 9119. Phones and browsers that use it talk to a second copy of Hermes.",
+      "An older Zeus server is running on port 9119. Phones and browsers that use it talk to a second copy of Zeus.",
     );
     expect(container.textContent).toContain("The same username and password keep working.");
     expect(moveButton()?.disabled).toBe(false);
@@ -169,17 +169,17 @@ describe("BackendMigrationCard", () => {
   it("shows what an incomplete rollback could not do, in the engine's words, next to the steps", async () => {
     const detail = "restored config.yaml: /h/config.yaml changed since the migration wrote it, so it was not written "
       + "back and your edits were kept; merge them with /h/backend_migration/config.yaml.bak by hand; did not start "
-      + "the old backend again: this background run is in hermes-backend-migration-1.service, which stops what it "
-      + "starts when the run ends; start it again from a terminal, without --detach: hermes gateway migrate --backends --restore";
+      + "the old backend again: this background run is in zeus-backend-migration-1.service, which stops what it "
+      + "starts when the run ends; start it again from a terminal, without --detach: zeus gateway migrate --backends --restore";
     await render(planWith({ nothing_to_do: true }, {
       ...none, state: "failed", step: "verify", started_at: 10, finished_at: 20,
       message: `verify failed: no HTTP 200; rollback incomplete: ${detail}`,
-      reason: "verify failed: no HTTP 200", manual_steps: ["hermes -p work gateway stop"],
+      reason: "verify failed: no HTTP 200", manual_steps: ["zeus -p work gateway stop"],
     }));
     const manual = container.querySelector('[data-slot="backend-migration-manual"]')?.textContent ?? "";
     expect(manual).toContain("(verify failed: no HTTP 200)");
     expect(manual).toContain("so it was not written back and your edits were kept; merge them with /h/backend_migration/config.yaml.bak by hand");
-    expect(manual).toContain("start it again from a terminal, without --detach: hermes -p work gateway migrate --backends --restore");
+    expect(manual).toContain("start it again from a terminal, without --detach: zeus -p work gateway migrate --backends --restore");
   });
 
   it("shows the engine's per-file notes as words to follow, never as commands to copy", async () => {
@@ -191,7 +191,7 @@ describe("BackendMigrationCard", () => {
     const missing = "the backup /h/backend_migration/env.bak of .env is missing or cannot be read: recover it, or "
       + "put /h/.env back "
       + "as it was before the migration by hand, before you start the old backend";
-    const commands = ["hermes -p work gateway uninstall", "systemctl --user start hermes-dashboard.service"];
+    const commands = ["zeus -p work gateway uninstall", "systemctl --user start zeus-dashboard.service"];
     await render(planWith({ nothing_to_do: true }, {
       ...none, state: "failed", step: "verify", started_at: 10, finished_at: 20,
       message: "verify failed; rollback incomplete: x", reason: "verify failed",
@@ -281,7 +281,7 @@ describe("BackendMigrationCard", () => {
       expect(manual.textContent).toContain("so it may hold the migration's changes; it was not written back");
       expect([...manual.querySelectorAll("li")].map((li) => li.textContent)).toEqual(steps);
       expect([...manual.querySelectorAll("li code")].map((c) => c.textContent))
-        .toEqual(steps.filter((s) => s.startsWith("hermes ") || s.startsWith("systemctl ")));
+        .toEqual(steps.filter((s) => s.startsWith("zeus ") || s.startsWith("systemctl ")));
       expect(note).toBeDefined();
     });
 
@@ -368,7 +368,7 @@ describe("BackendMigrationCard", () => {
       await confirmMove();
       await wait(5000);
       const refusal = container.querySelector('[data-slot="backend-migration-refusal"]')?.textContent ?? "";
-      expect(refusal).toContain("HERMES_CONFIG_BACKEND=remote keeps the settings outside config.yaml");
+      expect(refusal).toContain("ZEUS_CONFIG_BACKEND=remote keeps the settings outside config.yaml");
       expect(container.querySelector('[data-slot="backend-migration-progress"]')).toBeNull();
       expect(calls.filter((c) => c.includes("/status"))).toHaveLength(0);
       expect(moveButton()).toBeDefined();
@@ -478,7 +478,7 @@ describe("BackendMigrationCard", () => {
     await wait(65_000);
     const unknown = container.querySelector('[data-slot="backend-migration-unknown"]');
     expect(unknown?.textContent).toContain("It is not known yet whether the move started.");
-    expect(unknown?.textContent).toContain("hermes -p work gateway migrate --backends --status");
+    expect(unknown?.textContent).toContain("zeus -p work gateway migrate --backends --status");
     expect(container.textContent).not.toContain("did not start");
     expect(moveButton()).toBeUndefined();
     expect(button("Check again")).toBeDefined();
@@ -488,7 +488,7 @@ describe("BackendMigrationCard", () => {
   it("names the profile in the undo command, and in the recovery command of a run whose process is gone", async () => {
     await render(planWith({ nothing_to_do: true }, { ...none, state: "done", started_at: 100, new_address: "0.0.0.0:9119" }));
     expect(container.querySelector('[data-slot="backend-migration-done"]')?.textContent).toContain(
-      "hermes -p work gateway migrate --backends --restore",
+      "zeus -p work gateway migrate --backends --restore",
     );
     await act(async () => root.unmount());
     container.remove();
@@ -496,7 +496,7 @@ describe("BackendMigrationCard", () => {
     // The engine may leave the address out of a record: the card never prints "null".
     await render(planWith({ nothing_to_do: true }, { ...none, state: "done", started_at: 100, new_address: null }));
     expect(container.querySelector('[data-slot="backend-migration-done"]')?.textContent).toContain(
-      "Hermes now answers at the same address",
+      "Zeus now answers at the same address",
     );
     await act(async () => root.unmount());
     container.remove();
@@ -504,23 +504,23 @@ describe("BackendMigrationCard", () => {
     await render(planWith({ nothing_to_do: true },
       { ...none, state: "running", step: "start_gateway", started_at: 100, alive: false }));
     expect(container.querySelector('[data-slot="backend-migration-stalled"]')?.textContent).toContain(
-      "hermes -p work gateway migrate --backends --restore",
+      "zeus -p work gateway migrate --backends --restore",
     );
   });
 
-  it("shows the server's commands as given: a profile outside the standard root keeps its HERMES_HOME pin", async () => {
-    const pinned = "HERMES_HOME=/srv/team hermes -p work gateway migrate --backends";
+  it("shows the server's commands as given: a profile outside the standard root keeps its ZEUS_HOME pin", async () => {
+    const pinned = "ZEUS_HOME=/srv/team zeus -p work gateway migrate --backends";
     await render({
       ...planWith({ nothing_to_do: true }, { ...none, state: "done", started_at: 100, new_address: "0.0.0.0:9119" }),
       commands: { status: `${pinned} --status`, restore: `${pinned} --restore` },
     });
     const done = container.querySelector('[data-slot="backend-migration-done"]')?.textContent ?? "";
     expect(done).toContain(`${pinned} --restore`);
-    expect(done).not.toContain("hermes -p work gateway migrate --backends --restore to");
+    expect(done).not.toContain("zeus -p work gateway migrate --backends --restore to");
   });
 
   it("shows a manual plan's own steps in order, as given, only when nothing blocks it", async () => {
-    const steps = ["hermes -p work config set webapp.port 9119", "move \"Hermes Dashboard.lnk\" %TEMP%\\"];
+    const steps = ["zeus -p work config set webapp.port 9119", "move \"Zeus Dashboard.lnk\" %TEMP%\\"];
     const manual = {
       unsupported: [{ supervisor: "startup", unit: null, instructions: "Run the steps below.", steps }],
     };
@@ -537,7 +537,7 @@ describe("BackendMigrationCard", () => {
 
   it("never prints an unknown new address", async () => {
     await render(planWith({ new_address: null }));
-    expect(container.textContent).toContain("Hermes itself takes over its address.");
+    expect(container.textContent).toContain("Zeus itself takes over its address.");
     expect(container.textContent).not.toContain("null");
   });
 });
@@ -595,9 +595,9 @@ describe("readPoll", () => {
   it("leaves the save-both-files warning out when the steps already say what to do with each file", () => {
     const keep = "keep /h/.env as it is (it was edited after the migration wrote it): merge the lines you need from "
       + "/h/backend_migration/env.bak into it by hand before you start the old backend";
-    const refused = { ...run("failed"), refused: true, message: "did not start", manual_steps: ["hermes -p work gateway uninstall", keep] };
+    const refused = { ...run("failed"), refused: true, message: "did not start", manual_steps: ["zeus -p work gateway uninstall", keep] };
     const view = readPoll({ kind: "status", status: refused }, asked, at(2));
-    expect(view).toEqual({ kind: "notStarted", lines: ["did not start", "hermes -p work gateway uninstall", keep] });
+    expect(view).toEqual({ kind: "notStarted", lines: ["did not start", "zeus -p work gateway uninstall", keep] });
   });
 
   it.each([
@@ -697,9 +697,9 @@ describe("blockerAdvice and rolledBackReason on a home whose path holds the engi
 
 describe("isProseStep", () => {
   it("tells every step the engine can emit apart: prose to read, or a command to run", () => {
-    // A command starts with a program the engine names (or the HERMES_HOME pin in front of `hermes`); the
+    // A command starts with a program the engine names (or the ZEUS_HOME pin in front of `zeus`); the
     // engine's prose is its `#` lines, its per-file notes and "start the old backend again …".
-    const command = /^(\$env:HERMES_HOME=\S.*?; hermes |HERMES_HOME=\S+ hermes |HERMES_HOME='[^']+' hermes |hermes |(cp|rm|mv|mkdir|move|launchctl|schtasks|sudo|systemctl|taskkill) )/;
+    const command = /^(\$env:ZEUS_HOME=\S.*?; zeus |ZEUS_HOME=\S+ zeus |ZEUS_HOME='[^']+' zeus |zeus |(cp|rm|mv|mkdir|move|launchctl|schtasks|sudo|systemctl|taskkill) )/;
     for (const step of engineStepStrings) {
       expect([step, isProseStep(step)]).toEqual([step, !command.test(step)]);
     }
@@ -768,7 +768,7 @@ describe("BackendMigrationCard review round", () => {
     expect(container.textContent).toContain("Finding out whether the move started");
     await wait(40_000);
     expect(container.querySelector('[data-slot="backend-migration-unknown"]')?.textContent).toContain(
-      "hermes -p work gateway migrate --backends --status",
+      "zeus -p work gateway migrate --backends --status",
     );
     expect(container.textContent).not.toContain("did not start");
   });
@@ -776,12 +776,12 @@ describe("BackendMigrationCard review round", () => {
   it("never shows an engine step without the profile", async () => {
     await render(planWith({ nothing_to_do: true }, {
       ...none, state: "failed", started_at: 10, message: "verify failed; rollback incomplete: x",
-      manual_steps: ["hermes gateway stop", "cp /b/config.yaml.bak /h/.hermes/config.yaml", "hermes -p work gateway start"],
+      manual_steps: ["zeus gateway stop", "cp /b/config.yaml.bak /h/.zeus/config.yaml", "zeus -p work gateway start"],
     }));
     const manual = container.querySelector('[data-slot="backend-migration-manual"]')?.textContent ?? "";
-    expect(manual).toContain("hermes -p work gateway stop");
-    expect(manual).toContain("cp /b/config.yaml.bak /h/.hermes/config.yaml");
-    expect(manual).toContain("hermes -p work gateway start");
-    expect(manual).not.toMatch(/hermes gateway/);
+    expect(manual).toContain("zeus -p work gateway stop");
+    expect(manual).toContain("cp /b/config.yaml.bak /h/.zeus/config.yaml");
+    expect(manual).toContain("zeus -p work gateway start");
+    expect(manual).not.toMatch(/zeus gateway/);
   });
 });

@@ -1,4 +1,4 @@
-import { JsonRpcGatewayError, randomUuid } from '@hermes/shared'
+import { JsonRpcGatewayError, randomUuid } from '@zeus/shared'
 
 import { readJson, readKey, writeJson, writeKey } from '@/lib/storage'
 
@@ -65,12 +65,12 @@ async function metricsPhase<T>(run: () => T): Promise<T> {
   const locks = typeof navigator === 'undefined' ? undefined : navigator.locks
 
   if (locks) {
-    return locks.request('hermes-desktop-metrics-coordination', run)
+    return locks.request('zeus-desktop-metrics-coordination', run)
   }
 
   if (!lockDatabase) {
     const opened = Promise.withResolvers<IDBDatabase>()
-    const request = indexedDB.open('hermes-desktop-metrics-coordination', 1)
+    const request = indexedDB.open('zeus-desktop-metrics-coordination', 1)
 
     lockDatabase = opened.promise
     request.onupgradeneeded = () => request.result.createObjectStore('phases')

@@ -2,7 +2,7 @@
 
 A store whose facts match the checkout's pins must still not be shared when
 running from it would write to it: a missing or non-executable binary sends
-setup-hermes.sh (uv) or `pm install` into an unlocked re-stage, and an env that
+setup-zeus.sh (uv) or `pm install` into an unlocked re-stage, and an env that
 differs from what this checkout's package code records makes `pm install`
 re-record the shared facts.json.
 """
@@ -34,9 +34,9 @@ def _executable(path: Path) -> Path:
 
 def _matching_store(store: Path) -> Path:
     """A store recording every walked tool at the lock's pins with the env PM
-    would record, each entry holding an executable binary, plus setup-hermes.sh's
+    would record, each entry holding an executable binary, plus setup-zeus.sh's
     own uv copy. PM's entries are named so none is the setup path, which keeps
-    the two uv checks apart. Returns setup-hermes.sh's uv path."""
+    the two uv checks apart. Returns setup-zeus.sh's uv path."""
     lock = Lockfile(ROOT / "pm" / "lock.json")
     names, target = lock.names(), current_target()
     facts = Facts(store / "facts.json")
@@ -50,7 +50,7 @@ def _matching_store(store: Path) -> Path:
         _executable(binary if binary is not None else entry / "chrome")  # chromium's is discovered
         facts.record(package.name, version, entry.name, package.env(entry, target), store,
                      target=target, artifacts=[a["sha256"] for a in lock.artifacts(package.name, target)])
-    # setup-hermes.sh: entry="$store/uv-$uv_version-$os-$arch"
+    # setup-zeus.sh: entry="$store/uv-$uv_version-$os-$arch"
     return _executable(store / f"uv-{lock.version('uv')}-{'-'.join(target.split('-')[:2])}" / "uv")
 
 
@@ -111,26 +111,26 @@ def _run_runner(tmp_path: Path, account: Path, home: Path, naming: dict, *, boot
     and stops, so nothing is installed. ``getent`` answers with ``account`` as the OS account's
     home, which makes ``home`` a faked HOME. ``bootstrap=False`` leaves the checkout without the
     interpreter the runner could ask pm with. Like the real setup, the stub reads the environment
-    from the checkout (setup-hermes.sh cd's there first); ``cwd`` is where the runner is started.
-    ``real_setup`` runs the real setup-hermes.sh instead, stopped at the ``mktemp`` that opens its
+    from the checkout (setup-zeus.sh cd's there first); ``cwd`` is where the runner is started.
+    ``real_setup`` runs the real setup-zeus.sh instead, stopped at the ``mktemp`` that opens its
     bootstrap uv staging; the store returned is the directory that staging would have written."""
     root = tmp_path / "checkout"
     if real_setup and not root.exists():
         root.mkdir(parents=True)
-        shutil.copy2(ROOT / "setup-hermes.sh", root / "setup-hermes.sh")
+        shutil.copy2(ROOT / "setup-zeus.sh", root / "setup-zeus.sh")
         _executable(tmp_path / "bin" / "mktemp").write_text(
             f"#!/bin/sh\nprintf '%s' \"${{2%/*}}\" > '{root}/provisioned'\nexit 1\n", encoding="utf-8")
     if not (root / "scripts").exists():
         (root / "scripts").mkdir(parents=True)
-        for name in ("run_tests.sh", "run-in-hermes-env", "_activation.sh", "tool_store_pins.py"):
+        for name in ("run_tests.sh", "run-in-zeus-env", "_activation.sh", "tool_store_pins.py"):
             shutil.copy2(ROOT / "scripts" / name, root / "scripts" / name)
-        for name in ("pm", "hermes_constants.py", "hermes_platform"):
+        for name in ("pm", "zeus_constants.py", "zeus_platform"):
             (root / name).symlink_to(ROOT / name)
         if bootstrap:
             _executable(root / ".venv" / "bin" / "python").write_text(
                 f"#!/bin/sh\nexec '{sys.executable}' \"$@\"\n", encoding="utf-8")
         if not real_setup:
-            (root / "setup-hermes.sh").write_text(
+            (root / "setup-zeus.sh").write_text(
                 'cd "$(dirname "$0")"\n'
                 f"'{sys.executable}' -I -B -c 'import sys\nsys.path.insert(0, sys.argv[1])\n"
                 "from pm.environments import store_root\nprint(store_root(sys.argv[1]), end=\"\")' "
@@ -163,14 +163,14 @@ def _store_at_other_pins(store: Path) -> Path:
 
 
 @pytest.mark.platforms("posix")
-@pytest.mark.parametrize("named_by", ["HERMES_RUNTIME_DIR", "HERMES_HOME"])
+@pytest.mark.parametrize("named_by", ["ZEUS_RUNTIME_DIR", "ZEUS_HOME"])
 def test_faked_home_run_naming_the_account_store_never_provisions_other_pins_into_it(tmp_path, named_by):
-    """A lane that passes the account's store explicitly, or inherits the agent shell's HERMES_HOME,
-    must not re-stage its checkout's pins over the ones the account's own Hermes runs on."""
+    """A lane that passes the account's store explicitly, or inherits the agent shell's ZEUS_HOME,
+    must not re-stage its checkout's pins over the ones the account's own Zeus runs on."""
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = account / ".hermes" / "tools"
+    store = account / ".zeus" / "tools"
     _matching_store(store)
-    naming = {"HERMES_RUNTIME_DIR": str(store)} if named_by == "HERMES_RUNTIME_DIR" else {"HERMES_HOME": str(store.parent)}
+    naming = {"ZEUS_RUNTIME_DIR": str(store)} if named_by == "ZEUS_RUNTIME_DIR" else {"ZEUS_HOME": str(store.parent)}
     assert _provisioned_store(tmp_path, account, home, naming).samefile(store), \
         "control: a named store at this checkout's pins is used as is"
 
@@ -178,26 +178,26 @@ def test_faked_home_run_naming_the_account_store_never_provisions_other_pins_int
     data["packages"]["chromium"]["version"] = "0+another-checkouts-pin"
     (store / "facts.json").write_text(json.dumps(data), encoding="utf-8")
     before = _snapshot(store)
-    assert _provisioned_store(tmp_path, account, home, naming) == (home / ".hermes" / "tools").resolve()
+    assert _provisioned_store(tmp_path, account, home, naming) == (home / ".zeus" / "tools").resolve()
     assert _snapshot(store) == before
 
 
 def _naming(named_by: str, store: Path) -> dict:
-    return {"HERMES_RUNTIME_DIR": str(store)} if named_by == "HERMES_RUNTIME_DIR" else {"HERMES_HOME": str(store.parent)}
+    return {"ZEUS_RUNTIME_DIR": str(store)} if named_by == "ZEUS_RUNTIME_DIR" else {"ZEUS_HOME": str(store.parent)}
 
 
 @pytest.mark.platforms("posix")
-@pytest.mark.parametrize("alias", [".hermes", ".hermes/tools"])
+@pytest.mark.parametrize("alias", [".zeus", ".zeus/tools"])
 def test_faked_home_whose_own_store_aliases_the_account_store_is_refused(tmp_path, alias):
     """The faked home's store is where a run naming the account's store is sent instead; when that
     path is itself a link into the account's store, provisioning it re-stages the account's store."""
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = _store_at_other_pins(account / ".hermes" / "tools")
+    store = _store_at_other_pins(account / ".zeus" / "tools")
     link = home / alias
     link.parent.mkdir(parents=True)
     link.symlink_to(store if alias.endswith("tools") else store.parent)
     before = _snapshot(store)
-    run, provisioned = _run_runner(tmp_path, account, home, {"HERMES_RUNTIME_DIR": str(store)})
+    run, provisioned = _run_runner(tmp_path, account, home, {"ZEUS_RUNTIME_DIR": str(store)})
     assert provisioned is None, f"setup reached {provisioned}\n{run.stdout}{run.stderr}"
     assert run.returncode != 0
     assert "account's tool store" in run.stderr
@@ -205,26 +205,26 @@ def test_faked_home_whose_own_store_aliases_the_account_store_is_refused(tmp_pat
 
 
 @pytest.mark.platforms("posix")
-@pytest.mark.parametrize("named_by", ["HERMES_RUNTIME_DIR", "HERMES_HOME"])
+@pytest.mark.parametrize("named_by", ["ZEUS_RUNTIME_DIR", "ZEUS_HOME"])
 def test_suffixed_account_store_is_protected_like_the_default_one(tmp_path, named_by):
-    """HERMES_DATA_DIR_SUFFIX selects the account's ~/.hermes<suffix> home (hermes_constants), so
-    its store is the account's store as much as ~/.hermes/tools is."""
+    """ZEUS_DATA_DIR_SUFFIX selects the account's ~/.zeus<suffix> home (zeus_constants), so
+    its store is the account's store as much as ~/.zeus/tools is."""
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = _store_at_other_pins(account / ".hermes-isolated" / "tools")
-    naming = {"HERMES_DATA_DIR_SUFFIX": "-isolated", **_naming(named_by, store)}
+    store = _store_at_other_pins(account / ".zeus-isolated" / "tools")
+    naming = {"ZEUS_DATA_DIR_SUFFIX": "-isolated", **_naming(named_by, store)}
     provisioned = _provisioned_store(tmp_path, account, home, naming)
     assert not provisioned.exists() or not provisioned.samefile(store)
-    assert provisioned == (home / ".hermes-isolated" / "tools").resolve()
+    assert provisioned == (home / ".zeus-isolated" / "tools").resolve()
 
 
 @pytest.mark.platforms("posix")
 def test_store_that_cannot_be_checked_without_a_bootstrap_python_is_refused(tmp_path):
-    """With no interpreter to ask pm which store an inherited HERMES_HOME selects, the run must not
+    """With no interpreter to ask pm which store an inherited ZEUS_HOME selects, the run must not
     fall through to setup, which would fetch its own Python and provision that store."""
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = _store_at_other_pins(account / ".hermes" / "tools")
+    store = _store_at_other_pins(account / ".zeus" / "tools")
     before = _snapshot(store)
-    run, provisioned = _run_runner(tmp_path, account, home, _naming("HERMES_HOME", store), bootstrap=False)
+    run, provisioned = _run_runner(tmp_path, account, home, _naming("ZEUS_HOME", store), bootstrap=False)
     assert provisioned is None, f"setup reached {provisioned}\n{run.stdout}{run.stderr}"
     assert run.returncode != 0
     assert "cannot check" in run.stderr
@@ -233,37 +233,37 @@ def test_store_that_cannot_be_checked_without_a_bootstrap_python_is_refused(tmp_
 
 @pytest.mark.platforms("posix")
 def test_explicit_runtime_dir_is_checked_without_a_bootstrap_python(tmp_path):
-    """pm takes HERMES_RUNTIME_DIR verbatim, so naming the account's store that way is recognised
+    """pm takes ZEUS_RUNTIME_DIR verbatim, so naming the account's store that way is recognised
     without an interpreter, and the run provisions the faked home's store instead of refusing."""
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = _store_at_other_pins(account / ".hermes" / "tools")
-    run, provisioned = _run_runner(tmp_path, account, home, _naming("HERMES_RUNTIME_DIR", store), bootstrap=False)
-    assert provisioned == (home / ".hermes" / "tools").resolve(), run.stdout + run.stderr
+    store = _store_at_other_pins(account / ".zeus" / "tools")
+    run, provisioned = _run_runner(tmp_path, account, home, _naming("ZEUS_RUNTIME_DIR", store), bootstrap=False)
+    assert provisioned == (home / ".zeus" / "tools").resolve(), run.stdout + run.stderr
 
 
 @pytest.mark.platforms("posix")
 @pytest.mark.parametrize("bootstrap", [True, False])
 def test_runtime_dir_naming_the_account_store_through_a_missing_component_is_recognised(tmp_path, bootstrap):
-    """pm resolves HERMES_RUNTIME_DIR with Path.resolve(), which collapses ``missing/..`` without
+    """pm resolves ZEUS_RUNTIME_DIR with Path.resolve(), which collapses ``missing/..`` without
     the filesystem; the runner must read the path the same way or it misses the account's store."""
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = _store_at_other_pins(account / ".hermes" / "tools")
+    store = _store_at_other_pins(account / ".zeus" / "tools")
     before = _snapshot(store)
-    run, provisioned = _run_runner(tmp_path, account, home, {"HERMES_RUNTIME_DIR": str(store / "missing" / "..")},
+    run, provisioned = _run_runner(tmp_path, account, home, {"ZEUS_RUNTIME_DIR": str(store / "missing" / "..")},
                                    bootstrap=bootstrap)
-    assert provisioned == (home / ".hermes" / "tools").resolve(), run.stdout + run.stderr
+    assert provisioned == (home / ".zeus" / "tools").resolve(), run.stdout + run.stderr
     assert _snapshot(store) == before
 
 
 @pytest.mark.platforms("posix")
 def test_suffix_leading_the_faked_homes_store_back_to_the_account_store_is_refused(tmp_path):
-    """HERMES_DATA_DIR_SUFFIX is appended literally (hermes_constants), so ``/../..`` through the faked
-    home's missing ``.hermes`` reaches the account's store once pm resolves it."""
+    """ZEUS_DATA_DIR_SUFFIX is appended literally (zeus_constants), so ``/../..`` through the faked
+    home's missing ``.zeus`` reaches the account's store once pm resolves it."""
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = _store_at_other_pins(account / ".hermes" / "tools")
+    store = _store_at_other_pins(account / ".zeus" / "tools")
     before = _snapshot(store)
     run, provisioned = _run_runner(tmp_path, account, home,
-                                   {"HERMES_DATA_DIR_SUFFIX": "/../../account/.hermes", "HERMES_RUNTIME_DIR": str(store)})
+                                   {"ZEUS_DATA_DIR_SUFFIX": "/../../account/.zeus", "ZEUS_RUNTIME_DIR": str(store)})
     assert provisioned is None, f"setup reached {provisioned}\n{run.stdout}{run.stderr}"
     assert run.returncode != 0
     assert "account's tool store" in run.stderr
@@ -272,15 +272,15 @@ def test_suffix_leading_the_faked_homes_store_back_to_the_account_store_is_refus
 
 @pytest.mark.platforms("posix")
 def test_run_that_never_reaches_setup_is_not_refused_for_want_of_a_bootstrap_python(tmp_path):
-    """An explicit HERMES_PYTHON with pytest skips setup, so nothing is provisioned and there is no
+    """An explicit ZEUS_PYTHON with pytest skips setup, so nothing is provisioned and there is no
     store to keep the run off."""
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = _store_at_other_pins(account / ".hermes" / "tools")
-    run, provisioned = _run_runner(tmp_path, account, home, {"HERMES_PYTHON": sys.executable, **_naming("HERMES_HOME", store)},
+    store = _store_at_other_pins(account / ".zeus" / "tools")
+    run, provisioned = _run_runner(tmp_path, account, home, {"ZEUS_PYTHON": sys.executable, **_naming("ZEUS_HOME", store)},
                                    bootstrap=False)
     assert provisioned is None
     assert "cannot check" not in run.stderr, run.stderr
-    assert "using HERMES_PYTHON" in run.stdout, run.stdout + run.stderr
+    assert "using ZEUS_PYTHON" in run.stdout, run.stdout + run.stderr
 
 
 @pytest.mark.platforms("posix")
@@ -288,9 +288,9 @@ def test_store_pm_cannot_resolve_is_refused_with_pms_reason(tmp_path):
     """A bootstrap Python whose pm fails to resolve the store (here: a payload manifest whose store
     escapes its root) refuses the run with pm's reason, not as a missing interpreter."""
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = _store_at_other_pins(account / ".hermes" / "tools")
+    store = _store_at_other_pins(account / ".zeus" / "tools")
     (tmp_path / "manifest.json").write_text(json.dumps({"repo": "checkout", "store": "../outside"}), encoding="utf-8")
-    run, provisioned = _run_runner(tmp_path, account, home, _naming("HERMES_HOME", store))
+    run, provisioned = _run_runner(tmp_path, account, home, _naming("ZEUS_HOME", store))
     assert provisioned is None, f"setup reached {provisioned}\n{run.stdout}{run.stderr}"
     assert run.returncode != 0
     assert "escapes its root" in run.stderr
@@ -303,7 +303,7 @@ def test_runtime_dir_through_a_link_into_the_account_store_is_recognised(tmp_pat
     """Path.resolve() follows a symlink before taking the ``..`` after it, also when the link's own
     target runs through a missing part: both name the account's store to pm."""
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = _store_at_other_pins(account / ".hermes" / "tools")
+    store = _store_at_other_pins(account / ".zeus" / "tools")
     (store / "sub").mkdir()
     home.mkdir()
     first, _, rest = link_target.partition("/")
@@ -315,8 +315,8 @@ def test_runtime_dir_through_a_link_into_the_account_store_is_recognised(tmp_pat
         named = home / "lnk"
     assert named.resolve() == store.resolve(), "control: pm reads the path as the account's store"
     before = _snapshot(store)
-    run, provisioned = _run_runner(tmp_path, account, home, {"HERMES_RUNTIME_DIR": str(named)})
-    assert provisioned == (home / ".hermes" / "tools").resolve(), run.stdout + run.stderr
+    run, provisioned = _run_runner(tmp_path, account, home, {"ZEUS_RUNTIME_DIR": str(named)})
+    assert provisioned == (home / ".zeus" / "tools").resolve(), run.stdout + run.stderr
     assert _snapshot(store) == before
 
 
@@ -338,15 +338,15 @@ def test_link_target_ending_in_a_newline_is_followed_as_named(tmp_path, readlink
     if readlink == "bsd":
         _bsd_readlink(tmp_path / "bin")
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = _store_at_other_pins(account / ".hermes" / "tools")
+    store = _store_at_other_pins(account / ".zeus" / "tools")
     home.mkdir()
     (home / "x").mkdir()
     (home / "x\n").symlink_to(store)
     (home / "rt").symlink_to(f"{home / 'x'}\n")
     assert (home / "rt").resolve() == store.resolve(), "control: pm reads the path as the account's store"
     before = _snapshot(store)
-    run, provisioned = _run_runner(tmp_path, account, home, {"HERMES_RUNTIME_DIR": str(home / "rt")})
-    assert provisioned == (home / ".hermes" / "tools").resolve(), run.stdout + run.stderr
+    run, provisioned = _run_runner(tmp_path, account, home, {"ZEUS_RUNTIME_DIR": str(home / "rt")})
+    assert provisioned == (home / ".zeus" / "tools").resolve(), run.stdout + run.stderr
     assert _snapshot(store) == before
 
 
@@ -359,53 +359,53 @@ def test_resolved_store_preserves_its_final_newline(tmp_path, ends_in):
     physical = tmp_path / "physical\n"
     if ends_in == "account":
         _store_at_other_pins(physical)
-        (account / ".hermes").mkdir(parents=True)
-        (account / ".hermes" / "tools").symlink_to(physical)
-        store = account / ".hermes" / "tools"
+        (account / ".zeus").mkdir(parents=True)
+        (account / ".zeus" / "tools").symlink_to(physical)
+        store = account / ".zeus" / "tools"
     else:
-        store = _store_at_other_pins(account / ".hermes" / "tools")
+        store = _store_at_other_pins(account / ".zeus" / "tools")
         physical.mkdir()
-        (home / ".hermes").mkdir(parents=True)
-        (home / ".hermes" / "tools").symlink_to(physical)
+        (home / ".zeus").mkdir(parents=True)
+        (home / ".zeus" / "tools").symlink_to(physical)
     before = _snapshot(store)
-    run, provisioned = _run_runner(tmp_path, account, home, {"HERMES_RUNTIME_DIR": str(store)})
-    assert provisioned == (home / ".hermes" / "tools").resolve(), run.stdout + run.stderr
+    run, provisioned = _run_runner(tmp_path, account, home, {"ZEUS_RUNTIME_DIR": str(store)})
+    assert provisioned == (home / ".zeus" / "tools").resolve(), run.stdout + run.stderr
     assert _snapshot(store) == before
 
 
 @pytest.mark.platforms("posix")
 def test_bootstrap_uv_is_not_staged_into_the_account_store_the_faked_home_links_to(tmp_path):
-    """setup-hermes.sh stages its bootstrap uv into ``$HOME/.hermes/tools`` before pm runs. With the
-    faked home's ``.hermes`` linked to the account's and a separate HERMES_HOME choosing pm's store,
+    """setup-zeus.sh stages its bootstrap uv into ``$HOME/.zeus/tools`` before pm runs. With the
+    faked home's ``.zeus`` linked to the account's and a separate ZEUS_HOME choosing pm's store,
     that staging must go where pm provisions, not into the account's store."""
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = _store_at_other_pins(account / ".hermes" / "tools")
+    store = _store_at_other_pins(account / ".zeus" / "tools")
     home.mkdir()
-    (home / ".hermes").symlink_to(account / ".hermes")
+    (home / ".zeus").symlink_to(account / ".zeus")
     custom = tmp_path / "custom"
-    run, pm_store = _run_runner(tmp_path, account, home, {"HERMES_HOME": str(custom)})
+    run, pm_store = _run_runner(tmp_path, account, home, {"ZEUS_HOME": str(custom)})
     assert pm_store == (custom / "tools").resolve(), "control: pm provisions the custom home's store"
     before = _snapshot(store)
-    run, staged = _run_runner(tmp_path / "real", account, home, {"HERMES_HOME": str(custom)}, real_setup=True)
+    run, staged = _run_runner(tmp_path / "real", account, home, {"ZEUS_HOME": str(custom)}, real_setup=True)
     assert staged is not None, run.stdout + run.stderr
     assert Path(staged).resolve() == (custom / "tools").resolve(), run.stdout + run.stderr
     assert _snapshot(store) == before
 
 
 @pytest.mark.platforms("posix")
-@pytest.mark.parametrize("named_by", ["HERMES_RUNTIME_DIR", "HERMES_HOME"])
+@pytest.mark.parametrize("named_by", ["ZEUS_RUNTIME_DIR", "ZEUS_HOME"])
 def test_relative_store_is_read_from_the_checkout_like_setup_reads_it(tmp_path, named_by):
-    """setup-hermes.sh changes to the checkout before pm reads the environment, so a relative value
+    """setup-zeus.sh changes to the checkout before pm reads the environment, so a relative value
     names the store relative to the checkout, whatever directory the runner was started from."""
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = _store_at_other_pins(account / ".hermes" / "tools")
+    store = _store_at_other_pins(account / ".zeus" / "tools")
     caller = tmp_path / "x" / "y"
     caller.mkdir(parents=True)
-    naming = {"HERMES_RUNTIME_DIR": "../account/.hermes/tools"} if named_by == "HERMES_RUNTIME_DIR" \
-        else {"HERMES_HOME": "../account/.hermes"}
+    naming = {"ZEUS_RUNTIME_DIR": "../account/.zeus/tools"} if named_by == "ZEUS_RUNTIME_DIR" \
+        else {"ZEUS_HOME": "../account/.zeus"}
     before = _snapshot(store)
     run, provisioned = _run_runner(tmp_path, account, home, naming, cwd=caller)
-    assert provisioned == (home / ".hermes" / "tools").resolve(), run.stdout + run.stderr
+    assert provisioned == (home / ".zeus" / "tools").resolve(), run.stdout + run.stderr
     assert _snapshot(store) == before
 
 
@@ -414,12 +414,12 @@ def test_runtime_dir_through_a_link_loop_is_refused(tmp_path):
     """A link chain the kernel gives up on names no store the runner can compare, so the run stops
     before setup instead of guessing."""
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = _store_at_other_pins(account / ".hermes" / "tools")
+    store = _store_at_other_pins(account / ".zeus" / "tools")
     before = _snapshot(store)
     home.mkdir()
     (home / "a").symlink_to(home / "b")
     (home / "b").symlink_to(home / "a")
-    run, provisioned = _run_runner(tmp_path, account, home, {"HERMES_RUNTIME_DIR": str(home / "a")})
+    run, provisioned = _run_runner(tmp_path, account, home, {"ZEUS_RUNTIME_DIR": str(home / "a")})
     assert provisioned is None, f"setup reached {provisioned}\n{run.stdout}{run.stderr}"
     assert run.returncode != 0
     assert "more than 40 symlinks" in run.stderr
@@ -432,11 +432,11 @@ def test_runtime_dir_through_a_link_readlink_cannot_read_is_refused(tmp_path):
     must refuse the run, not drop the link and resolve from its parent directory."""
     _executable(tmp_path / "bin" / "readlink").write_text("#!/bin/sh\nexit 1\n", encoding="utf-8")
     account, home = tmp_path / "account", tmp_path / "fakehome"
-    store = _store_at_other_pins(account / ".hermes" / "tools")
+    store = _store_at_other_pins(account / ".zeus" / "tools")
     before = _snapshot(store)
     home.mkdir()
     (home / "rt").symlink_to(store)
-    run, provisioned = _run_runner(tmp_path, account, home, {"HERMES_RUNTIME_DIR": str(home / "rt")})
+    run, provisioned = _run_runner(tmp_path, account, home, {"ZEUS_RUNTIME_DIR": str(home / "rt")})
     assert provisioned is None, f"setup reached {provisioned}\n{run.stdout}{run.stderr}"
     assert run.returncode != 0
     assert "or a link readlink cannot read" in run.stderr

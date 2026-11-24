@@ -12,7 +12,7 @@ import {
 } from '@/app/session/hooks/use-prompt-actions/utils'
 import { sessionCreatedThisRun } from '@/app/session/hooks/use-session-actions/created-this-run'
 import { preserveLocalPendingTurnMessages } from '@/app/session/hooks/use-session-actions/utils'
-import { getLatestSessionMessages, type ProfileScope } from '@/hermes'
+import { getLatestSessionMessages, type ProfileScope } from '@/zeus'
 import {
   type ChatMessage,
   preserveLocalAssistantErrors,
@@ -996,7 +996,7 @@ interface BackgroundSyncParams {
   refreshActiveTranscript: () => Promise<unknown> | unknown
   refreshCronJobs: () => Promise<unknown> | unknown
   refreshCurrentModel: (force?: boolean) => Promise<unknown> | unknown
-  refreshHermesConfig: () => Promise<unknown> | unknown
+  refreshZeusConfig: () => Promise<unknown> | unknown
   refreshMessagingSessions: () => Promise<unknown> | unknown
   refreshSessions: () => Promise<unknown> | unknown
   requestGateway: GatewayRequester
@@ -1069,7 +1069,7 @@ export function useBackgroundSync({
   refreshActiveTranscript,
   refreshCronJobs,
   refreshCurrentModel,
-  refreshHermesConfig,
+  refreshZeusConfig,
   refreshMessagingSessions,
   refreshSessions,
   requestGateway,
@@ -1553,7 +1553,7 @@ export function useBackgroundSync({
     )
   }, [changeEventsAvailable, cronChangeTick, gatewayState, refreshCronJobs])
 
-  // projects.changed (projects.db moved: a CLI `hermes projects create`, another
+  // projects.changed (projects.db moved: a CLI `zeus projects create`, another
   // window's folder picker, a `set_primary` from the workspace settings) refreshes
   // both the projects list and the sidebar tree — the desktop's own mutations
   // refresh optimistically, so this only needs to cover writers in OTHER
@@ -1618,9 +1618,9 @@ export function useBackgroundSync({
   useEffect(() => {
     if (gatewayState === 'open' && !activeSessionId && freshDraftReady) {
       void refreshCurrentModel()
-      void refreshHermesConfig()
+      void refreshZeusConfig()
     }
-  }, [activeSessionId, freshDraftReady, gatewayState, refreshCurrentModel, refreshHermesConfig])
+  }, [activeSessionId, freshDraftReady, gatewayState, refreshCurrentModel, refreshZeusConfig])
 
   // A refused mid-turn pick hands new chats back to the default (deferred-pick.ts) while a draft may already
   // be open: repaint that draft's pill with the default it now launches with.

@@ -15,11 +15,11 @@ _BODY = "original body " * 200
 
 
 @pytest.mark.parametrize(("backend", "visible_root"), [
-    ("docker", "/root/.hermes/cache/pruned/"), ("modal", "/root/.hermes/cache/pruned/"),
-    ("ssh", "~/.hermes/cache/pruned/"), ("daytona", "~/.hermes/cache/pruned/"),
-    ("vercel_sandbox", "~/.hermes/cache/pruned/")])
+    ("docker", "/root/.zeus/cache/pruned/"), ("modal", "/root/.zeus/cache/pruned/"),
+    ("ssh", "~/.zeus/cache/pruned/"), ("daytona", "~/.zeus/cache/pruned/"),
+    ("vercel_sandbox", "~/.zeus/cache/pruned/")])
 def test_publishing_backend_archives_and_names_the_sandbox_path(tmp_path, monkeypatch, backend, visible_root):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     monkeypatch.setenv("TERMINAL_ENV", backend)
 
     archived = write_pruned_original(_BODY, "s1", "read_file", "call_1")
@@ -32,14 +32,14 @@ def test_publishing_backend_archives_and_names_the_sandbox_path(tmp_path, monkey
 
 
 def test_the_folder_is_published_with_the_other_cache_dirs(tmp_path, monkeypatch):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     mounts = {m["container_path"]: m["host_path"] for m in get_cache_directory_mounts()}
-    assert mounts["/root/.hermes/cache/pruned"] == str(tmp_path / "cache" / "pruned")
+    assert mounts["/root/.zeus/cache/pruned"] == str(tmp_path / "cache" / "pruned")
 
 
 @pytest.mark.parametrize("backend", ["singularity-plugin", "some_future_backend"])
 def test_backend_that_does_not_publish_the_folder_keeps_results_whole(tmp_path, monkeypatch, backend):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     monkeypatch.setenv("TERMINAL_ENV", backend)
 
     assert write_pruned_original(_BODY, "s1", "read_file", "call_1") is None
@@ -51,7 +51,7 @@ def test_backend_that_does_not_publish_the_folder_keeps_results_whole(tmp_path, 
 
 
 def test_hosted_scope_keeps_results_whole(tmp_path, monkeypatch):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     monkeypatch.setenv("TERMINAL_ENV", "docker")
     monkeypatch.setattr("tools.environments.sandbox_scope.hosted_scope", lambda: object())
 
@@ -59,7 +59,7 @@ def test_hosted_scope_keeps_results_whole(tmp_path, monkeypatch):
 
 
 def test_local_backend_still_archives_with_the_display_path(tmp_path, monkeypatch):
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     monkeypatch.setenv("TERMINAL_ENV", "local")
 
     archived = write_pruned_original(_BODY, "s1", "read_file", "call_1")
@@ -76,7 +76,7 @@ def test_read_file_pushes_a_synced_backend_before_opening_an_archive(tmp_path, m
 
     import tools.file_tools as ft
 
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     monkeypatch.setenv("TERMINAL_ENV", "local")
     archived = write_pruned_original(_BODY, "s1", "read_file", "call_1")
     assert archived is not None
@@ -99,7 +99,7 @@ def test_read_file_pushes_a_synced_backend_before_opening_an_archive(tmp_path, m
 
 
 def test_sandbox_archive_is_read_at_the_path_the_sandbox_names(tmp_path, monkeypatch):
-    """On daytona the stub names ``~/.hermes/...``: the sandbox's ``~``, not the host's. The byte read must get that
+    """On daytona the stub names ``~/.zeus/...``: the sandbox's ``~``, not the host's. The byte read must get that
     path, or a one-line JSON archive falls through to the ordinary reader and comes back cut at the per-line cap."""
     import base64
     import json
@@ -109,14 +109,14 @@ def test_sandbox_archive_is_read_at_the_path_the_sandbox_names(tmp_path, monkeyp
     from tools.file_operations_common import ReadResult
     from tools.tool_output_limits import get_max_line_length
 
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     monkeypatch.setenv("TERMINAL_ENV", "daytona")
     monkeypatch.setenv("HOME", str(tmp_path / "host_home"))  # the host's ~ is not the sandbox's
     body = json.dumps({"output": "x" * (get_max_line_length() * 3)})
     archived = write_pruned_original(body, "s1", "terminal", "call_1")
     assert archived is not None
     host_path, stub_path = archived
-    assert stub_path.startswith("~/.hermes/")
+    assert stub_path.startswith("~/.zeus/")
     raw = open(host_path, "rb").read()
     requested = []
 

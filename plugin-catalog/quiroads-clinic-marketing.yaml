@@ -8,7 +8,7 @@ maintainer: QuiroAds
 tier: community
 category: tools
 docs_url: https://github.com/quiroads/clinic-marketing-skills#hermes-agent
-requires_hermes: ">=0.22.0"
+requires_zeus: ">=0.22.0"
 readme: true
 platforms: []
 capabilities:

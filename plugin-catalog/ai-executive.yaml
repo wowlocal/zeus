@@ -12,13 +12,13 @@ description: >-
   the user's account are pulled into the session context, and so reach the user's model provider; phone
   numbers arrive masked. Both tools are read-only; nothing is booked, sent, purchased or published.
   AI Executive logs each call's metadata. The tool list comes from the server at run time, so the
-  pinned commit doesn't cover it. Hermes stores and refreshes the OAuth tokens. OAuth must be enabled with
-  `hermes mcp add ai-executive --url https://connect.aiexec.me/mcp --auth oauth`;
+  pinned commit doesn't cover it. Zeus stores and refreshes the OAuth tokens. OAuth must be enabled with
+  `zeus mcp add ai-executive --url https://connect.aiexec.me/mcp --auth oauth`;
   the bundled mcp.json alone yields 401.
 maintainer: jghaygood
 tier: community
 category: tools
-requires_hermes: ">=0.23.0"
+requires_zeus: ">=0.23.0"
 docs_url: https://github.com/jghaygood/ai-executive-hermes-plugin/blob/92692ec374a1673140815f426f652cc6104bc82f/README.md
 version: "1.0.0"
 image: https://raw.githubusercontent.com/jghaygood/ai-executive-hermes-plugin/92692ec374a1673140815f426f652cc6104bc82f/assets/catalog-card.png

@@ -1,9 +1,9 @@
 import { map } from 'nanostores'
 
-import type { HermesGateway } from '@/hermes'
+import type { ZeusGateway } from '@/zeus'
 import { gatewayRouteState, requestGatewayForAgent } from '@/store/gateway'
 import type { AgentProfileRoute } from '@/store/profile'
-import type { ProjectInfo, ProjectsPayload } from '@/types/hermes'
+import type { ProjectInfo, ProjectsPayload } from '@/types/zeus'
 
 // A project another gateway owns is drawn from that gateway's session rows; its
 // look (color / icon) lives in THAT gateway profile's projects.db, the same
@@ -96,15 +96,15 @@ interface OwnerRead {
   /** The socket reconnected while a read was in flight: that read may predate it, so read again. */
   rereadQueued: boolean
   /** The socket the published looks came over; until it matches the route's socket, a render reads. */
-  readOver: HermesGateway | null
+  readOver: ZeusGateway | null
   stopWatching: () => void
-  watching: HermesGateway | null
+  watching: ZeusGateway | null
 }
 
 const MAX_FAILED_READS = 3
 const reads = new Map<string, OwnerRead>()
 
-async function readOwner(route: AgentProfileRoute, read: OwnerRead, gateway: HermesGateway): Promise<void> {
+async function readOwner(route: AgentProfileRoute, read: OwnerRead, gateway: ZeusGateway): Promise<void> {
   const sentAt = writeSeq
 
   read.inFlight = true
@@ -133,7 +133,7 @@ async function readOwner(route: AgentProfileRoute, read: OwnerRead, gateway: Her
 }
 
 /** A socket that drops and reopens re-reads: the owner's window may have recoloured meanwhile. */
-function watchSocket(route: AgentProfileRoute, read: OwnerRead, gateway: HermesGateway): void {
+function watchSocket(route: AgentProfileRoute, read: OwnerRead, gateway: ZeusGateway): void {
   let dropped = false
 
   read.stopWatching()

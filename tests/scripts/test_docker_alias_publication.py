@@ -110,7 +110,7 @@ def test_promote_canary_refuses_rollback_behind_live_head_before_touching_docker
         assert len(creates) == 2
 
     # Unreadable live R2 head fails closed without touching Docker Hub.
-    from hermes_cli.release_channels import ChannelError
+    from zeus_cli.release_channels import ChannelError
 
     def broken(_repo, _channel, *, base_url=None):
         raise ChannelError("R2 unreachable")

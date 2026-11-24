@@ -1,4 +1,4 @@
-import type { HermesConnection } from '@/global'
+import type { ZeusConnection } from '@/global'
 import { RECONNECT_ATTEMPT_TIMEOUT_MS, withTimeout } from '@/lib/with-timeout'
 
 // True when `profile`'s backend route resolves to the SHARED primary backend
@@ -22,8 +22,8 @@ export async function sharedPrimaryRoute(profile: string): Promise<boolean> {
 }
 
 /** `profile`'s descriptor when it rides the shared primary backend, else null. */
-export async function sharedPrimaryConnection(profile: string): Promise<HermesConnection | null> {
-  const desktop = window.hermesDesktop
+export async function sharedPrimaryConnection(profile: string): Promise<ZeusConnection | null> {
+  const desktop = window.zeusDesktop
 
   if (!desktop) {
     return null

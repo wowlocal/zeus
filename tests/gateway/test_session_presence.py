@@ -15,7 +15,7 @@ import pytest
 from tests.gateway.test_local_desktop_identity import _connect
 from tests.waiting import async_wait_until
 
-DESKTOP = {'name': 'hermes-desktop', 'version': '2.1.0', 'kind': 'desktop'}
+DESKTOP = {'name': 'zeus-desktop', 'version': '2.1.0', 'kind': 'desktop'}
 
 
 def _peer(identity):
@@ -183,11 +183,11 @@ async def test_viewers_are_the_attached_connections_with_their_hello(tmp_path, m
         seen = sorted(_viewers(conn, sid), key=lambda v: v['name'] or '')
         assert seen == [
             {'name': None, 'kind': None, 'idle_seconds': None, 'basis': None, 'can_alert': None},
-            {'name': 'hermes-desktop', 'kind': 'desktop', 'idle_seconds': 7.0, 'basis': 'system', 'can_alert': True},
+            {'name': 'zeus-desktop', 'kind': 'desktop', 'idle_seconds': 7.0, 'basis': 'system', 'can_alert': True},
         ]
         await _report(other, [sid], 1)
         await other.call('session.detach', session_id=sid, subscription_id=subscription)
-        assert [v['name'] for v in _viewers(conn, sid)] == ['hermes-desktop']
+        assert [v['name'] for v in _viewers(conn, sid)] == ['zeus-desktop']
         await desktop.connection.close()
         assert _viewers(conn, sid) == []
         assert _viewers(conn, 'no-such-session') == []
@@ -315,9 +315,9 @@ async def _profiles(tmp_path, monkeypatch):
     from tests.fixtures.storage_seed import seed_session
     monkeypatch.setattr(Path, 'home', lambda: tmp_path)
     authorities = []
-    for home in (tmp_path / '.hermes' / 'profiles' / 'beta', tmp_path / '.hermes'):
+    for home in (tmp_path / '.zeus' / 'profiles' / 'beta', tmp_path / '.zeus'):
         home.mkdir(parents=True, exist_ok=True)
-        monkeypatch.setenv('HERMES_HOME', str(home))
+        monkeypatch.setenv('ZEUS_HOME', str(home))
         store = SessionStore(home / 'sessions', GatewayConfig())
         runner = SimpleNamespace(_session_db=store.persistence, session_store=store, _draining=False,
                                  _adapter_for_source=lambda source: None)

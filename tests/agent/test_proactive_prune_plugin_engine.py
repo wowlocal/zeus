@@ -72,6 +72,6 @@ def _drive_route(engine, route):
 @pytest.mark.parametrize("route", ["after_tool", "turn_start"])
 def test_plugin_inheriting_default_hook_keeps_messages_and_creates_no_archives(tmp_path, monkeypatch, route):
     """Pin both host routes to leave a plugin's own store and transcript untouched without a host DB."""
-    monkeypatch.setenv("HERMES_HOME", str(tmp_path))
+    monkeypatch.setenv("ZEUS_HOME", str(tmp_path))
     _drive_route(_PluginEngine(), route)
     assert not list((tmp_path / "cache" / "pruned").glob("**/*"))

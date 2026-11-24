@@ -7,7 +7,7 @@ description: "Cross-cultural business intelligence: country culture briefs and h
 maintainer: pswong661-eng
 tier: community
 category: tools
-requires_hermes: ">=0.21.0"
+requires_zeus: ">=0.21.0"
 image: https://raw.githubusercontent.com/pswong661-eng/hermes-global-business-culture/f0ae35f6188800734aae788388543dbdf3bb728f/assets/banner.png
 readme: true
 platforms: [linux, macos, windows]

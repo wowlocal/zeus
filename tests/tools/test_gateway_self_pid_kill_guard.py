@@ -107,7 +107,7 @@ def test_string_runner_payloads_see_heredoc_written_scripts(run, runner):
 
 def test_oversized_numeric_operand_keeps_the_script_walk(run, tmp_path):
     script = tmp_path / "restart.sh"
-    script.write_text("#!/bin/sh\nhermes gateway restart\n")
+    script.write_text("#!/bin/sh\nzeus gateway restart\n")
     assert run(f"kill {'1' * 5000} 2>/dev/null; bash {script}") is not None
 
 
@@ -127,7 +127,7 @@ def test_pid_check_is_scoped_to_local_supervised_gateway(run, monkeypatch):
     "stop-process -id {pid} -WHATIF",
     "Stop-Process -Id {pid} -Force -WhatIf",
     "Stop-Process -WhatIf -Id {pid}",
-    "Stop-Process -Name hermes -WhatIf",
+    "Stop-Process -Name zeus -WhatIf",
     "spps -Id {pid} -WhatIf",
 ])
 def test_stop_process_whatif_preview_is_safe_but_disabled_switch_is_blocked(run, command):

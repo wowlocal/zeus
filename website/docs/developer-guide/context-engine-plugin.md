@@ -108,7 +108,7 @@ An engine that keeps per-session state reads the session store through two hooks
 - `bind_session_state(session_db, session_id, persistence=None)`, when your engine defines it, runs each time an agent binds a session to the engine: at agent start, after `/new`, `/resume` or `/branch`, on a gateway hygiene pass, and when a cold `/compress` builds a one-off engine. The first two arguments can arrive by position.
 - `on_session_start(session_id, **kwargs)` carries `session_db` and `persistence` in `kwargs` only when an agent adopts a continuation that another compression already created. The notice after the agent's own compression, and the calls at agent start and after `/new`, carry neither, so keep the handle `bind_session_state` received.
 
-`persistence` is the agent's storage interface handle (`persistence_assembly.Persistence`): `persistence.sessions.get(session_id)`, `persistence.messages.read_transcript(session_id)` and the other repositories in the [plugin guide's replacement table](./plugins/index.md#hermes_state-deprecated-use-the-storage-interface). Hermes passes it only to a hook whose signature names `persistence` or takes `**kwargs`, so an engine whose bind takes the two arguments alone keeps working. `session_db` is the deprecated `hermes_state.SessionDB` over the same store and is removed with `hermes_state` in v0.27.0; read through `persistence` instead. An engine with a session hook that cannot take `persistence` gets a `DeprecationWarning` naming its class, once per process.
+`persistence` is the agent's storage interface handle (`persistence_assembly.Persistence`): `persistence.sessions.get(session_id)`, `persistence.messages.read_transcript(session_id)` and the other repositories in the [plugin guide's replacement table](./plugins/index.md#zeus_state-deprecated-use-the-storage-interface). Zeus passes it only to a hook whose signature names `persistence` or takes `**kwargs`, so an engine whose bind takes the two arguments alone keeps working. `session_db` is the deprecated `zeus_state.SessionDB` over the same store and is removed with `zeus_state` in v0.27.0; read through `persistence` instead. An engine with a session hook that cannot take `persistence` gets a `DeprecationWarning` naming its class, once per process.
 
 ## Per-turn context selection and observation
 
@@ -200,7 +200,7 @@ What the host guarantees:
   Never assume per-row uniqueness in the active set; key your own state on
   the uid and treat the later row as the current version.
 - **Tool calls get per-occurrence ids too.** Provider tool-call ids repeat
-  (Hermes mints deterministic `call_<12hex>` ids for identical calls, and models
+  (Zeus mints deterministic `call_<12hex>` ids for identical calls, and models
   reuse ids), so an assistant message carries `_tool_call_uids`, a
   `{tool_call_id: uid}` map for its `tool_calls`, and each tool-result message
   carries the matching `_tool_call_uid`. Calls that repeat a provider id inside
@@ -282,7 +282,7 @@ Engine tools are injected into the agent's tool list at startup and dispatched a
 
 ### Via directory (recommended)
 
-Place your engine in `plugins/context_engine/<name>/` (bundled) or `~/.hermes/plugins/<name>/` (user-installed; `$HERMES_HOME/plugins/<name>/`). The `__init__.py` must export a `ContextEngine` subclass or a `register(ctx)` that calls `ctx.register_context_engine(...)`. Setting `context.engine: <name>` is the activation — a user-installed engine does not need a `plugins.enabled` entry. Bundled names win on collision.
+Place your engine in `plugins/context_engine/<name>/` (bundled) or `~/.zeus/plugins/<name>/` (user-installed; `$ZEUS_HOME/plugins/<name>/`). The `__init__.py` must export a `ContextEngine` subclass or a `register(ctx)` that calls `ctx.register_context_engine(...)`. Setting `context.engine: <name>` is the activation — a user-installed engine does not need a `plugins.enabled` entry. Bundled names win on collision.
 
 ### Via general plugin system
 
@@ -298,7 +298,7 @@ Only one engine can be registered. A second plugin attempting to register is rej
 
 The registered instance is shared process-wide, but every `AIAgent` (parent, subagents, gateway
 sessions) needs its own engine so a child's `update_model()` cannot mutate the parent's budget.
-Hermes therefore calls `engine.clone_for_agent()` on the registered instance at each agent init.
+Zeus therefore calls `engine.clone_for_agent()` on the registered instance at each agent init.
 The default is `copy.deepcopy(self)`; override it when the engine holds state that cannot be
 deep-copied (locks, SQLite or HTTP connections) and return a fresh engine sharing the durable
 backend while copying only the mutable budget fields. If the clone raises, the agent falls back to
@@ -333,7 +333,7 @@ for that compression, which then also receives `on_session_end()`.
 
 ## Configuration
 
-Users select your engine via `hermes plugins` → Provider Plugins → Context Engine, or by editing `config.yaml`:
+Users select your engine via `zeus plugins` → Provider Plugins → Context Engine, or by editing `config.yaml`:
 
 ```yaml
 context:
@@ -364,7 +364,7 @@ See `tests/agent/test_context_engine.py` for the full ABC contract test suite.
 
 ## Thread safety
 
-When `compression.context_timeout_seconds > 0` (the default), Hermes runs the
+When `compression.context_timeout_seconds > 0` (the default), Zeus runs the
 whole compression pass — including your engine's `compress()` and boundary
 callbacks, and any memory provider's `on_pre_compress` /
 `on_session_switch` — on a pooled daemon thread with a host-side timeout.

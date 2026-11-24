@@ -238,7 +238,7 @@ def _resolve_inference_api_key(cfg: Optional[dict[str, Any]], provider: str) -> 
     runtime_key = _resolve_inference_value(None, provider, "api_key", runtime_ok=lambda _: True)
     if runtime_key or not isinstance(cfg, dict) or callable(_runtime_main("api_key")):
         return runtime_key
-    from hermes_cli.runtime_provider_custom import _is_model_base_url, main_endpoint_key_for
+    from zeus_cli.runtime_provider_custom import _is_model_base_url, main_endpoint_key_for
     base_url, model_cfg = _resolve_inference_base_url(cfg, provider), _dict_or_empty(cfg.get("model"))
     if _is_model_base_url(model_cfg, base_url):
         return main_endpoint_key_for(model_cfg, base_url)
@@ -287,7 +287,7 @@ def _probe_managed_runtime(provider: str, model: str, cfg: Optional[dict[str, An
     on whether it can see (its /props reports modalities). Cloud catalogs have never
     heard of a local GGUF, so without this every local model reads as text-only and
     screenshots detour to a cloud auxiliary."""
-    from hermes_cli.local_runtime.capabilities import is_managed_provider, managed_model_supports_vision
+    from zeus_cli.local_runtime.capabilities import is_managed_provider, managed_model_supports_vision
 
     managed = is_managed_provider(provider, _resolve_inference_base_url(cfg, provider) or "")
     return managed_model_supports_vision(model) if managed else None
@@ -306,7 +306,7 @@ def _probe_models_dev(provider: str, model: str, cfg: Optional[dict[str, Any]]) 
     # historical network-on-cold-cache behavior for this one path; the fetch is cached (4h TTL) and
     # backoff-limited after failures.
     if (provider or "").strip().lower() == "openai-codex":
-        # A VALID Codex ``-900k`` picker variant is a Hermes-side alias of its base slug; the catalog
+        # A VALID Codex ``-900k`` picker variant is a Zeus-side alias of its base slug; the catalog
         # only knows the base, so look that up. The runtime model id stays untouched (the transport
         # owns wire normalization) and ineligible ``-900k`` strings pass through unchanged (#102189).
         from agent.model_metadata import strip_codex_context_variant_suffix
@@ -323,7 +323,7 @@ def _probe_nous_catalog(provider: str, model: str, cfg: Optional[dict[str, Any]]
     :func:`_probe_models_dev`; the catalog is cached in memory and mirrored to disk."""
     if _clean_str(provider).lower() != "nous":
         return None
-    from hermes_cli.models_reasoning_caps import nous_catalog_url, nous_model_supports_vision
+    from zeus_cli.models_reasoning_caps import nous_catalog_url, nous_model_supports_vision
 
     # The catalog describes the Portal the saved credentials name; a run pointed at another
     # endpoint (``--base-url`` to staging or a proxy) gets no verdict from it, so it stays unknown.
@@ -473,7 +473,7 @@ def _transcode_to_png(raw: bytes) -> Optional[bytes]:
     except ImportError:
         logger.info(
             "image_routing: Pillow not installed; cannot transcode "
-            "non-standard image format to PNG. Run `hermes pm repair` to restore Pillow, "
+            "non-standard image format to PNG. Run `zeus pm repair` to restore Pillow, "
             "or convert the image to PNG before sending it."
         )
         return None
@@ -518,7 +518,7 @@ def _accepted_mimes() -> frozenset:
     confabulates a description), so its narrower set transcodes those here."""
     try:
         from agent.auxiliary_client import _runtime_main_value
-        from hermes_cli.local_runtime.capabilities import ACCEPTED_IMAGE_MIMES, is_managed_provider
+        from zeus_cli.local_runtime.capabilities import ACCEPTED_IMAGE_MIMES, is_managed_provider
 
         if is_managed_provider(str(_runtime_main_value("provider") or ""), str(_runtime_main_value("base_url") or "")):
             return ACCEPTED_IMAGE_MIMES

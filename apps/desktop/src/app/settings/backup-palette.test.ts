@@ -6,7 +6,7 @@ import { backupPaletteEntries, backupSettingsHrefForLegacy } from './backup-pale
 
 const host = vi.hoisted(() => ({ cloud: false }))
 
-vi.mock('@/lib/hermes-cloud-host', () => ({ servedByHermesCloud: () => host.cloud }))
+vi.mock('@/lib/zeus-cloud-host', () => ({ servedByZeusCloud: () => host.cloud }))
 
 afterEach(() => {
   host.cloud = false
@@ -16,11 +16,11 @@ describe('Backup & Transfer entry points', () => {
   it('lists exactly one ⌘K row per task', () => {
     expect(backupPaletteEntries(en).map(entry => [entry.id, entry.label])).toEqual([
       ['backup-agent', 'Back up this agent'],
-      ['transfer-to-cloud', 'Transfer to Hermes Cloud']
+      ['transfer-to-cloud', 'Transfer to Zeus Cloud']
     ])
   })
 
-  it('offers only the backup row on a Webapp Hermes Cloud serves', () => {
+  it('offers only the backup row on a Webapp Zeus Cloud serves', () => {
     host.cloud = true
 
     expect(backupPaletteEntries(en).map(entry => entry.id)).toEqual(['backup-agent'])

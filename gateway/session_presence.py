@@ -6,7 +6,7 @@ time of two sources: input the owner itself sees on that connection (``INPUT_MET
 ``touch`` from ``AuthorityConnection.dispatch``, and a result frame answering a server request a
 reconnecting viewer is handed again, a skip or cancel included, via ``seen``) and the client's own
 ``client.activity`` reports (``report``), which say how long ago the user last touched the device or
-the Hermes window. Idle time is simply ``now - last input``: no timer ages a record out, so it grows
+the Zeus window. Idle time is simply ``now - last input``: no timer ages a record out, so it grows
 until new input. A report is the connection's whole statement: it replaces the last report of each
 session it lists, and every record of a session it does not list is dropped, owner-seen input
 included (``sessions: []`` drops them all). ``away`` (screen locked, machine suspending) clears the

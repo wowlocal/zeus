@@ -2,7 +2,7 @@
 
 A memory provider configured via ``memory.provider`` but reporting
 ``is_available() == False`` (e.g. missing credentials, or a systemd/gateway
-service that didn't inherit ``~/.hermes/.env``) used to be dropped silently.
+service that didn't inherit ``~/.zeus/.env``) used to be dropped silently.
 ``agent_init`` now emits a one-time, deduped warning instead.
 """
 
@@ -51,10 +51,10 @@ def test_provider_reason_is_appended(caplog):
 def test_parked_provider_is_reported_and_never_reinstalled(monkeypatch):
     """A provider that plugins.disabled parks (by the user, or by an update that could not install it)
     is reported once with how to turn it back on and the update's reason; it is never re-installed."""
-    from hermes_cli import memory_provider_migration
-    from hermes_constants import get_hermes_home
+    from zeus_cli import memory_provider_migration
+    from zeus_constants import get_zeus_home
 
-    home = get_hermes_home()
+    home = get_zeus_home()
     plugin = home / "plugins" / "parkedmem"
     plugin.mkdir(parents=True)
     (plugin / "__init__.py").write_text("from agent.memory_provider import MemoryProvider\n", encoding="utf-8")
@@ -69,22 +69,22 @@ def test_parked_provider_is_reported_and_never_reinstalled(monkeypatch):
     assert agent_init.resolve_memory_provider("parkedmem", say=said.append) is None
     assert agent_init.resolve_memory_provider("parkedmem", say=said.append) is None
     assert len(said) == 1
-    assert "hermes -p default plugins enable parkedmem` with HERMES_HOME set to" in said[0], said[0]
+    assert "zeus -p default plugins enable parkedmem` with ZEUS_HOME set to" in said[0], said[0]
     assert "requires Python <3.14" in said[0]
 
 
 def test_provider_that_still_fails_after_recovery_is_reported(monkeypatch):
     """An install notice from startup recovery does not explain a provider that still cannot load:
     the user is told external memory is off."""
-    from hermes_cli import memory_provider_migration
-    from hermes_constants import get_hermes_home
+    from zeus_cli import memory_provider_migration
+    from zeus_constants import get_zeus_home
 
-    plugin = get_hermes_home() / "plugins" / "brokenmem"
+    plugin = get_zeus_home() / "plugins" / "brokenmem"
 
     def recover(name, say=None):
         plugin.mkdir(parents=True)
         (plugin / "__init__.py").write_text(
-            "from agent.memory_provider import MemoryProvider\nimport hermes_missing_package_for_test\n", encoding="utf-8")
+            "from agent.memory_provider import MemoryProvider\nimport zeus_missing_package_for_test\n", encoding="utf-8")
         say(f"Installed memory provider '{name}'.")
         return True
 
@@ -99,17 +99,17 @@ def test_provider_that_still_fails_after_recovery_is_reported(monkeypatch):
 def test_an_installed_provider_that_fails_to_import_logs_the_import_error(caplog):
     """The startup log names why an installed provider did not load (a plugin importing a module core
     removed), in one WARNING line per provider, not a bare 'no provider instance found'."""
-    from hermes_constants import get_hermes_home
+    from zeus_constants import get_zeus_home
 
-    plugin = get_hermes_home() / "plugins" / "importfailmem"
+    plugin = get_zeus_home() / "plugins" / "importfailmem"
     plugin.mkdir(parents=True)
     (plugin / "__init__.py").write_text(
-        "from agent.memory_provider import MemoryProvider\nimport hermes_removed_module_for_test\n", encoding="utf-8")
+        "from agent.memory_provider import MemoryProvider\nimport zeus_removed_module_for_test\n", encoding="utf-8")
     agent_init._warned_unavailable_providers.clear()
 
     with caplog.at_level(logging.WARNING):
         assert agent_init.resolve_memory_provider("importfailmem") is None
 
     named = [r.getMessage() for r in caplog.records
-             if r.levelno == logging.WARNING and "No module named 'hermes_removed_module_for_test'" in r.getMessage()]
+             if r.levelno == logging.WARNING and "No module named 'zeus_removed_module_for_test'" in r.getMessage()]
     assert len(named) == 1 and "importfailmem" in named[0] and "\n" not in named[0]

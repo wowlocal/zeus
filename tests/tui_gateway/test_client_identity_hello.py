@@ -52,29 +52,29 @@ async def test_a_hello_is_kept_on_the_connection_without_an_unknown_kind(tmp_pat
     conn, connection, peer = await _hello_connection(tmp_path, monkeypatch)
     try:
         assert peer.client_identity is None
-        reply = await _request(connection, peer, 1, {'client': {'name': 'hermes-desktop', 'version': '2.1.0',
+        reply = await _request(connection, peer, 1, {'client': {'name': 'zeus-desktop', 'version': '2.1.0',
                                                                 'kind': 'watch'}})
         assert 'result' in reply, reply
-        assert peer.client_identity == {'name': 'hermes-desktop', 'version': '2.1.0'}
-        await _request(connection, peer, 2, {'client': {'name': 'hermes-desktop', 'kind': 'desktop'}})
-        assert peer.client_identity == {'name': 'hermes-desktop', 'kind': 'desktop'}
+        assert peer.client_identity == {'name': 'zeus-desktop', 'version': '2.1.0'}
+        await _request(connection, peer, 2, {'client': {'name': 'zeus-desktop', 'kind': 'desktop'}})
+        assert peer.client_identity == {'name': 'zeus-desktop', 'kind': 'desktop'}
     finally:
         await connection.close()
         await conn.connection.close()
 
 
 @pytest.mark.asyncio
-@pytest.mark.parametrize('bad', [{'name': 'Hermes'}, {'name': 'x', 'kind': 7}, {'name': 'x', 'version': 'v 1'}, None])
+@pytest.mark.parametrize('bad', [{'name': 'Zeus'}, {'name': 'x', 'kind': 7}, {'name': 'x', 'version': 'v 1'}, None])
 async def test_a_malformed_hello_is_refused_and_the_earlier_one_kept(tmp_path, monkeypatch, bad):
     conn, connection, peer = await _hello_connection(tmp_path, monkeypatch)
     try:
-        await _request(connection, peer, 1, {'client': {'name': 'hermes-webapp', 'kind': 'webapp'}})
+        await _request(connection, peer, 1, {'client': {'name': 'zeus-webapp', 'kind': 'webapp'}})
         refused = await _request(connection, peer, 2, {'client': bad})
         assert refused['error']['code'] == 4001, refused
-        assert peer.client_identity == {'name': 'hermes-webapp', 'kind': 'webapp'}
+        assert peer.client_identity == {'name': 'zeus-webapp', 'kind': 'webapp'}
         # A later call that names other fields only keeps the announced client.
         assert 'result' in await _request(connection, peer, 3, {'server_requests': True})
-        assert peer.client_identity == {'name': 'hermes-webapp', 'kind': 'webapp'}
+        assert peer.client_identity == {'name': 'zeus-webapp', 'kind': 'webapp'}
     finally:
         await connection.close()
         await conn.connection.close()
@@ -85,7 +85,7 @@ async def test_a_hello_sent_alone_changes_nothing_else_the_connection_declared(t
     from tui_gateway import server_requests
     conn, connection, peer = await _hello_connection(tmp_path, monkeypatch)
     try:
-        reply = await _request(connection, peer, 1, {'client': {'name': 'hermes-desktop', 'kind': 'desktop'}})
+        reply = await _request(connection, peer, 1, {'client': {'name': 'zeus-desktop', 'kind': 'desktop'}})
         assert 'clarify' in reply['result']['server_requests']
         assert server_requests.answers_requests(peer) is False
         assert peer.desktop_local is False
@@ -102,7 +102,7 @@ async def test_a_transport_that_keeps_no_identity_ignores_the_hello(tmp_path, mo
     conn = await _connect(tmp_path, monkeypatch)
     try:
         assert isinstance(conn.transport, _Transport)
-        reply = await _request(conn.connection, conn.transport, 1, {'client': {'name': 'hermes-desktop'}})
+        reply = await _request(conn.connection, conn.transport, 1, {'client': {'name': 'zeus-desktop'}})
         assert 'result' in reply, reply
         assert not hasattr(conn.transport, 'client_identity')
     finally:

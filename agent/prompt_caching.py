@@ -153,7 +153,7 @@ def is_qwen_model(model: str) -> bool:
 # Measured on one install (2 days of per-call logs): 63% of interactive cache-write tokens
 # were cold re-writes after a 5–60 min idle gap (1h saves ~42% of write cost there), while
 # 1h on subagents/cron would have cost ~49% more. ``auto`` is the shipped default
-# (hermes_cli/config_defaults.py). ``api_server`` is the API server's platform label and
+# (zeus_cli/config_defaults.py). ``api_server`` is the API server's platform label and
 # ``curator`` the background skill curator (tens of back-to-back calls); both are machine-paced.
 AUTO_CACHE_TTL = "auto"
 MACHINE_PACED_SOURCES = frozenset({
@@ -211,7 +211,7 @@ def effective_cache_ttl(ttl: str | None, *, model: str = "", provider: str = "",
     ``NO_1H_TIER_MODELS``; that check runs BEFORE the generic Qwen clamp, which would swallow it.
     Bedrock keeps auto on 5m for legacy models; an explicit 1h pin is preserved.
     Then the route's declared ceiling (:func:`route_ttl_ceiling`) applies to that result on every
-    path: the prompt-cache clock reads the same helper, so what Hermes asks for and what it
+    path: the prompt-cache clock reads the same helper, so what Zeus asks for and what it
     believes never disagree.
     """
     if ttl != "1h":
@@ -277,7 +277,7 @@ def catalog_cache_markers(provider: str, base_url: str = "", model: str = "", ap
 
 
 def learned_or_catalog_markers(provider: str, base_url: str = "", model: str = "", api_key: str = "") -> bool | None:
-    """Whether a Chat Completions request to ``model`` should carry markers: what Hermes learned from
+    """Whether a Chat Completions request to ``model`` should carry markers: what Zeus learned from
     this route's own usage (``prompt_cache_routes.marker_preference``) first, then its catalog."""
     from agent.prompt_cache_routes import marker_preference
 
@@ -293,7 +293,7 @@ def route_ttl_ceiling(provider: str, base_url: str = "") -> str | None:
     for gets a ``5m`` ceiling so it is never asked for (or billed) the dearer tier; a gateway that
     keeps 1h declares ``1h`` so the prompt-cache clock trusts the tier it sends.
     """
-    from hermes_cli.config import load_config_readonly
+    from zeus_cli.config import load_config_readonly
     from providers import get_provider_profile
 
     names = _route_names(provider, base_url)

@@ -12,7 +12,7 @@ def _end_suppressed_cron_session(db, job: dict, job_id: str, job_name: str, cron
     Receipts and terminal admissions remain available for exact retry and lazy resume.
     """
     from cron.scheduler import (
-        _BoundedCronSessionDB, _set_cron_session_title, _hermes_now, safe_strftime,
+        _BoundedCronSessionDB, _set_cron_session_title, _zeus_now, safe_strftime,
     )
 
     if db is None:
@@ -22,7 +22,7 @@ def _end_suppressed_cron_session(db, job: dict, job_id: str, job_name: str, cron
         bounded.end(cron_session_id, "cron_suppressed")
         title = " ".join(job_name.split())[:60].strip() or f"cron {job_id}"
         _set_cron_session_title(bounded, cron_session_id,
-                               f"{title} · {safe_strftime(_hermes_now(), '%b %d %H:%M')}")
+                               f"{title} · {safe_strftime(_zeus_now(), '%b %d %H:%M')}")
         # No filesystem validation during teardown: this is the admission's configured cwd,
         # not a directory we are about to execute in. A disconnected mount must not block end.
         workdir = (job.get("workdir") or "").strip()

@@ -1,9 +1,9 @@
 // The window's reporter through its real seams: the HashRouter route and session stores decide what
 // is in view, the composer's owner ladder and the gateway registry decide which connection owns it,
-// and real HermesGateway clients over in-memory sockets carry the frames.
+// and real ZeusGateway clients over in-memory sockets carry the frames.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { HermesGateway } from '@/api/client'
+import { ZeusGateway } from '@/api/client'
 import { createSessionRpcDispatcher } from '@/app/contrib/session-rpc-dispatcher'
 import { captureSubmissionDestination } from '@/app/session/hooks/use-prompt-actions/submission-destination'
 import { group } from '@/components/pane-shell/tree/model'
@@ -78,7 +78,7 @@ const URL_ = 'ws://example.invalid/api/ws'
 
 async function openGateway(answer: Record<string, unknown> = { client_activity: true }) {
   Sock.answers[Sock.sockets.length] = answer
-  const gateway = new HermesGateway()
+  const gateway = new ZeusGateway()
   const connected = gateway.connect(URL_)
   const socket = Sock.sockets.at(-1)!
   socket.open()
@@ -101,7 +101,7 @@ function showChat(stored = 'stored-1', runtime = 'rt-1') {
 /** A host that can show notifications; resolves once main's answer is known. */
 function notifyingHost() {
   const supported = Promise.resolve(true)
-  window.hermesDesktop = { notify: vi.fn(async () => true), notifySupported: () => supported } as never
+  window.zeusDesktop = { notify: vi.fn(async () => true), notifySupported: () => supported } as never
 
   return supported
 }
@@ -133,8 +133,8 @@ afterEach(() => {
   $layoutTree.set(null)
   forgetSessionOwnerHintsForConnection('conn-a')
   window.location.hash = ''
-  delete (window as { hermesDesktop?: unknown }).hermesDesktop
-  delete document.documentElement.dataset.hermesDesktopHost
+  delete (window as { zeusDesktop?: unknown }).zeusDesktop
+  delete document.documentElement.dataset.zeusDesktopHost
   vi.restoreAllMocks()
   vi.unstubAllGlobals()
   vi.useRealTimers()
@@ -167,7 +167,7 @@ describe('the report goes where a submit for the session in view goes', () => {
 
   describe('a session whose row names only a profile', () => {
     /** The composer's submit for `stored-1` on the window's real session dispatcher. */
-    async function submit(ambient: HermesGateway) {
+    async function submit(ambient: ZeusGateway) {
       const dispatch = createSessionRpcDispatcher({
         ambientRequest: (method, params) => ambient.request(method, params),
         runtimeIdByStoredSessionIdRef: { current: new Map([['stored-1', 'rt-1']]) },
@@ -354,7 +354,7 @@ describe('client.activity only on a connection that advertised it, now', () => {
 
 describe('can_alert by notification uses the check that sends the notification', () => {
   it('a browser permission revoked after start gives can_alert false', async () => {
-    document.documentElement.dataset.hermesDesktopHost = 'browser'
+    document.documentElement.dataset.zeusDesktopHost = 'browser'
     vi.stubGlobal('isSecureContext', true)
     const permission = { value: 'granted' }
     vi.stubGlobal('Notification', { get permission() { return permission.value } })

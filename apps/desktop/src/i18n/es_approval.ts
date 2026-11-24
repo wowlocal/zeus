@@ -2,11 +2,11 @@ import type { ApprovalCopy } from './types_approval'
 
 export const esApproval: Partial<ApprovalCopy> = {
   gatewayDisconnected:
-    'Hermes está sin conexión ahora mismo. El comando sigue esperando tu respuesta (hasta que se agote el tiempo de aprobación). Reconéctate y vuelve a enviarla.',
+    'Zeus está sin conexión ahora mismo. El comando sigue esperando tu respuesta (hasta que se agote el tiempo de aprobación). Reconéctate y vuelve a enviarla.',
   sendFailed: 'No se pudo enviar tu respuesta',
   reconnect: 'Reconectar',
   timedOutSystemLine:
-    'Se agotó el tiempo de aprobación: el comando no se ejecutó. Pide a Hermes que lo intente de nuevo o sube el límite en Configuración → Seguridad → Tiempo de aprobación.',
+    'Se agotó el tiempo de aprobación: el comando no se ejecutó. Pide a Zeus que lo intente de nuevo o sube el límite en Configuración → Seguridad → Tiempo de aprobación.',
   openSafetySettings: 'Abrir configuración de seguridad',
   run: 'Ejecutar',
   command: 'Comando',
@@ -17,29 +17,29 @@ export const esApproval: Partial<ApprovalCopy> = {
   reject: 'Rechazar',
   alwaysTitle: '¿Permitir siempre este comando?',
   alwaysDescription: pattern =>
-    `Esto añade el patrón “${pattern}” a tu allowlist permanente (~/.hermes/config.yaml). Hermes no volverá a preguntar por comandos como este, ni en esta sesión ni en futuras.`,
+    `Esto añade el patrón “${pattern}” a tu allowlist permanente (~/.zeus/config.yaml). Zeus no volverá a preguntar por comandos como este, ni en esta sesión ni en futuras.`,
   alwaysAllow: 'Permitir siempre',
   deny: 'Denegar',
   allow: 'Permitir',
   allowHint: 'Hasta que se desactive el sandbox',
   denyReason: 'Motivo de la denegación',
-  denyReasonPlaceholder: 'Dile a Hermes por qué (opcional)',
+  denyReasonPlaceholder: 'Dile a Zeus por qué (opcional)',
   access: {
     title: 'Acceso a carpeta',
     readOnly: 'Solo lectura',
     readWrite: 'Lectura y escritura',
     timedOut: folder =>
-      `Se agotó el tiempo de la solicitud: no se concedió el acceso a la carpeta ${folder}. Pide a Hermes que lo intente de nuevo.`,
+      `Se agotó el tiempo de la solicitud: no se concedió el acceso a la carpeta ${folder}. Pide a Zeus que lo intente de nuevo.`,
     alwaysTitle: '¿Permitir siempre esta carpeta?',
     alwaysDescription:
-      'La carpeta se añade al sandbox de este perfil. Hermes no volverá a preguntar por ella en ningún chat.'
+      'La carpeta se añade al sandbox de este perfil. Zeus no volverá a preguntar por ella en ningún chat.'
   },
   network: {
     title: 'Acceso a sitio web',
     timedOut: site =>
-      `Se agotó el tiempo de la solicitud: no se concedió el acceso a ${site}. Pide a Hermes que lo intente de nuevo.`,
+      `Se agotó el tiempo de la solicitud: no se concedió el acceso a ${site}. Pide a Zeus que lo intente de nuevo.`,
     alwaysTitle: '¿Permitir siempre este sitio?',
     alwaysDescription:
-      'El sitio se añade a los sitios permitidos de este perfil. Hermes no volverá a preguntar por él en ningún chat.'
+      'El sitio se añade a los sitios permitidos de este perfil. Zeus no volverá a preguntar por él en ningún chat.'
   }
 }

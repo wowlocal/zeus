@@ -6,7 +6,7 @@ description: "Doubleword models (GLM, Kimi, DeepSeek, Qwen) via the OpenAI-compa
 maintainer: doublewordai
 tier: community
 category: models
-requires_hermes: ">=0.23.2"
+requires_zeus: ">=0.23.2"
 docs_url: https://github.com/doublewordai/hermes-doubleword-provider#readme
 version: "1.0.1"
 platforms: []

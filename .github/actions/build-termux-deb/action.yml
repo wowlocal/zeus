@@ -125,7 +125,7 @@ runs:
           dockerfile="scripts/termux/termux-builder.Dockerfile"
           short="$(python3 -c 'import hashlib, pathlib, sys; print(hashlib.sha256(sys.argv[1].encode() + b"\0" + pathlib.Path(sys.argv[2]).read_bytes()).hexdigest()[:12])' "$base" "$dockerfile")"
           owner="$(printf '%s' "$GITHUB_REPOSITORY_OWNER" | tr '[:upper:]' '[:lower:]')"
-          published="ghcr.io/${owner}/hermes-termux-builder:${short}"
+          published="ghcr.io/${owner}/zeus-termux-builder:${short}"
           if docker manifest inspect "$published" >/dev/null 2>&1; then
             printf 'builder image already published: %s\n%s\n' "$published" "$published" | tee termux-build/.builder-image.log
           else
@@ -158,28 +158,28 @@ runs:
         TERMUX_BUILDER_IMAGE: ${{ steps.builder_image_push.outputs.image || steps.builder_image_local.outputs.image }}
       run: |
         if [ "$TERMUX_BUILD_MODE" = commit ]; then
-          if [ -n "${HERMES_RELEASE_COMMIT:-}" ] && [ "${LEGACY_COMMIT_BUILD:-false}" != true ]; then
+          if [ -n "${ZEUS_RELEASE_COMMIT:-}" ] && [ "${LEGACY_COMMIT_BUILD:-false}" != true ]; then
             bash scripts/termux/termux_build.sh \
               --repo . \
-              --tag "$HERMES_PAYLOAD_TAG" \
-              --release-commit "$HERMES_RELEASE_COMMIT" \
+              --tag "$ZEUS_PAYLOAD_TAG" \
+              --release-commit "$ZEUS_RELEASE_COMMIT" \
               --out termux-build/payload
           else
             bash scripts/termux/termux_build.sh \
               --repo . \
-              --commit "$HERMES_BUILD_COMMIT" \
+              --commit "$ZEUS_BUILD_COMMIT" \
               --out termux-build/payload
           fi
-        elif [ -n "${HERMES_RELEASE_COMMIT:-}" ]; then
+        elif [ -n "${ZEUS_RELEASE_COMMIT:-}" ]; then
           bash scripts/termux/termux_build.sh \
             --repo . \
-            --tag "$HERMES_PAYLOAD_TAG" \
-            --release-commit "$HERMES_RELEASE_COMMIT" \
+            --tag "$ZEUS_PAYLOAD_TAG" \
+            --release-commit "$ZEUS_RELEASE_COMMIT" \
             --out termux-build/payload
         else
           bash scripts/termux/termux_build.sh \
             --repo . \
-            --tag "$HERMES_PAYLOAD_TAG" \
+            --tag "$ZEUS_PAYLOAD_TAG" \
             --out termux-build/payload
         fi
 
@@ -203,31 +203,31 @@ runs:
         TERMUX_BUILDER_IMAGE: ${{ steps.builder_image_push.outputs.image || steps.builder_image_local.outputs.image }}
       run: |
         if [ "$TERMUX_BUILD_MODE" = commit ]; then
-          if [ -n "${HERMES_RELEASE_COMMIT:-}" ] && [ "${LEGACY_COMMIT_BUILD:-false}" != true ]; then
+          if [ -n "${ZEUS_RELEASE_COMMIT:-}" ] && [ "${LEGACY_COMMIT_BUILD:-false}" != true ]; then
             python3 scripts/termux/build.py \
               --repo . \
-              --tag "$HERMES_PAYLOAD_TAG" \
-              --release-commit "$HERMES_RELEASE_COMMIT" \
+              --tag "$ZEUS_PAYLOAD_TAG" \
+              --release-commit "$ZEUS_RELEASE_COMMIT" \
               --payload termux-build/payload \
               --out termux-build/deb
           else
             python3 scripts/termux/build.py \
               --repo . \
-              --commit "$HERMES_BUILD_COMMIT" \
+              --commit "$ZEUS_BUILD_COMMIT" \
               --payload termux-build/payload \
               --out termux-build/deb
           fi
-        elif [ -n "${HERMES_RELEASE_COMMIT:-}" ]; then
+        elif [ -n "${ZEUS_RELEASE_COMMIT:-}" ]; then
           python3 scripts/termux/build.py \
             --repo . \
-            --tag "$HERMES_PAYLOAD_TAG" \
-            --release-commit "$HERMES_RELEASE_COMMIT" \
+            --tag "$ZEUS_PAYLOAD_TAG" \
+            --release-commit "$ZEUS_RELEASE_COMMIT" \
             --payload termux-build/payload \
             --out termux-build/deb
         else
           python3 scripts/termux/build.py \
             --repo . \
-            --tag "$HERMES_PAYLOAD_TAG" \
+            --tag "$ZEUS_PAYLOAD_TAG" \
             --payload termux-build/payload \
             --out termux-build/deb
         fi

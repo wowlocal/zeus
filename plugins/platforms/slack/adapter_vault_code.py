@@ -18,10 +18,10 @@ from gateway.platforms.base import SendResult
 
 logger = logging.getLogger("plugins.platforms.slack.adapter")
 
-OPEN_ACTION = "hermes_vault_code_open"
-VIEW_CALLBACK = "hermes_vault_code_submit"
-_BLOCK_ID = "hermes_vault_code_block"
-_INPUT_ACTION = "hermes_vault_code_value"
+OPEN_ACTION = "zeus_vault_code_open"
+VIEW_CALLBACK = "zeus_vault_code_submit"
+_BLOCK_ID = "zeus_vault_code_block"
+_INPUT_ACTION = "zeus_vault_code_value"
 _HINT_LIMIT = 300
 _MODAL_TITLE_LIMIT = 24  # Slack caps modal title / submit text at 24 characters
 _REQUESTS_MAX = 200

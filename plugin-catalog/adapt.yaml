@@ -6,5 +6,5 @@ maintainer: Opeyemi Moses
 category: memory
 tier: community
 version: "0.1.0"
-requires_hermes: ">=0.20.0"
+requires_zeus: ">=0.20.0"
 readme: true

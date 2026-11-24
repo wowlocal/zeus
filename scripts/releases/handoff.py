@@ -22,7 +22,7 @@ def validate_identity(tag: str, commit: str, name: str) -> None:
     # identity admits rc.N-vX.Y.Z beside plain vX.Y.Z and canary.<stamp>-vX.Y.Z tags.
     # A commit claim (commit.<stamp>-vX.Y.Z) stages under its own claim archive too;
     # its version is no release version, which is why it never reaches a feed.
-    from hermes_cli.update_channel import is_commit_tag, release_version
+    from zeus_cli.update_channel import is_commit_tag, release_version
     from scripts.releases.versioning import parse_attempt_ref
 
     if (not isinstance(tag, str)
@@ -103,7 +103,7 @@ def _receipt_file_rows(selected: dict[str, Path]) -> list[dict]:
 
 def channel_prefix(request: dict) -> str:
     """A channel build is an allocation, never a source SHA alias."""
-    from hermes_cli.release_channels import build_prefix, validate_request
+    from zeus_cli.release_channels import build_prefix, validate_request
     return build_prefix(validate_request(request)["buildId"])
 
 
@@ -289,8 +289,8 @@ def _fetch_receipts(receipts: list[dict], root: Path,
 def main(argv: list[str] | None = None) -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=["stage", "fetch"])
-    parser.add_argument("--tag", default=os.environ.get("HERMES_PAYLOAD_TAG") or os.environ.get("RELEASE_TAG"), required=False)
-    # Explicit only: a commit claim's legs export HERMES_BUILD_COMMIT (its Commit<sha7> identity)
+    parser.add_argument("--tag", default=os.environ.get("ZEUS_PAYLOAD_TAG") or os.environ.get("RELEASE_TAG"), required=False)
+    # Explicit only: a commit claim's legs export ZEUS_BUILD_COMMIT (its Commit<sha7> identity)
     # beside the claim tag, and stage under the claim archive like every candidate.
     parser.add_argument("--commit-build", default=None,
                         help="Commit-only mode: stage/fetch under releases/commit/<sha>/ "
@@ -307,7 +307,7 @@ def main(argv: list[str] | None = None) -> None:
         parser.error('--public-base is only supported for fetch')
     if args.channel_request:
         request = json.loads(args.channel_request.read_text(encoding="utf-8-sig"))
-        # One-dispatch runs export HERMES_PAYLOAD_TAG/HERMES_BUILD_COMMIT to
+        # One-dispatch runs export ZEUS_PAYLOAD_TAG/ZEUS_BUILD_COMMIT to
         # every leg, and argparse defaults pick them up even when the leg's
         # explicit args name only --channel-request. A commit equal to the
         # request's own is provenance, not selection; only a genuinely

@@ -3,7 +3,7 @@ import hashlib
 import json
 from pathlib import Path
 
-import hermes_yaml
+import zeus_yaml
 import pytest
 
 from tests.ci.desktop_release_roles import (
@@ -16,7 +16,7 @@ from tests.scripts.test_release_r2 import r2_server
 
 
 def smoke_workflow():
-    return hermes_yaml.safe_load((ROOT / '.github/workflows/desktop-bundle-smoke.yml').read_text(encoding='utf-8-sig'))
+    return zeus_yaml.safe_load((ROOT / '.github/workflows/desktop-bundle-smoke.yml').read_text(encoding='utf-8-sig'))
 
 
 def smoke_fetch_script():
@@ -42,12 +42,12 @@ def smoke_fetch_script():
 
 
 def transport_env(tmp_path, server, *, commit=False):
-    return dict(HERMES_PAYLOAD_TAG='' if commit else TAG, HERMES_BUILD_COMMIT=SHA if commit else '',
+    return dict(ZEUS_PAYLOAD_TAG='' if commit else TAG, ZEUS_BUILD_COMMIT=SHA if commit else '',
                 RELEASE_TAG='' if commit else TAG, RELEASE_COMMIT=SHA, COMMIT_BUILD=str(commit).lower(),
-                PUBLIC_BASE=f'http://127.0.0.1:{server.server_port}/hermes-releases',
-                CLOUDFLARE_R2_PUBLIC_URL=f'http://127.0.0.1:{server.server_port}/hermes-releases',
+                PUBLIC_BASE=f'http://127.0.0.1:{server.server_port}/zeus-releases',
+                CLOUDFLARE_R2_PUBLIC_URL=f'http://127.0.0.1:{server.server_port}/zeus-releases',
                 CLOUDFLARE_R2_ACCOUNT_ID='loopback', CLOUDFLARE_R2_ACCESS_KEY_ID='test-inert',
-                CLOUDFLARE_R2_SECRET_ACCESS_KEY='test-inert', CLOUDFLARE_R2_BUCKET='hermes-releases',
+                CLOUDFLARE_R2_SECRET_ACCESS_KEY='test-inert', CLOUDFLARE_R2_BUCKET='zeus-releases',
                 RELEASE_PHASE='', SMOKE_ROOT=str(tmp_path / 'smoke'), GITHUB_OUTPUT=str(tmp_path / 'output'))
 
 
@@ -61,7 +61,7 @@ def test_public_smoke_fetches_the_receipt_bound_native_format(tmp_path, r2_serve
     release = tmp_path / 'apps/desktop/release'
     release.mkdir(parents=True)
     suffix = f'mac-{arch}.{fmt}' if platform == 'darwin' else ('win.msixbundle' if fmt == 'msixbundle' else f'win-{arch}.msix')
-    filename = f'HermesBundled-0.28.0-{suffix}'
+    filename = f'ZeusBundled-0.28.0-{suffix}'
     payload = b'transport fixture only: not a deployable package'
     (release / filename).write_bytes(payload)
     (release / ('Store-' + filename)).write_bytes(b'not eligible')
@@ -71,7 +71,7 @@ def test_public_smoke_fetches_the_receipt_bound_native_format(tmp_path, r2_serve
     if platform == 'darwin':
         # The producer stages all of its formats together; smoke selects one.
         for ext in ('dmg', 'zip', 'zip.blockmap'):
-            (release / f'HermesBundled-0.28.0-mac-{arch}.{ext}').write_bytes(payload)
+            (release / f'ZeusBundled-0.28.0-mac-{arch}.{ext}').write_bytes(payload)
         (release / f'{arch}-canary-mac.yml').write_bytes(payload)
     staged = shell_step(tmp_path, r2_server, '', '', {**env, 'TARGET': f'{platform}-{arch}'},
                         script=stage_step(jobs[producer])['run'])
@@ -95,7 +95,7 @@ def test_public_smoke_fetches_the_receipt_bound_native_format(tmp_path, r2_serve
 @pytest.mark.parametrize('fault', ['missing', 'ambiguous', 'wrong-commit', 'corrupt'])
 def test_download_faults_never_export_an_accepted_artifact(tmp_path, r2_server, fault):
     env = transport_env(tmp_path, r2_server, commit=True)
-    filename = 'HermesBundled-0.28.0-win-x64.msix'
+    filename = 'ZeusBundled-0.28.0-win-x64.msix'
     payload = b'inert integrity fixture'
     row = {'path': filename, 'size': len(payload), 'sha256': hashlib.sha256(payload).hexdigest()}
     receipt = {'schema': 2, 'commit': 'b' * 40 if fault == 'wrong-commit' else SHA,
@@ -105,7 +105,7 @@ def test_download_faults_never_export_an_accepted_artifact(tmp_path, r2_server, 
     if fault == 'missing':
         receipt['files'] = [{**row, 'path': 'Store-' + filename}]
     elif fault == 'ambiguous':
-        second = 'HermesBundled-0.29.0-win-x64.msix'
+        second = 'ZeusBundled-0.29.0-win-x64.msix'
         receipt['files'].append({**row, 'path': second})
         r2_server.store[prefix + second] = (payload, '"e"')
     r2_server.store[prefix + 'handoff-win32-x64.json'] = (json.dumps(receipt).encode(), '"e"')

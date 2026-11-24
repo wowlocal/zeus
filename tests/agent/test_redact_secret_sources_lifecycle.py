@@ -19,8 +19,8 @@ from agent.redact import redact_sensitive_text, register_vault_redaction_value
 from agent.secret_sources import registry as reg_module
 from agent.secret_sources.base import FetchResult
 from agent.secret_sources.registry import AppliedVar, ApplyReport, SourceReport
-from hermes_cli import env_loader
-from hermes_constants import reset_hermes_home_override, set_hermes_home_override
+from zeus_cli import env_loader
+from zeus_constants import reset_zeus_home_override, set_zeus_home_override
 
 OPAQUE = "mxq7Tpl2vRw9Kd"
 PATH = "/srv/workspace/project"
@@ -37,11 +37,11 @@ def _clean(monkeypatch):
 
 @contextmanager
 def _profile(home):
-    token = set_hermes_home_override(str(home))
+    token = set_zeus_home_override(str(home))
     try:
         yield
     finally:
-        reset_hermes_home_override(token)
+        reset_zeus_home_override(token)
 
 
 def _home(tmp_path, name, config="secrets:\n  cmd:\n    enabled: true\n"):
@@ -133,19 +133,19 @@ def test_removed_routed_source_releases_mask(tmp_path, monkeypatch, config):
 
 
 def test_startup_publish_leaves_the_redact_secrets_bridge_in_charge(tmp_path):
-    # load_hermes_dotenv publishes source values BEFORE hermes_cli/main.py bridges security.redact_secrets
-    # into HERMES_REDACT_SECRETS, and agent.redact snapshots that variable when it is first imported.
+    # load_zeus_dotenv publishes source values BEFORE zeus_cli/main.py bridges security.redact_secrets
+    # into ZEUS_REDACT_SECRETS, and agent.redact snapshots that variable when it is first imported.
     key = "sk-proj-" + "abcdefghijklmnopqrstuvwx1234"
     script = "\n".join([
         "import os",
         "from agent.redact_secret_sources import publish_secret_source_values",
         f"publish_secret_source_values({str(tmp_path)!r}, {{'VENDOR_TOKEN': {OPAQUE!r}}})",
-        "os.environ['HERMES_REDACT_SECRETS'] = 'false'  # the bridge",
+        "os.environ['ZEUS_REDACT_SECRETS'] = 'false'  # the bridge",
         "from agent.redact import redact_sensitive_text",
         f"print(redact_sensitive_text('bare {OPAQUE} key {key}'))",
     ])
-    env = {**os.environ, "HERMES_HOME": str(tmp_path), "PYTHONPATH": str(Path(__file__).resolve().parents[2])}
-    env.pop("HERMES_REDACT_SECRETS", None)
+    env = {**os.environ, "ZEUS_HOME": str(tmp_path), "PYTHONPATH": str(Path(__file__).resolve().parents[2])}
+    env.pop("ZEUS_REDACT_SECRETS", None)
     out = subprocess.run([sys.executable, "-c", script], cwd=tmp_path, env=env, capture_output=True, text=True,
                          check=True, timeout=60).stdout
     assert OPAQUE not in out  # the source value stays masked whatever the preference

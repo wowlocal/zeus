@@ -6,7 +6,7 @@ import type { SandboxCopy } from '@/i18n/types_sandbox'
 // its sandbox starting, restarting or stopping on purpose. While one lasts, a
 // dropped or refused connection to that profile's backend is the transition,
 // not a failure: the status bar and composer name it instead of "Backend
-// offline" / "Reconnecting to Hermes…", and requests wait for the backend to
+// offline" / "Reconnecting to Zeus…", and requests wait for the backend to
 // come back instead of failing (use-gateway-request).
 //
 // Sources: the plugin's status route (launcher-transition.ts) and the SDK's

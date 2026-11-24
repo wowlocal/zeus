@@ -562,7 +562,7 @@ const CommandApprovalCard: FC<ApprovalCardProps> = ({ request, total, position, 
   const { t } = useI18n()
   const copy = t.assistant.approval
   const { cardRef, rememberFocusOrigin, respond, submitting } = useApprovalResponder(request, stack)
-  // "Always allow" persists the pattern to ~/.hermes/config.yaml permanently, so
+  // "Always allow" persists the pattern to ~/.zeus/config.yaml permanently, so
   // it goes through a confirm step rather than firing straight from the menu.
   const [confirmAlways, setConfirmAlways] = useState(false)
 

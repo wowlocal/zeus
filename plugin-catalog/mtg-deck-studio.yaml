@@ -7,7 +7,7 @@ description: "A Magic: The Gathering Commander deck table beside the chat. The A
 maintainer: GillesGaelBERNARD
 tier: community
 category: desktop
-requires_hermes: ">=0.22.7"
+requires_zeus: ">=0.22.7"
 version: "0.3.1"
 docs_url: https://github.com/GillesGaelBERNARD/mtg-deck-studio#readme
 readme: true

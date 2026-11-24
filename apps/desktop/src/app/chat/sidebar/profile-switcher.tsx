@@ -18,7 +18,7 @@ import {
   useSortable
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { LOCAL_CONNECTION_ID } from '@hermes/shared'
+import { LOCAL_CONNECTION_ID } from '@zeus/shared'
 import { useStore } from '@nanostores/react'
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router'
@@ -46,7 +46,7 @@ import { ProfileGlyph } from '@/components/ui/profile-glyph'
 import { Tip, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { $pluginRecords } from '@/contrib/plugins-store'
 import type { DesktopRegistryConnection } from '@/global'
-import { getProfileSoul, updateProfileSoul } from '@/hermes'
+import { getProfileSoul, updateProfileSoul } from '@/zeus'
 import { useResizeObserver } from '@/hooks/use-resize-observer'
 import { type Translations, useI18n } from '@/i18n'
 import { sortConnectionsForDisplay } from '@/lib/connection-display'
@@ -98,7 +98,7 @@ import {
 } from '@/store/profile-remote-override'
 import { runExportProfileFlow, runImportProfileFlow } from '@/store/profile-share'
 import { $profileSwitchFailure, $profileSwitchPending } from '@/store/profile-switch-state'
-import type { ProfileInfo } from '@/types/hermes'
+import type { ProfileInfo } from '@/types/zeus'
 
 import { CreateProfileDialog } from '../../profiles/create-profile-dialog'
 import { DeleteProfileDialog } from '../../profiles/delete-profile-dialog'
@@ -478,7 +478,7 @@ export function ProfileRail() {
     void refreshProfileRemoteOverrides(names)
 
     // A plugin (or Settings) can move a profile's backend without changing the list.
-    return window.hermesDesktop?.onConnectionApplied?.(() => void refreshProfileRemoteOverrides(names))
+    return window.zeusDesktop?.onConnectionApplied?.(() => void refreshProfileRemoteOverrides(names))
   }, [profileNamesKey])
 
   // Open the create dialog when the `profile.create` hotkey fires (the dialog

@@ -383,8 +383,8 @@ def test_real_task_wins_over_trailing_dropped_tools_continuation_nudge(compresso
 def test_compress_context_todo_snapshot_stays_synthetic_across_two_boundaries(
     tmp_path, monkeypatch
 ):
-    hermes_home = tmp_path / "hermes-home"
-    monkeypatch.setenv("HERMES_HOME", str(hermes_home))
+    zeus_home = tmp_path / "zeus-home"
+    monkeypatch.setenv("ZEUS_HOME", str(zeus_home))
     db = storage_handle(tmp_path)
     session_id = "zero-user-todo-lifecycle"
     seed_session(db, session_id, "cron", model="test/model")

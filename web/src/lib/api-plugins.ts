@@ -57,7 +57,7 @@ export interface CatalogEntry {
   sha_short: string;
   tier: "official" | "verified" | "community";
   maintainer: string;
-  requires_hermes: string;
+  requires_zeus: string;
   platforms: string[];
   capabilities: CatalogCapabilities;
   docs_url: string;

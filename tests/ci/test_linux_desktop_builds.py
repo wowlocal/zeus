@@ -116,9 +116,9 @@ def test_linux_stage_archives_the_appimage_under_its_tag_only(tmp_path, r2_serve
     unpacked = release / f"linux-{arch}-unpacked/resources/agent-payload"
     unpacked.mkdir(parents=True)
     (unpacked / "manifest.json").write_text("{}")
-    from hermes_cli.update_channel import release_version
+    from zeus_cli.update_channel import release_version
 
-    image = release / f"HermesBundled-{release_version(CANARY_TAG)}-linux-{arch}.AppImage"
+    image = release / f"ZeusBundled-{release_version(CANARY_TAG)}-linux-{arch}.AppImage"
     image.write_bytes(b"AppImage transport fixture")
     (release / "builder-debug.yml").write_text("unstaged: true\n")
     staged = {image.name}
@@ -126,12 +126,12 @@ def test_linux_stage_archives_the_appimage_under_its_tag_only(tmp_path, r2_serve
         name = "canary-linux.yml" if arch == "x64" else "canary-linux-arm64.yml"
         (release / name).write_text("version: fixture\n")
         staged.add(name)
-    base = f"http://127.0.0.1:{r2_server.server_port}/hermes-releases"
+    base = f"http://127.0.0.1:{r2_server.server_port}/zeus-releases"
     result = shell_step(tmp_path, r2_server, "", "", {
-        "HERMES_PAYLOAD_TAG": CANARY_TAG, "HERMES_ARCHIVE_TAG": CANARY_TAG, "RELEASE_COMMIT": SHA,
+        "ZEUS_PAYLOAD_TAG": CANARY_TAG, "ZEUS_ARCHIVE_TAG": CANARY_TAG, "RELEASE_COMMIT": SHA,
         "TARGET": target, "CLOUDFLARE_R2_PUBLIC_URL": base, "CLOUDFLARE_R2_ACCOUNT_ID": "loopback",
         "CLOUDFLARE_R2_ACCESS_KEY_ID": "test-inert", "CLOUDFLARE_R2_SECRET_ACCESS_KEY": "test-inert",
-        "CLOUDFLARE_R2_BUCKET": "hermes-releases",
+        "CLOUDFLARE_R2_BUCKET": "zeus-releases",
     }, script=step["run"])
     assert result.returncode == 0, result.stdout + result.stderr
 

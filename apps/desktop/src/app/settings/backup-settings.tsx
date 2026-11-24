@@ -26,7 +26,7 @@ import {
   PORTAL_AGENTS_URL,
   transferRequest as request,
   transferAvailable
-} from '@/lib/hermes-cloud-agents'
+} from '@/lib/zeus-cloud-agents'
 import { hostHas } from '@/lib/host-capabilities'
 import { Archive, CloudUpload } from '@/lib/icons'
 import { $activeConnectionId } from '@/store/connections'
@@ -60,7 +60,7 @@ type Phase =
   | { kind: 'undone'; agent: DesktopCloudAgent }
   | { kind: 'error'; message: string; retry: () => void; undo?: () => void }
 
-/** `hermes backup` of the whole Hermes home, saved to a file the user picks. */
+/** `zeus backup` of the whole Zeus home, saved to a file the user picks. */
 function BackupCard({ copy, owner }: { copy: Copy; owner: TransferEndpoint }) {
   const [busy, setBusy] = useState(false)
   const [lastLine, setLastLine] = useState('')

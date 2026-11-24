@@ -1,4 +1,4 @@
-import { gaugeTitle } from '@hermes/shared'
+import { gaugeTitle } from '@zeus/shared'
 import { useStore } from '@nanostores/react'
 import { useCallback, useMemo } from 'react'
 import { useNavigate } from 'react-router'
@@ -81,7 +81,7 @@ import {
   $updateStatus,
   openUpdateOverlayFor
 } from '@/store/updates'
-import type { FreeTierStatus, StatusResponse, UsageStats } from '@/types/hermes'
+import type { FreeTierStatus, StatusResponse, UsageStats } from '@/types/zeus'
 
 import { CRON_ROUTE, SETTINGS_ROUTE, WEBHOOKS_ROUTE } from '../../routes'
 import type { StatusbarItem } from '../statusbar-controls'
@@ -162,7 +162,7 @@ export function useStatusbarItems({
   const terminalShowing = useStore($paneVisible('terminal'))
   const sessionsShowing = useStore($paneVisible('sessions'))
   const profileRailVisible = useStore($profileRailVisible)
-  const botsShowing = useStore($paneVisible('hermes-bots:pane'))
+  const botsShowing = useStore($paneVisible('zeus-bots:pane'))
   const primaryBusy = useStore($busy)
   // Draft / primary composer atom — used only while the focused surface is the
   // primary (or a draft with no runtime slice yet). A focused TILE keeps its
@@ -465,7 +465,7 @@ export function useStatusbarItems({
       version: desktopVersion?.appVersion
     })
 
-    // A Webapp served by Hermes Cloud: Cloud updates it, so there is no version/update pill to open.
+    // A Webapp served by Zeus Cloud: Cloud updates it, so there is no version/update pill to open.
     return versionItem('client', status, applying, copy.toggleVersion, cloudOwnsUpdates.client)
   }, [
     cloudOwnsUpdates.client,
@@ -480,7 +480,7 @@ export function useStatusbarItems({
   ])
 
   const backendVersionItem = useMemo<StatusbarItem | null>(() => {
-    // Hermes Cloud updates its agents itself: no backend pill, as outside remote mode.
+    // Zeus Cloud updates its agents itself: no backend pill, as outside remote mode.
     if (connection?.mode !== 'remote' || cloudOwnsUpdates.backend) {
       return null
     }
